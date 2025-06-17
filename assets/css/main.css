@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+}
+
+/* Custom styles for markdown content */
+.markdown-content {
+  @apply prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto;
+}
+
+.markdown-content img {
+  @apply rounded-lg shadow-md;
+}
+
+/* Custom styles for review cards */
+.review-card {
+  @apply transition-transform duration-200 hover:scale-[1.02];
+}
+
+/* Custom styles for star ratings */
+.star-rating {
+  @apply text-yellow-400;
+}
+
+/* Custom styles for premium user badge */
+.premium-badge {
+  @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-1 rounded-full text-xs font-bold;
+} 
