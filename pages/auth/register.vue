@@ -1,124 +1,138 @@
 <template>
-  <div class="max-w-md mx-auto">
-    <Card>
-      <template #title>
-        <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p class="mt-2 text-gray-600">
-            Already have an account?
-            <NuxtLink to="/auth/login" class="text-primary-600 hover:text-primary-500">
-              Sign in
-            </NuxtLink>
-          </p>
-        </div>
-      </template>
+  <div class="min-h-screen flex items-center justify-center bg-surface-0 p-4">
+    <div class="max-w-xl w-full">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-semibold text-surface-900 mb-3">Create your account</h1>
+        <p class="text-surface-600">Fill in the details below to get started.</p>
+      </div>
 
-      <template #content>
-        <form @submit.prevent="handleRegister" class="space-y-4">
-          <div class="field">
-            <label for="full-name" class="block text-sm font-medium text-gray-700">Full name</label>
-            <InputText
-              id="full-name"
-              v-model="form.fullName"
-              class="w-full"
-              required
-            />
-          </div>
+      <Card class="bg-surface-50 shadow-md">
+        <template #content>
+          <form @submit.prevent="handleSubmit" class="space-y-6">
+            <!-- Name Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="first-name" class="block text-sm text-surface-600 mb-1">First Name</label>
+                <InputText
+                  id="first-name"
+                  v-model="form.firstName"
+                  placeholder="e.g. John"
+                  :class="{ 'p-invalid': submitted && !form.firstName }"
+                  class="w-full bg-surface-0"
+                />
+                <small class="text-red-500" v-if="submitted && !form.firstName">First name is required</small>
+              </div>
 
-          <div class="field">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <InputText
-              id="email"
-              v-model="form.email"
-              type="email"
-              class="w-full"
-              required
-            />
-          </div>
+              <div>
+                <label for="last-name" class="block text-sm text-surface-600 mb-1">Last Name</label>
+                <InputText
+                  id="last-name"
+                  v-model="form.lastName"
+                  placeholder="e.g. Smith"
+                  :class="{ 'p-invalid': submitted && !form.lastName }"
+                  class="w-full bg-surface-0"
+                />
+                <small class="text-red-500" v-if="submitted && !form.lastName">Last name is required</small>
+              </div>
+            </div>
 
-          <div class="field">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <Password
-              id="password"
-              v-model="form.password"
-              class="w-full"
-              toggleMask
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm password</label>
-            <Password
-              id="confirm-password"
-              v-model="form.confirmPassword"
-              class="w-full"
-              :feedback="false"
-              toggleMask
-              required
-            />
-          </div>
-
-          <div class="field">
-            <div class="flex items-start">
-              <Checkbox
-                id="terms"
-                v-model="form.acceptTerms"
-                :binary="true"
-                :class="{ 'p-invalid': form.acceptTerms === false }"
+            <!-- Email -->
+            <div>
+              <label for="email" class="block text-sm text-surface-600 mb-1">Email Address</label>
+              <InputText
+                id="email"
+                v-model="form.email"
+                type="email"
+                placeholder="e.g. john@your-domain.com"
+                :class="{ 'p-invalid': submitted && !form.email }"
+                class="w-full bg-surface-0"
               />
-              <label for="terms" class="ml-2 block text-sm text-gray-700">
-                I agree to the
-                <NuxtLink to="/terms" class="text-primary-600 hover:text-primary-500">Terms of Service</NuxtLink>
-                and
-                <NuxtLink to="/privacy" class="text-primary-600 hover:text-primary-500">Privacy Policy</NuxtLink>
+              <small class="text-red-500" v-if="submitted && !form.email">Email is required</small>
+            </div>
+
+            <!-- Optional Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="phone" class="block text-sm text-surface-600 mb-1">Phone (Optional)</label>
+                <InputText
+                  id="phone"
+                  v-model="form.phone"
+                  placeholder="+00 0000 000 0000"
+                  class="w-full bg-surface-0"
+                />
+              </div>
+
+              <div>
+                <label for="website" class="block text-sm text-surface-600 mb-1">Website (Optional)</label>
+                <InputText
+                  id="website"
+                  v-model="form.website"
+                  placeholder="e.g. https://google.com"
+                  class="w-full bg-surface-0"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div>
+              <label for="password" class="block text-sm text-surface-600 mb-1">Password</label>
+              <Password
+                id="password"
+                v-model="form.password"
+                placeholder="Your Password"
+                :feedback="false"
+                toggleMask
+                :class="{ 'p-invalid': submitted && !form.password }"
+                class="w-full bg-surface-0"
+              />
+              <small class="text-red-500" v-if="submitted && !form.password">Password is required</small>
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+              <label for="confirm-password" class="block text-sm text-surface-600 mb-1">Confirm Password</label>
+              <Password
+                id="confirm-password"
+                v-model="form.confirmPassword"
+                placeholder="Confirm Password"
+                :feedback="false"
+                toggleMask
+                :class="{ 'p-invalid': submitted && !form.confirmPassword }"
+                class="w-full bg-surface-0"
+              />
+              <small class="text-red-500" v-if="submitted && !form.confirmPassword">Please confirm your password</small>
+            </div>
+
+            <!-- Terms -->
+            <div class="flex items-start space-x-2">
+              <Checkbox v-model="form.terms" :binary="true" inputId="terms" />
+              <label for="terms" class="text-sm text-surface-600">
+                I agree to the <NuxtLink to="/terms" class="text-primary hover:text-primary-600">Terms of Service</NuxtLink> and
+                <NuxtLink to="/privacy" class="text-primary hover:text-primary-600">Privacy Policy</NuxtLink>
               </label>
             </div>
-            <small v-if="form.acceptTerms === false" class="p-error">You must accept the terms and conditions</small>
-          </div>
 
-          <div class="flex justify-center">
+            <!-- Submit -->
             <Button
               type="submit"
-              :loading="isLoading"
               label="Create Account"
-              class="w-full"
+              class="w-full bg-primary hover:bg-primary-600 text-white"
+              :loading="isLoading"
             />
-          </div>
-        </form>
 
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300"></div>
+            <!-- Links -->
+            <div class="text-center text-sm">
+              <NuxtLink to="/auth/login" class="text-primary hover:text-primary-600">
+                Already have an account? Sign in
+              </NuxtLink>
             </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
+          </form>
+        </template>
+      </Card>
 
-          <div class="mt-6 grid grid-cols-2 gap-3">
-            <Button
-              @click="handleSocialLogin('github')"
-              class="w-full"
-              severity="secondary"
-              icon="pi pi-github"
-              label="GitHub"
-            />
-            <Button
-              @click="handleSocialLogin('google')"
-              class="w-full"
-              severity="secondary"
-              icon="pi pi-google"
-              label="Google"
-            />
-          </div>
-        </div>
-      </template>
-    </Card>
-
-    <!-- Toast for error messages -->
-    <Toast />
+      <!-- Toast for notifications -->
+      <Toast position="top-center" />
+    </div>
   </div>
 </template>
 
@@ -133,33 +147,36 @@ if (user.value) {
 }
 
 const form = ref({
-  fullName: '',
+  firstName: '',
+  lastName: '',
   email: '',
+  phone: '',
+  website: '',
   password: '',
   confirmPassword: '',
-  acceptTerms: false
+  terms: false
 })
 
+const submitted = ref(false)
 const isLoading = ref(false)
 
-const handleRegister = async () => {
-  if (form.value.password !== form.value.confirmPassword) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Passwords do not match',
-      life: 3000
-    })
-    return
-  }
+const isValidEmail = (email) => {
+  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+  return emailPattern.test(email)
+}
 
-  if (!form.value.acceptTerms) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'You must accept the terms and conditions',
-      life: 3000
-    })
+const handleSubmit = async () => {
+  submitted.value = true
+
+  if (!form.value.firstName || 
+      !form.value.lastName ||
+      !form.value.email || 
+      !form.value.password || 
+      !form.value.confirmPassword || 
+      !form.value.terms ||
+      !isValidEmail(form.value.email) ||
+      form.value.password.length < 6 ||
+      form.value.password !== form.value.confirmPassword) {
     return
   }
 
@@ -171,7 +188,10 @@ const handleRegister = async () => {
       password: form.value.password,
       options: {
         data: {
-          full_name: form.value.fullName
+          first_name: form.value.firstName,
+          last_name: form.value.lastName,
+          phone: form.value.phone,
+          website: form.value.website
         }
       }
     })
@@ -183,8 +203,11 @@ const handleRegister = async () => {
       .from('profiles')
       .insert({
         id: data.user.id,
-        full_name: form.value.fullName,
-        email: form.value.email
+        first_name: form.value.firstName,
+        last_name: form.value.lastName,
+        email: form.value.email,
+        phone: form.value.phone,
+        website: form.value.website
       })
 
     if (profileError) throw profileError
@@ -199,26 +222,6 @@ const handleRegister = async () => {
     })
   } finally {
     isLoading.value = false
-  }
-}
-
-const handleSocialLogin = async (provider) => {
-  try {
-    const { error } = await client.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/confirm`
-      }
-    })
-
-    if (error) throw error
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: error.message,
-      life: 3000
-    })
   }
 }
 </script> 

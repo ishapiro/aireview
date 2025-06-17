@@ -83,37 +83,70 @@
             <form @submit.prevent="handleChangePassword" class="space-y-4">
               <div class="field">
                 <label for="current-password" class="block text-sm font-medium text-gray-700">Current password</label>
-                <Password
-                  id="current-password"
-                  v-model="passwordForm.currentPassword"
-                  class="w-full"
-                  :feedback="false"
-                  toggleMask
-                  required
-                />
+                <div class="relative w-full">
+                  <Password
+                    id="current-password"
+                    v-model="passwordForm.currentPassword"
+                    :feedback="false"
+                    toggleMask
+                    required
+                    class="w-full"
+                    inputClass="w-full pr-8"
+                    :inputStyle="{ width: '100%' }"
+                  >
+                    <template #hideicon>
+                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                    <template #showicon>
+                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                  </Password>
+                </div>
               </div>
 
               <div class="field">
                 <label for="new-password" class="block text-sm font-medium text-gray-700">New password</label>
-                <Password
-                  id="new-password"
-                  v-model="passwordForm.newPassword"
-                  class="w-full"
-                  toggleMask
-                  required
-                />
+                <div class="relative w-full">
+                  <Password
+                    id="new-password"
+                    v-model="passwordForm.newPassword"
+                    toggleMask
+                    required
+                    class="w-full"
+                    inputClass="w-full pr-8"
+                    :inputStyle="{ width: '100%' }"
+                  >
+                    <template #hideicon>
+                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                    <template #showicon>
+                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                  </Password>
+                </div>
               </div>
 
               <div class="field">
                 <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm new password</label>
-                <Password
-                  id="confirm-password"
-                  v-model="passwordForm.confirmPassword"
-                  class="w-full"
-                  :feedback="false"
-                  toggleMask
-                  required
-                />
+                <div class="relative w-full">
+                  <Password
+                    id="confirm-password"
+                    v-model="passwordForm.confirmPassword"
+                    :feedback="false"
+                    toggleMask
+                    required
+                    class="w-full"
+                    inputClass="w-full pr-8"
+                    :inputStyle="{ width: '100%' }"
+                  >
+                    <template #hideicon>
+                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                    <template #showicon>
+                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
+                    </template>
+                  </Password>
+                </div>
               </div>
 
               <div class="flex justify-end">

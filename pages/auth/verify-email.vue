@@ -1,41 +1,50 @@
 <template>
-  <div class="max-w-md mx-auto">
-    <Card>
-      <template #title>
-        <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900">Check your email</h1>
-        </div>
-      </template>
+  <div class="min-h-screen flex items-center justify-center bg-white p-4">
+    <div class="max-w-xl w-full">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-3">Check your email</h1>
+        <p class="text-gray-500">We've sent you a verification link.</p>
+      </div>
 
-      <template #content>
-        <div class="text-center space-y-4">
-          <i class="pi pi-envelope text-4xl text-primary-600"></i>
-          <p class="text-gray-600">
-            We've sent you a verification link to your email address.
-            Please check your inbox and click the link to verify your account.
-          </p>
-
-          <div class="space-y-4">
-            <Button
-              @click="handleResendEmail"
-              :loading="isResending"
-              label="Resend verification email"
-              class="w-full"
-            />
-
-            <Button
-              @click="handleSignOut"
-              severity="secondary"
-              label="Sign out"
-              class="w-full"
-            />
+      <div class="space-y-8">
+        <!-- Icon -->
+        <div class="flex justify-center">
+          <div class="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center">
+            <i class="pi pi-envelope text-4xl text-primary-600"></i>
           </div>
         </div>
-      </template>
-    </Card>
 
-    <!-- Toast for notifications -->
-    <Toast />
+        <!-- Message -->
+        <div class="text-center space-y-4">
+          <p class="text-gray-600">
+            Please check your inbox and click the verification link to verify your account.
+          </p>
+          <p class="text-gray-600">
+            If you haven't received the email, click below to resend.
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-4">
+          <Button
+            @click="handleResendEmail"
+            :loading="isResending"
+            label="Resend verification email"
+            class="w-full p-button-primary"
+          />
+
+          <Button
+            @click="handleSignOut"
+            severity="secondary"
+            label="Sign out"
+            class="w-full p-button-outlined"
+          />
+        </div>
+      </div>
+
+      <!-- Toast for notifications -->
+      <Toast position="top-center" />
+    </div>
   </div>
 </template>
 
