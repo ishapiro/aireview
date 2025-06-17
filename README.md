@@ -326,4 +326,98 @@ SUPABASE_KEY=your-supabase-anon-key
 
 ## 🆘 Support
 
-For support, please open an issue in the GitHub repository or contact the maintainers. 
+For support, please open an issue in the GitHub repository or contact the maintainers.
+
+## ⚠️ Important Configuration Notes
+
+Before diving into the setup, please be aware of these critical configuration requirements that will save you time and prevent common issues:
+
+### PrimeVue + Nuxt 3 + Tailwind Integration
+
+1. **Version Compatibility**
+   ```bash
+   npm install primevue@^3.49.1 primeicons@^6.0.1 nuxt-primevue@^3.0.0 @tailwindcss/forms postcss@^8.5.6 postcss-import tailwindcss-primeui --save-dev
+   ```
+   - Use PrimeVue 3.49.1 or later to avoid PT configuration issues
+   - Ensure postcss version is compatible with your Nuxt version
+
+2. **Critical Configuration Order**
+   The order of configuration is crucial to prevent styling conflicts:
+
+   ```javascript
+   // nuxt.config.js
+   export default defineNuxtConfig({
+     modules: [
+       '@nuxtjs/supabase',
+       '@nuxtjs/tailwindcss',
+       'nuxt-primevue'
+     ],
+     primevue: {
+       cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
+       components: {
+         include: ['Button', 'Card', /* other components */]
+       },
+       options: {
+         unstyled: true,
+         ripple: true,
+         inputStyle: 'filled',
+         pt: {}  // Required for Nuxt 3.12+
+       }
+     }
+   })
+   ```
+
+3. **CSS Layer Ordering**
+   - Tailwind base must load before PrimeVue
+   - PrimeVue styles must load before Tailwind utilities
+   - Use the `cssLayerOrder` option to manage this
+
+4. **Common Issues & Solutions**
+
+   a. **PT Configuration Error**
+   ```
+   [nuxt] Could not access 'pt'. The only available runtime config keys are 'public' and 'app'
+   ```
+   Solution: Move PT configuration from `runtimeConfig` to PrimeVue options:
+   ```javascript
+   primevue: {
+     options: {
+       pt: {}  // Place PT configuration here
+     }
+   }
+   ```
+
+   b. **Password Input Accessibility**
+   For password forms, always include:
+   - Hidden username field with `autocomplete="username"`
+   - Proper autocomplete attributes on password fields:
+     ```vue
+     <Password
+       :inputProps="{ autocomplete: 'current-password' }"
+       // or 'new-password' for new password fields
+     />
+     ```
+
+   c. **Style Conflicts**
+   If Tailwind is overriding PrimeVue styles:
+   ```javascript
+   primevue: {
+     cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities'
+   }
+   ```
+
+   d. **Component Loading Issues**
+   Ensure components are explicitly included:
+   ```javascript
+   primevue: {
+     components: {
+       include: ['Button', 'Card', 'Password', /* etc */]
+     }
+   }
+   ```
+
+5. **Development Best Practices**
+   - Always check browser console for configuration warnings
+   - Use browser dev tools to inspect CSS layer ordering
+   - Test form components with password managers enabled
+   - Verify accessibility compliance with browser tools 

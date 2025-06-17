@@ -81,6 +81,14 @@
           <template #title>Change Password</template>
           <template #content>
             <form @submit.prevent="handleChangePassword" class="space-y-4">
+              <!-- Hidden username field for accessibility -->
+              <input
+                type="email"
+                :value="form.email"
+                autocomplete="username"
+                style="display: none"
+              />
+              
               <div class="field">
                 <label for="current-password" class="block text-sm font-medium text-gray-700">Current password</label>
                 <div class="relative w-full">
@@ -93,7 +101,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
-                    autocomplete="current-password"
+                    :inputProps="{ autocomplete: 'current-password' }"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
@@ -116,7 +124,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
-                    autocomplete="new-password"
+                    :inputProps="{ autocomplete: 'new-password' }"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
@@ -140,7 +148,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
-                    autocomplete="new-password"
+                    :inputProps="{ autocomplete: 'new-password' }"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
