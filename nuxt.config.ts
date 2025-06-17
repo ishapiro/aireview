@@ -32,7 +32,8 @@ export default defineNuxtConfig({
           'Tag',
           'Textarea',
           'Dialog',
-          'ConfirmDialog'
+          'ConfirmDialog',
+          'ConfirmPopup'
         ]
       },
       directives: {

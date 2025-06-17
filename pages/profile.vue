@@ -166,6 +166,18 @@
           <template #title>Account Actions</template>
           <template #content>
             <div class="space-y-4">
+              <NuxtLink
+                v-if="profile.is_admin"
+                to="/admin"
+                class="block w-full"
+              >
+                <Button
+                  class="w-full"
+                  severity="secondary"
+                  label="Admin Dashboard"
+                  icon="pi pi-cog"
+                />
+              </NuxtLink>
               <Button
                 @click="handleDeleteAccount"
                 class="w-full"
