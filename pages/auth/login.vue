@@ -78,17 +78,10 @@
             </div>
           </div>
 
-          <div class="mt-6 grid grid-cols-2 gap-3">
-            <Button
-              @click="handleSocialLogin('github')"
-              class="w-full"
-              severity="secondary"
-              icon="pi pi-github"
-              label="GitHub"
-            />
+          <div class="mt-6 flex justify-center">
             <Button
               @click="handleSocialLogin('google')"
-              class="w-full"
+              class="w-full max-w-xs"
               severity="secondary"
               icon="pi pi-google"
               label="Google"
