@@ -7,11 +7,7 @@ export default defineNuxtConfig({
     'nuxt-primevue'
   ],
   primevue: {
-    usePrimeVue: true,
-    options: {
-      unstyled: true,
-      ripple: true
-    },
+    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
     components: {
       include: [
         'Button',
@@ -31,10 +27,20 @@ export default defineNuxtConfig({
     },
     directives: {
       include: ['Ripple', 'Tooltip']
+    },
+    services: {
+      include: ['ToastService', 'ConfirmationService']
+    },
+    options: {
+      unstyled: true,
+      ripple: true,
+      inputStyle: 'filled',
+      pt: {}
     }
   },
   css: [
     '@/assets/css/main.css',
+    '@/assets/css/primevue.css',
     'primeicons/primeicons.css'
   ],
   build: {

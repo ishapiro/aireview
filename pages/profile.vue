@@ -93,6 +93,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
+                    autocomplete="current-password"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
@@ -115,6 +116,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
+                    autocomplete="new-password"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
@@ -138,6 +140,7 @@
                     class="w-full"
                     inputClass="w-full pr-8"
                     :inputStyle="{ width: '100%' }"
+                    autocomplete="new-password"
                   >
                     <template #hideicon>
                       <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
