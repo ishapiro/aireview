@@ -9,68 +9,70 @@
 
     <Card>
       <template #content>
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div class="field">
-            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-            <InputText
-              id="title"
-              v-model="form.title"
-              class="w-full"
-              required
-            />
-          </div>
+        <div class="space-y-6">
+          <form @submit.prevent="handleSubmit">
+            <div class="field">
+              <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+              <InputText
+                id="title"
+                v-model="form.title"
+                class="w-full"
+                required
+              />
+            </div>
 
-          <div class="field">
-            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-            <Dropdown
-              id="category"
-              v-model="form.category_id"
-              :options="categories"
-              option-label="name"
-              option-value="id"
-              placeholder="Select a category"
-              class="w-full"
-              required
-            />
-          </div>
+            <div class="field">
+              <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+              <Dropdown
+                id="category"
+                v-model="form.category_id"
+                :options="categories"
+                option-label="name"
+                option-value="id"
+                placeholder="Select a category"
+                class="w-full"
+                required
+              />
+            </div>
 
-          <div class="field">
-            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-            <Textarea
-              id="content"
-              v-model="form.content"
-              rows="10"
-              class="w-full"
-              required
-            />
-          </div>
+            <div class="field">
+              <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+              <Textarea
+                id="content"
+                v-model="form.content"
+                rows="10"
+                class="w-full"
+                required
+              />
+            </div>
 
-          <div class="field">
-            <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
-            <Dropdown
-              id="rating"
-              v-model="form.rating"
-              :options="[1,2,3,4,5]"
-              placeholder="Select a rating"
-              class="w-full"
-              required
-            />
-          </div>
+            <div class="field">
+              <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
+              <Dropdown
+                id="rating"
+                v-model="form.rating"
+                :options="[1,2,3,4,5]"
+                placeholder="Select a rating"
+                class="w-full"
+                required
+              />
+            </div>
 
-          <div class="flex items-center space-x-4">
-            <Button
-              type="submit"
-              :loading="isSubmitting"
-              label="Create Review"
-            />
-            <Button
-              type="button"
-              severity="secondary"
-              label="Save as Draft"
-              @click="handleSaveAsDraft"
-            />
-          </div>
-        </form>
+            <div class="flex items-center space-x-4 mt-6">
+              <Button
+                type="submit"
+                :loading="isSubmitting"
+                label="Create Review"
+              />
+              <Button
+                type="button"
+                severity="secondary"
+                label="Save as Draft"
+                @click="handleSaveAsDraft"
+              />
+            </div>
+          </form>
+        </div>
       </template>
     </Card>
 
@@ -79,6 +81,8 @@
 </template>
 
 <script setup>
+import { useToast } from 'primevue/usetoast'
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()

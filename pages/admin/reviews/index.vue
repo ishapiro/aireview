@@ -64,7 +64,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <NuxtLink
-                    :to="`/admin/reviews/${review.id}/edit`"
+                    :to="`/admin/reviews/${review.id}`"
                     class="text-primary-600 hover:text-primary-900 mr-4"
                   >
                     Edit
@@ -91,6 +91,7 @@
 <script setup>
 import { format } from 'date-fns'
 import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 
 const client = useSupabaseClient()
 const toast = useToast()

@@ -1,192 +1,140 @@
 <template>
   <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Profile</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Profile Settings</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Profile Information -->
-      <div class="md:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Profile Form -->
+      <div class="md:col-span-2">
         <Card>
-          <template #title>Profile Information</template>
           <template #content>
-            <form @submit.prevent="handleUpdateProfile" class="space-y-4">
-              <div class="field">
-                <label for="full-name" class="block text-sm font-medium text-gray-700">Full name</label>
-                <InputText
-                  id="full-name"
-                  v-model="form.fullName"
-                  class="w-full"
-                  required
-                />
-              </div>
-
-              <div class="field">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <InputText
-                  id="email"
-                  v-model="form.email"
-                  class="w-full"
-                  disabled
-                />
-                <small class="text-gray-500">Email cannot be changed</small>
-              </div>
-
-              <div class="field">
-                <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
-                <Textarea
-                  id="bio"
-                  v-model="form.bio"
-                  rows="4"
-                  class="w-full"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-
-              <div class="field">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
-                <div class="flex items-center">
-                  <img
-                    v-if="form.avatar_url"
-                    :src="form.avatar_url"
-                    class="h-16 w-16 rounded-full object-cover"
-                  />
-                  <div
-                    v-else
-                    class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center"
-                  >
-                    <i class="pi pi-user text-2xl text-gray-400"></i>
-                  </div>
-                  <Button
-                    type="button"
-                    @click="handleAvatarUpload"
-                    class="ml-4"
-                    severity="secondary"
-                    label="Change Avatar"
+            <div class="space-y-6">
+              <h2 class="text-xl font-semibold text-gray-900">Profile Information</h2>
+              <form @submit.prevent="handleSubmit" class="space-y-6">
+                <div class="field">
+                  <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                  <InputText
+                    id="fullName"
+                    v-model="form.fullName"
+                    class="w-full"
                   />
                 </div>
-              </div>
 
-              <div class="flex justify-end">
-                <Button
-                  type="submit"
-                  :loading="isUpdating"
-                  label="Save Changes"
-                />
-              </div>
-            </form>
+                <div class="field">
+                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                  <InputText
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    class="w-full"
+                    disabled
+                  />
+                </div>
+
+                <div class="field">
+                  <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
+                  <Textarea
+                    id="bio"
+                    v-model="form.bio"
+                    rows="4"
+                    class="w-full"
+                  />
+                </div>
+
+                <div>
+                  <Button
+                    type="submit"
+                    :loading="isSubmitting"
+                    class="w-full"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </div>
           </template>
         </Card>
 
-        <!-- Change Password -->
-        <Card>
-          <template #title>Change Password</template>
+        <!-- Password Change -->
+        <Card class="mt-6">
           <template #content>
-            <form @submit.prevent="handleChangePassword" class="space-y-4">
-              <!-- Hidden username field for accessibility -->
-              <input
-                type="email"
-                :value="form.email"
-                autocomplete="username"
-                style="display: none"
-              />
-              
-              <div class="field">
-                <label for="current-password" class="block text-sm font-medium text-gray-700">Current password</label>
-                <div class="relative w-full">
+            <div class="space-y-6">
+              <h2 class="text-xl font-semibold text-gray-900">Change Password</h2>
+              <form @submit.prevent="handlePasswordChange" class="space-y-6">
+                <!-- Hidden username field for password managers -->
+                <input
+                  type="email"
+                  :value="form.email"
+                  autocomplete="username"
+                  style="display: none"
+                />
+
+                <div class="field">
+                  <label for="currentPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
                   <Password
-                    id="current-password"
+                    id="currentPassword"
                     v-model="passwordForm.currentPassword"
                     :feedback="false"
                     toggleMask
-                    required
-                    class="w-full"
-                    inputClass="w-full pr-8"
-                    :inputStyle="{ width: '100%' }"
                     :inputProps="{ autocomplete: 'current-password' }"
-                  >
-                    <template #hideicon>
-                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                    <template #showicon>
-                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                  </Password>
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="new-password" class="block text-sm font-medium text-gray-700">New password</label>
-                <div class="relative w-full">
-                  <Password
-                    id="new-password"
-                    v-model="passwordForm.newPassword"
-                    toggleMask
-                    required
                     class="w-full"
-                    inputClass="w-full pr-8"
-                    :inputStyle="{ width: '100%' }"
-                    :inputProps="{ autocomplete: 'new-password' }"
-                  >
-                    <template #hideicon>
-                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                    <template #showicon>
-                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                  </Password>
+                  />
                 </div>
-              </div>
 
-              <div class="field">
-                <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm new password</label>
-                <div class="relative w-full">
+                <div class="field">
+                  <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
                   <Password
-                    id="confirm-password"
+                    id="newPassword"
+                    v-model="passwordForm.newPassword"
+                    :feedback="false"
+                    toggleMask
+                    :inputProps="{ autocomplete: 'new-password' }"
+                    class="w-full"
+                  />
+                </div>
+
+                <div class="field">
+                  <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                  <Password
+                    id="confirmPassword"
                     v-model="passwordForm.confirmPassword"
                     :feedback="false"
                     toggleMask
-                    required
-                    class="w-full"
-                    inputClass="w-full pr-8"
-                    :inputStyle="{ width: '100%' }"
                     :inputProps="{ autocomplete: 'new-password' }"
-                  >
-                    <template #hideicon>
-                      <i class="pi pi-eye-slash absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                    <template #showicon>
-                      <i class="pi pi-eye absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700" style="font-size: 1rem; z-index: 1;" />
-                    </template>
-                  </Password>
+                    class="w-full"
+                  />
                 </div>
-              </div>
 
-              <div class="flex justify-end">
-                <Button
-                  type="submit"
-                  :loading="isChangingPassword"
-                  label="Change Password"
-                />
-              </div>
-            </form>
+                <div>
+                  <Button
+                    type="submit"
+                    :loading="isChangingPassword"
+                    severity="secondary"
+                    class="w-full"
+                  >
+                    Change Password
+                  </Button>
+                </div>
+              </form>
+            </div>
           </template>
         </Card>
       </div>
 
-      <!-- Subscription -->
+      <!-- Sidebar -->
       <div class="space-y-6">
         <Card>
-          <template #title>Subscription</template>
           <template #content>
             <div class="space-y-4">
+              <h2 class="text-xl font-semibold text-gray-900">Subscription</h2>
               <div class="flex items-center justify-between">
                 <span class="text-gray-700">Status</span>
                 <Tag
-                  :value="profile.is_premium ? 'Premium' : 'Free'"
-                  :severity="profile.is_premium ? 'success' : 'info'"
+                  :value="profile?.is_premium ? 'Premium' : 'Free'"
+                  :severity="profile?.is_premium ? 'success' : 'info'"
                 />
               </div>
 
-              <div v-if="!profile.is_premium">
+              <div v-if="!profile?.is_premium">
                 <Button
                   @click="handleUpgrade"
                   class="w-full"
@@ -207,27 +155,29 @@
 
         <!-- Account Actions -->
         <Card>
-          <template #title>Account Actions</template>
           <template #content>
             <div class="space-y-4">
-              <NuxtLink
-                v-if="profile.is_admin"
-                to="/admin"
-                class="block w-full"
-              >
+              <h2 class="text-xl font-semibold text-gray-900">Account Actions</h2>
+              <div class="space-y-4">
+                <NuxtLink
+                  v-if="profile?.is_admin"
+                  to="/admin"
+                  class="block w-full"
+                >
+                  <Button
+                    class="w-full"
+                    severity="secondary"
+                    label="Admin Dashboard"
+                    icon="pi pi-cog"
+                  />
+                </NuxtLink>
                 <Button
+                  @click="handleDeleteAccount"
                   class="w-full"
-                  severity="secondary"
-                  label="Admin Dashboard"
-                  icon="pi pi-cog"
+                  severity="danger"
+                  label="Delete Account"
                 />
-              </NuxtLink>
-              <Button
-                @click="handleDeleteAccount"
-                class="w-full"
-                severity="danger"
-                label="Delete Account"
-              />
+              </div>
             </div>
           </template>
         </Card>
@@ -240,14 +190,18 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
-
-// Redirect if not logged in
-if (!user.value) {
-  navigateTo('/auth/login')
-}
+const confirm = useConfirm()
+const profile = ref({})
+const error = ref('')
+const isSubmitting = ref(false)
+const isChangingPassword = ref(false)
 
 const form = ref({
   fullName: '',
@@ -262,35 +216,65 @@ const passwordForm = ref({
   confirmPassword: ''
 })
 
-const isUpdating = ref(false)
-const isChangingPassword = ref(false)
-const error = ref('')
+// Redirect if not logged in
+if (!user.value) {
+  navigateTo('/auth/login')
+}
 
-// Fetch profile data
-const { data: profile } = await useAsyncData('profile', async () => {
-  const { data } = await client
-    .from('profiles')
-    .select('*')
-    .eq('id', user.value.id)
-    .single()
-  
-  return data
+// Fetch user profile
+const fetchProfile = async () => {
+  try {
+    const { data, error } = await client
+      .from('profiles')
+      .select('*')
+      .eq('id', user.value?.id)
+      .single()
+
+    if (error) throw error
+    profile.value = data
+    form.value = {
+      fullName: data.full_name,
+      email: data.email,
+      bio: data.bio || '',
+      avatar_url: data.avatar_url
+    }
+    console.log('Fetched profile:', JSON.parse(JSON.stringify(data)))
+    console.log('Assigned to form.value:', JSON.parse(JSON.stringify(form.value)))
+  } catch (err) {
+    console.error('Error fetching profile:', err)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load profile',
+      life: 3000
+    })
+  }
+}
+
+// Call fetchProfile when component mounts
+onMounted(() => {
+  if (user.value) {
+    fetchProfile()
+  }
 })
 
-// Update form with profile data
-watchEffect(() => {
-  if (profile.value) {
+// Watch for user changes
+watch(user, (newUser) => {
+  if (newUser) {
+    fetchProfile()
+  } else {
+    profile.value = {}
     form.value = {
-      fullName: profile.value.full_name,
-      email: profile.value.email,
-      bio: profile.value.bio || '',
-      avatar_url: profile.value.avatar_url
+      fullName: '',
+      email: '',
+      bio: '',
+      avatar_url: ''
     }
   }
 })
 
-const handleUpdateProfile = async () => {
-  isUpdating.value = true
+const handleSubmit = async () => {
+  isSubmitting.value = true
   error.value = ''
 
   try {
@@ -306,15 +290,18 @@ const handleUpdateProfile = async () => {
     if (updateError) throw updateError
 
     toast.add({ severity: 'success', summary: 'Success', detail: 'Profile updated successfully!', life: 3000 })
+    // Refetch and log
+    await fetchProfile()
+    console.log('Profile updated and refetched')
   } catch (err) {
     error.value = err.message
     toast.add({ severity: 'error', summary: 'Error', detail: err.message, life: 3000 })
   } finally {
-    isUpdating.value = false
+    isSubmitting.value = false
   }
 }
 
-const handleChangePassword = async () => {
+const handlePasswordChange = async () => {
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'New passwords do not match', life: 3000 })
     return

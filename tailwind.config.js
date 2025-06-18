@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: 'class',
   content: [
     "./components/**/*.{js,vue,ts}",
@@ -13,39 +13,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary-50': 'var(--p-primary-50)',
-        'primary-100': 'var(--p-primary-100)',
-        'primary-200': 'var(--p-primary-200)',
-        'primary-300': 'var(--p-primary-300)',
-        'primary-400': 'var(--p-primary-400)',
-        'primary-500': 'var(--p-primary-500)',
-        'primary-600': 'var(--p-primary-600)',
-        'primary-700': 'var(--p-primary-700)',
-        'primary-800': 'var(--p-primary-800)',
-        'primary-900': 'var(--p-primary-900)',
-        'primary-950': 'var(--p-primary-950)',
-        'surface-0': 'var(--p-surface-0)',
-        'surface-50': 'var(--p-surface-50)',
-        'surface-100': 'var(--p-surface-100)',
-        'surface-200': 'var(--p-surface-200)',
-        'surface-300': 'var(--p-surface-300)',
-        'surface-400': 'var(--p-surface-400)',
-        'surface-500': 'var(--p-surface-500)',
-        'surface-600': 'var(--p-surface-600)',
-        'surface-700': 'var(--p-surface-700)',
-        'surface-800': 'var(--p-surface-800)',
-        'surface-900': 'var(--p-surface-900)',
-        'surface-950': 'var(--p-surface-950)'
+        primary: {
+          DEFAULT: 'var(--primary-color)',
+          hover: 'var(--primary-hover-color)',
+          active: 'var(--primary-active-color)',
+          contrast: 'var(--primary-contrast-color)'
+        },
+        surface: {
+          DEFAULT: 'var(--surface-ground)',
+          section: 'var(--surface-section)',
+          card: 'var(--surface-card)',
+          hover: 'var(--surface-hover)',
+          border: 'var(--surface-border)',
+          highlight: 'var(--surface-hover)',
+          text: 'var(--text-color)',
+          'text-secondary': 'var(--text-color-secondary)',
+          'text-muted': 'var(--text-color-secondary)'
+        }
       },
       typography: {
         DEFAULT: {
           css: {
             maxWidth: '65ch',
-            color: '#333',
+            color: 'var(--text-color)',
             a: {
-              color: '#3182ce',
+              color: 'var(--primary-color)',
               '&:hover': {
-                color: '#2c5282',
+                color: 'var(--primary-hover-color)',
               },
             },
           },
@@ -55,7 +49,12 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    require('@tailwindcss/forms'),
-    require('tailwindcss-primeui')
+    require('@tailwindcss/forms')
   ],
+  // Ensure Tailwind classes take precedence over PrimeVue styles
+  important: true,
+  // Configure the order of CSS layers
+  corePlugins: {
+    preflight: false,
+  },
 } 

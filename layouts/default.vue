@@ -5,7 +5,7 @@
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
-            <NuxtLink to="/" class="flex items-center">
+            <NuxtLink to="/" class="flex items-center no-underline">
               <span class="text-2xl font-bold text-primary-600">C</span>
               <span class="ml-2 text-xl font-bold text-gray-900">Cogitations</span>
             </NuxtLink>
@@ -18,7 +18,13 @@
             
             <template v-if="user">
               <NuxtLink to="/profile">
-                <Button icon="pi pi-user" text rounded aria-label="Profile" />
+                <Button 
+                  icon="pi pi-user" 
+                  text 
+                  rounded 
+                  aria-label="Profile"
+                  :severity="user ? 'success' : undefined"
+                />
               </NuxtLink>
               <Button
                 @click="handleSignOut"

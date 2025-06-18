@@ -24,103 +24,114 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <div class="card">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div class="space-y-4">
-          <NuxtLink to="/admin/reviews/new" class="btn-primary block text-center">
-            Create New Review
-          </NuxtLink>
-          <NuxtLink to="/admin/categories" class="btn-secondary block text-center">
-            Manage Categories
-          </NuxtLink>
-          <NuxtLink to="/admin/users" class="btn-secondary block text-center">
-            Manage Users
-          </NuxtLink>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-        <div class="space-y-4">
-          <div v-for="activity in recentActivity" :key="activity.id" class="flex items-start">
-            <div class="flex-shrink-0">
-              <i :class="getActivityIcon(activity.type)" class="text-gray-400"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-gray-900">{{ activity.description }}</p>
-              <p class="text-xs text-gray-500">{{ formatDate(activity.created_at) }}</p>
+      <Card>
+        <template #content>
+          <div class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+            <div class="space-y-4">
+              <NuxtLink to="/admin/reviews/new" class="btn-primary block text-center">
+                Create New Review
+              </NuxtLink>
+              <NuxtLink to="/admin/categories" class="btn-secondary block text-center">
+                Manage Categories
+              </NuxtLink>
+              <NuxtLink to="/admin/users" class="btn-secondary block text-center">
+                Manage Users
+              </NuxtLink>
             </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
+
+      <Card>
+        <template #content>
+          <div class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+            <div class="space-y-4">
+              <div v-for="activity in recentActivity" :key="activity.id" class="flex items-start">
+                <div class="flex-shrink-0">
+                  <i :class="getActivityIcon(activity.type)" class="text-gray-400"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-gray-900">{{ activity.description }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDate(activity.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Recent Reviews -->
-    <div class="card">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-medium text-gray-900">Recent Reviews</h3>
-        <NuxtLink to="/admin/reviews" class="text-primary-600 hover:text-primary-700">
-          View All
-        </NuxtLink>
-      </div>
-      
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Author
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rating
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="review in recentReviews" :key="review.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ review.title }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ review.author.full_name }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="star-rating">
-                  <i class="pi pi-star-fill mr-1"></i>
-                  {{ review.rating }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <NuxtLink
-                  :to="`/admin/reviews/${review.id}/edit`"
-                  class="text-primary-600 hover:text-primary-900 mr-4"
-                >
-                  Edit
-                </NuxtLink>
-                <button
-                  @click="handleDeleteReview(review.id)"
-                  class="text-red-600 hover:text-red-900"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Card>
+      <template #content>
+        <div class="space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900">Recent Reviews</h3>
+            <NuxtLink to="/admin/reviews" class="text-primary-600 hover:text-primary-700">
+              View All
+            </NuxtLink>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Author
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rating
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="review in recentReviews" :key="review.id">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{ review.title }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ review.author.full_name }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="star-rating">
+                      <i class="pi pi-star-fill mr-1"></i>
+                      {{ review.rating }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <NuxtLink
+                      :to="`/admin/reviews/${review.id}`"
+                      class="text-primary-600 hover:text-primary-900 mr-4"
+                    >
+                      Edit
+                    </NuxtLink>
+                    <button
+                      @click="handleDeleteReview(review.id)"
+                      class="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+    </Card>
   </div>
 </template>
 

@@ -1,26 +1,37 @@
 <template>
   <div class="card review-card">
-    <NuxtLink :to="`/reviews/${review.slug}`">
-      <img
-        :src="review.thumbnail_url"
-        :alt="review.title"
-        class="w-full h-48 object-cover rounded-lg mb-4"
-      />
+    <NuxtLink :to="`/reviews/${review.slug}`" @click="handleCardClick">
+      <div class="relative">
+        <img
+          v-if="review.thumbnail_url"
+          :src="review.thumbnail_url"
+          :alt="review.title"
+          class="w-full h-48 object-cover rounded-lg mb-4"
+        />
+        <div v-if="review.ai_generated" class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
+          <i class="pi pi-robot mr-1"></i>
+          AI Review
+        </div>
+      </div>
+      
       <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ review.title }}</h3>
-      <p class="text-gray-600 mb-4 line-clamp-3">{{ review.summary }}</p>
+      <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content?.substring(0, 200) }}...</p>
       
       <div class="flex items-center justify-between">
         <div class="flex items-center">
           <img
+            v-if="review.author && review.author.avatar_url"
             :src="review.author.avatar_url"
-            :alt="review.author.full_name"
+            :alt="review.author.full_name || 'Author'"
             class="w-8 h-8 rounded-full mr-2"
           />
-          <span class="text-sm text-gray-600">{{ review.author.full_name }}</span>
+          <span v-if="review.author && review.author.full_name" class="text-sm text-gray-600">
+            {{ review.author.full_name }}
+          </span>
         </div>
         
         <div class="flex items-center">
-          <div class="star-rating mr-2">
+          <div class="star-rating mr-2" v-if="review.rating > 1">
             <i class="pi pi-star-fill mr-1"></i>
             {{ review.rating }}
           </div>
@@ -30,20 +41,25 @@
         </div>
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-2">
+      <!-- Add metrics -->
+      <div class="mt-4 flex items-center justify-end text-sm text-gray-500 space-x-4 min-h-[1.5rem]">
+        <span v-if="review.views_count > 0">
+          <i class="pi pi-eye mr-1"></i>
+          {{ review.views_count }} views
+        </span>
+        <span v-if="review.helpful_count > 0">
+          <i class="pi pi-thumbs-up mr-1"></i>
+          {{ review.helpful_count }} found helpful
+        </span>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2" v-if="Array.isArray(review.categories)">
         <span
           v-for="category in review.categories"
           :key="category.id"
           class="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
         >
           {{ category.name }}
-        </span>
-      </div>
-
-      <div v-if="review.ai_generated" class="mt-4">
-        <span class="text-sm text-blue-600">
-          <i class="pi pi-robot mr-1"></i>
-          AI Assisted Review
         </span>
       </div>
     </NuxtLink>
@@ -59,6 +75,10 @@ const props = defineProps({
     required: true
   }
 })
+
+const handleCardClick = (event) => {
+  console.log('[ReviewCard] Card clicked, navigating to review:', props.review.slug)
+}
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')

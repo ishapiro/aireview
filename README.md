@@ -261,6 +261,70 @@ npm run build
 yarn build
 ```
 
+## 🚀 Deployment
+
+### Vercel Deployment
+
+1. **Prerequisites**
+   - A Vercel account
+   - Your project pushed to a Git repository
+   - Supabase project set up
+
+2. **Environment Variables**
+   Create a `.env` file with the following variables:
+   ```env
+   SUPABASE_URL=your-project-url
+   SUPABASE_KEY=your-anon-key
+   NUXT_PUBLIC_SITE_URL=your-production-url
+   NODE_ENV=production
+   ```
+
+3. **Deploy to Vercel**
+   ```bash
+   # Install Vercel CLI
+   npm i -g vercel
+
+   # Deploy
+   vercel
+   ```
+
+   Or connect your GitHub repository to Vercel for automatic deployments.
+
+4. **Production Build**
+   ```bash
+   # Build for production
+   npm run build
+
+   # Preview production build
+   npm run preview
+   ```
+
+### Development
+
+1. **Local Setup**
+   ```bash
+   # Install dependencies
+   npm install
+
+   # Start development server
+   npm run dev
+   ```
+
+2. **Environment Variables**
+   Copy `.env.example` to `.env` and fill in your values:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Available Scripts**
+   - `npm run dev` - Start development server
+   - `npm run build` - Build for production
+   - `npm run preview` - Preview production build
+   - `npm run lint` - Run ESLint
+   - `npm run lint:fix` - Fix ESLint issues
+   - `npm run generate` - Generate static site
+   - `npm run start` - Start production server
+
 ## 🔧 Configuration
 
 ### PrimeVue Components
@@ -363,6 +427,11 @@ Before diving into the setup, please be aware of these critical configuration re
          inputStyle: 'filled',
          pt: {}  // Required for Nuxt 3.12+
        }
+     },
+     router: {
+       options: {
+         strict: false  // Handle unknown paths gracefully
+       }
      }
    })
    ```
@@ -416,8 +485,27 @@ Before diving into the setup, please be aware of these critical configuration re
    }
    ```
 
+   e. **Vue Router Warnings**
+   To handle unknown paths (including Chrome DevTools paths):
+   1. Set `router.options.strict: false` in nuxt.config.js
+   2. Create a catch-all route (`pages/[...slug].vue`):
+      ```vue
+      <template>
+        <div class="min-h-screen flex items-center justify-center">
+          <div class="text-center">
+            <h1 class="text-4xl font-bold mb-4">404</h1>
+            <p class="mb-8">Page not found</p>
+            <NuxtLink to="/">
+              <Button label="Go Home" icon="pi pi-home" />
+            </NuxtLink>
+          </div>
+        </div>
+      </template>
+      ```
+
 5. **Development Best Practices**
    - Always check browser console for configuration warnings
    - Use browser dev tools to inspect CSS layer ordering
    - Test form components with password managers enabled
-   - Verify accessibility compliance with browser tools 
+   - Verify accessibility compliance with browser tools
+   - Handle unknown routes gracefully with a catch-all route 

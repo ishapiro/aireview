@@ -1,47 +1,16 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
   modules: [
     '@nuxtjs/supabase',
-    '@nuxtjs/tailwindcss',
-    'nuxt-primevue'
+    '@nuxtjs/tailwindcss'
   ],
-  primevue: {
-    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
-    components: {
-      include: [
-        'Button',
-        'Card',
-        'Password',
-        'InputText',
-        'Toast',
-        'Checkbox',
-        'Dropdown',
-        'Paginator',
-        'Tag',
-        'Textarea',
-        'Dialog',
-        'ConfirmDialog',
-        'ConfirmPopup'
-      ]
-    },
-    directives: {
-      include: ['Ripple', 'Tooltip']
-    },
-    services: {
-      include: ['ToastService', 'ConfirmationService']
-    },
-    options: {
-      unstyled: true,
-      ripple: true,
-      inputStyle: 'filled',
-      pt: {}
-    }
-  },
   css: [
-    '@/assets/css/main.css',
-    '@/assets/css/primevue.css',
-    'primeicons/primeicons.css'
+    'primevue/resources/themes/lara-light-indigo/theme.css',
+    'primevue/resources/primevue.css',
+    'primeicons/primeicons.css',
+    'primeflex/primeflex.css',
+    '@/assets/css/main.css'
   ],
   build: {
     transpile: ['primevue']
@@ -84,11 +53,23 @@ export default defineNuxtConfig({
         '/search',
         '/about',
         '/privacy',
-        '/terms'
+        '/terms',
+        '/reviews/*'
       ]
     }
   },
   nitro: {
-    compatibilityDate: '2025-06-17'
+    compatibilityDate: '2025-06-17',
+    preset: 'vercel'
+  },
+  router: {
+    options: {
+      strict: false
+    }
+  },
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
   }
 }) 

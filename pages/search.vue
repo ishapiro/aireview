@@ -99,11 +99,15 @@
         </div>
       </template>
     </Card>
+
+    <!-- Toast for notifications -->
+    <Toast />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -189,6 +193,8 @@ const fetchResults = async () => {
       query = query.or(`title.ilike.%${searchForm.value.query}%,content.ilike.%${searchForm.value.query}%`)
     }
 
+    query = query.eq('is_published', true)
+
     if (searchForm.value.category) {
       query = query.eq('category_id', searchForm.value.category)
     }
@@ -199,7 +205,7 @@ const fetchResults = async () => {
 
     // Apply sorting
     const [sortField, order] = searchForm.value.sort.split('_')
-    query = query.order(sortField, { ascending: order === 'asc' })
+    query = query.order(sortField === 'created' ? 'created_at' : sortField, { ascending: order === 'asc' })
 
     // Apply pagination
     const from = (currentPage.value - 1) * 12
@@ -208,12 +214,27 @@ const fetchResults = async () => {
 
     const { data, count, error } = await query
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching search results:', error)
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch search results. Please try again.',
+        life: 3000
+      })
+      return
+    }
 
-    searchResults.value = data
-    totalResults.value = count
+    searchResults.value = data || []
+    totalResults.value = count || 0
   } catch (error) {
     console.error('Error fetching search results:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An unexpected error occurred. Please try again.',
+      life: 3000
+    })
   } finally {
     isSearching.value = false
   }

@@ -64,26 +64,27 @@
       :header="editingCategory ? 'Edit Category' : 'Add Category'"
       class="p-fluid"
     >
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div class="field">
-          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-          <InputText
-            id="name"
-            v-model="form.name"
-            required
-          />
-        </div>
+      <template #default>
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <div class="field">
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <InputText
+              id="name"
+              v-model="form.name"
+              required
+            />
+          </div>
 
-        <div class="field">
-          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-          <Textarea
-            id="description"
-            v-model="form.description"
-            rows="3"
-          />
-        </div>
-      </form>
-
+          <div class="field">
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <Textarea
+              id="description"
+              v-model="form.description"
+              rows="3"
+            />
+          </div>
+        </form>
+      </template>
       <template #footer>
         <Button
           label="Cancel"
@@ -108,6 +109,7 @@
 
 <script setup>
 import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 
 const client = useSupabaseClient()
 const toast = useToast()

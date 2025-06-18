@@ -7,7 +7,10 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@nuxtjs/supabase": "^1.5.2",
@@ -16,7 +19,9 @@
     "date-fns": "^3.3.1",
     "marked": "^11.1.1",
     "nuxt": "^3.9.3",
-    "tailwindcss-primeui": "^0.6.1",
+    "primeflex": "^3.3.1",
+    "primevue": "^3.49.1",
+    "tailwind-merge": "^2.2.1",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },
@@ -28,12 +33,13 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^8.56.0",
     "eslint-plugin-vue": "^9.21.1",
-    "nuxt-primevue": "^3.0.0",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
     "primeicons": "^6.0.1",
-    "primevue": "^3.49.1",
     "supabase": "^2.26.9",
     "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

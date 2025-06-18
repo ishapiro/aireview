@@ -1,132 +1,150 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-surface-0 p-4">
-    <div class="max-w-xl w-full">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-semibold text-surface-900 mb-3">Create your account</h1>
-        <p class="text-surface-600">Fill in the details below to get started.</p>
-      </div>
-
-      <Card class="bg-surface-50 shadow-md">
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="max-w-md w-full">
+      <Card>
         <template #content>
-          <form @submit.prevent="handleSubmit" class="space-y-6">
-            <!-- Name Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-6">
+            <div class="text-center">
+              <h1 class="text-2xl font-bold text-gray-900">Create your account</h1>
+              <p class="mt-2 text-sm text-gray-600">
+                Or
+                <NuxtLink to="/auth/login" class="text-primary-600 hover:text-primary-500">
+                  sign in to your account
+                </NuxtLink>
+              </p>
+            </div>
+
+            <form @submit.prevent="handleSubmit" class="space-y-4">
+              <!-- First Name -->
               <div>
-                <label for="first-name" class="block text-sm text-surface-600 mb-1">First Name</label>
+                <label for="first-name" class="block text-sm text-gray-600 mb-1">First Name</label>
                 <InputText
                   id="first-name"
                   v-model="form.firstName"
-                  placeholder="e.g. John"
+                  placeholder="Your First Name"
                   :class="{ 'p-invalid': submitted && !form.firstName }"
-                  class="w-full bg-surface-0"
+                  class="w-full"
                 />
                 <small class="text-red-500" v-if="submitted && !form.firstName">First name is required</small>
               </div>
 
+              <!-- Last Name -->
               <div>
-                <label for="last-name" class="block text-sm text-surface-600 mb-1">Last Name</label>
+                <label for="last-name" class="block text-sm text-gray-600 mb-1">Last Name</label>
                 <InputText
                   id="last-name"
                   v-model="form.lastName"
-                  placeholder="e.g. Smith"
+                  placeholder="Your Last Name"
                   :class="{ 'p-invalid': submitted && !form.lastName }"
-                  class="w-full bg-surface-0"
+                  class="w-full"
                 />
                 <small class="text-red-500" v-if="submitted && !form.lastName">Last name is required</small>
               </div>
-            </div>
 
-            <!-- Email -->
-            <div>
-              <label for="email" class="block text-sm text-surface-600 mb-1">Email Address</label>
-              <InputText
-                id="email"
-                v-model="form.email"
-                type="email"
-                placeholder="e.g. john@your-domain.com"
-                :class="{ 'p-invalid': submitted && !form.email }"
-                class="w-full bg-surface-0"
-              />
-              <small class="text-red-500" v-if="submitted && !form.email">Email is required</small>
-            </div>
-
-            <!-- Optional Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Email -->
               <div>
-                <label for="phone" class="block text-sm text-surface-600 mb-1">Phone (Optional)</label>
+                <label for="email" class="block text-sm text-gray-600 mb-1">Email</label>
+                <InputText
+                  id="email"
+                  v-model="form.email"
+                  type="email"
+                  placeholder="Your Email"
+                  :class="{ 'p-invalid': submitted && !form.email }"
+                  class="w-full"
+                />
+                <small class="text-red-500" v-if="submitted && !form.email">Email is required</small>
+                <small class="text-red-500" v-else-if="submitted && !isValidEmail(form.email)">Please enter a valid email</small>
+              </div>
+
+              <!-- Phone -->
+              <div>
+                <label for="phone" class="block text-sm text-gray-600 mb-1">Phone (Optional)</label>
                 <InputText
                   id="phone"
                   v-model="form.phone"
-                  placeholder="+00 0000 000 0000"
-                  class="w-full bg-surface-0"
+                  placeholder="Your Phone Number"
+                  class="w-full"
                 />
               </div>
 
+              <!-- Website -->
               <div>
-                <label for="website" class="block text-sm text-surface-600 mb-1">Website (Optional)</label>
+                <label for="website" class="block text-sm text-gray-600 mb-1">Website (Optional)</label>
                 <InputText
                   id="website"
                   v-model="form.website"
-                  placeholder="e.g. https://google.com"
-                  class="w-full bg-surface-0"
+                  placeholder="Your Website"
+                  class="w-full"
                 />
               </div>
-            </div>
 
-            <!-- Password -->
-            <div>
-              <label for="password" class="block text-sm text-surface-600 mb-1">Password</label>
-              <Password
-                id="password"
-                v-model="form.password"
-                placeholder="Your Password"
-                :feedback="false"
-                toggleMask
-                :class="{ 'p-invalid': submitted && !form.password }"
-                class="w-full bg-surface-0"
+              <!-- Password -->
+              <div>
+                <label for="password" class="block text-sm text-gray-600 mb-1">Password</label>
+                <Password
+                  id="password"
+                  v-model="form.password"
+                  placeholder="Your Password"
+                  :feedback="true"
+                  toggleMask
+                  :class="{ 'p-invalid': submitted && !form.password }"
+                  class="w-full"
+                  :inputProps="{ autocomplete: 'new-password' }"
+                />
+                <small class="text-red-500" v-if="submitted && !form.password">Password is required</small>
+                <small class="text-red-500" v-else-if="submitted && form.password.length < 6">Password must be at least 6 characters</small>
+              </div>
+
+              <!-- Confirm Password -->
+              <div>
+                <label for="confirm-password" class="block text-sm text-gray-600 mb-1">Confirm Password</label>
+                <Password
+                  id="confirm-password"
+                  v-model="form.confirmPassword"
+                  placeholder="Confirm Password"
+                  :feedback="false"
+                  toggleMask
+                  :class="{ 'p-invalid': submitted && !form.confirmPassword }"
+                  class="w-full"
+                  :inputProps="{ autocomplete: 'new-password' }"
+                />
+                <small class="text-red-500" v-if="submitted && !form.confirmPassword">Please confirm your password</small>
+              </div>
+
+              <!-- Terms -->
+              <div class="flex items-start space-x-2">
+                <Checkbox v-model="form.terms" :binary="true" inputId="terms" />
+                <label for="terms" class="text-sm text-gray-600">
+                  I agree to the <NuxtLink to="/terms" class="text-primary hover:text-primary-600">Terms of Service</NuxtLink> and
+                  <NuxtLink to="/privacy" class="text-primary hover:text-primary-600">Privacy Policy</NuxtLink>
+                </label>
+              </div>
+
+              <!-- Submit -->
+              <Button
+                type="submit"
+                label="Create Account"
+                class="w-full bg-primary hover:bg-primary-600 text-white"
+                :loading="isLoading"
               />
-              <small class="text-red-500" v-if="submitted && !form.password">Password is required</small>
-            </div>
 
-            <!-- Confirm Password -->
-            <div>
-              <label for="confirm-password" class="block text-sm text-surface-600 mb-1">Confirm Password</label>
-              <Password
-                id="confirm-password"
-                v-model="form.confirmPassword"
-                placeholder="Confirm Password"
-                :feedback="false"
-                toggleMask
-                :class="{ 'p-invalid': submitted && !form.confirmPassword }"
-                class="w-full bg-surface-0"
+              <!-- Google Sign Up -->
+              <Button
+                label="Sign up with Google"
+                icon="pi pi-google"
+                class="w-full p-button-outlined p-button-secondary mt-2"
+                @click="handleGoogleSignUp"
+                type="button"
               />
-              <small class="text-red-500" v-if="submitted && !form.confirmPassword">Please confirm your password</small>
-            </div>
 
-            <!-- Terms -->
-            <div class="flex items-start space-x-2">
-              <Checkbox v-model="form.terms" :binary="true" inputId="terms" />
-              <label for="terms" class="text-sm text-surface-600">
-                I agree to the <NuxtLink to="/terms" class="text-primary hover:text-primary-600">Terms of Service</NuxtLink> and
-                <NuxtLink to="/privacy" class="text-primary hover:text-primary-600">Privacy Policy</NuxtLink>
-              </label>
-            </div>
-
-            <!-- Submit -->
-            <Button
-              type="submit"
-              label="Create Account"
-              class="w-full bg-primary hover:bg-primary-600 text-white"
-              :loading="isLoading"
-            />
-
-            <!-- Links -->
-            <div class="text-center text-sm">
-              <NuxtLink to="/auth/login" class="text-primary hover:text-primary-600">
-                Already have an account? Sign in
-              </NuxtLink>
-            </div>
-          </form>
+              <!-- Links -->
+              <div class="text-center text-sm">
+                <NuxtLink to="/auth/login" class="text-primary-600 hover:text-primary-500">
+                  Already have an account? Sign in
+                </NuxtLink>
+              </div>
+            </form>
+          </div>
         </template>
       </Card>
 
@@ -137,6 +155,8 @@
 </template>
 
 <script setup>
+import { useToast } from 'primevue/usetoast'
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
@@ -222,6 +242,20 @@ const handleSubmit = async () => {
     })
   } finally {
     isLoading.value = false
+  }
+}
+
+const handleGoogleSignUp = async () => {
+  try {
+    const { error } = await client.auth.signInWithOAuth({ provider: 'google' })
+    if (error) throw error
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 3000
+    })
   }
 }
 </script> 
