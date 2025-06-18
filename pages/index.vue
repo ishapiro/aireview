@@ -36,7 +36,7 @@
             </template>
             <template #footer>
               <NuxtLink :to="`/categories/${category.slug}`">
-                <Button label="View Reviews" text />
+                <Button label="View Reviews" />
               </NuxtLink>
             </template>
           </Card>
@@ -50,7 +50,7 @@
         <div class="flex justify-between items-center mb-8">
           <h2 class="text-3xl font-bold text-gray-900">Latest Reviews</h2>
           <NuxtLink to="/search">
-            <Button label="View All" text />
+            <Button label="View All"  />
           </NuxtLink>
         </div>
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +69,7 @@
         <div class="flex justify-between items-center mb-8">
           <h2 class="text-3xl font-bold text-gray-900">Top Rated Products</h2>
           <NuxtLink to="/search?sort=rating&order=desc">
-            <Button label="View All" text />
+            <Button label="View All"  />
           </NuxtLink>
         </div>
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

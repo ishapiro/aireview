@@ -20,9 +20,10 @@
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center">
             <img
-              :src="review.author.avatar_url"
+              :src="review.author.avatar_url || '/default-avatar.svg'"
               :alt="review.author.full_name"
-              class="w-10 h-10 rounded-full mr-3"
+              class="w-10 h-10 rounded-full mr-3 bg-gray-100"
+              @error="$event.target.src = '/default-avatar.svg'"
             />
             <div>
               <div class="font-medium text-gray-900">{{ review.author.full_name }}</div>
@@ -106,9 +107,12 @@
           </button>
         </div>
         <div v-else class="mb-8 text-center">
-          <NuxtLink to="/auth/login" class="btn-primary">
+          <button 
+            @click="navigateTo('/auth/login')"
+            class="btn-primary border-none"
+          >
             Sign in to comment
-          </NuxtLink>
+          </button>
         </div>
 
         <!-- Comments List -->
@@ -120,9 +124,10 @@
           >
             <div class="flex items-center mb-4">
               <img
-                :src="comment.author.avatar_url"
+                :src="comment.author.avatar_url || '/default-avatar.svg'"
                 :alt="comment.author.full_name"
-                class="w-8 h-8 rounded-full mr-3"
+                class="w-8 h-8 rounded-full mr-3 bg-gray-100"
+                @error="$event.target.src = '/default-avatar.svg'"
               />
               <div>
                 <div class="font-medium text-gray-900">

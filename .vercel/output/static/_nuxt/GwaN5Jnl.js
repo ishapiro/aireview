@@ -1,0 +1,1 @@
+import{W as o,B as r,E as i,X as u}from"./DhNaSuU-.js";import{u as d}from"./CqJylN-A.js";const f=o(async l=>{let e,s;const t=r();if(!t.value)return i("/auth/login");const n=d(),{data:a}=([e,s]=u(()=>n.from("profiles").select("is_admin").eq("id",t.value.id).single()),e=await e,s(),e);if(!(a!=null&&a.is_admin))return i("/")});export{f as default};

@@ -1,6 +1,11 @@
 import { useSupabaseUser, useSupabaseClient } from '#imports'
 import { defineNuxtRouteMiddleware, navigateTo } from '#app'
 
+// Define the profile type
+interface Profile {
+  is_admin: boolean
+}
+
 export default defineNuxtRouteMiddleware(async (to) => {
   const user = useSupabaseUser()
   
@@ -15,7 +20,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.value.id)
-    .single()
+    .single() as { data: Profile | null }
 
   // If user is not an admin, redirect to home
   if (!profile?.is_admin) {

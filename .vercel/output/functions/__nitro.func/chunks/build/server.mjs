@@ -464,7 +464,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-BYTdNrFq.mjs')
+    component: () => import('./index-FGePd-yD.mjs')
   },
   {
     name: "terms",
@@ -475,7 +475,7 @@ const _routes = [
   {
     name: "search",
     path: "/search",
-    component: () => import('./search-DclCGRiC.mjs')
+    component: () => import('./search-Hc1wBfrP.mjs')
   },
   {
     name: "privacy",
@@ -516,7 +516,7 @@ const _routes = [
   {
     name: "reviews-slug",
     path: "/reviews/:slug()",
-    component: () => import('./_slug_-DEl6W9CN.mjs')
+    component: () => import('./_slug_-jGwyZDZe.mjs')
   },
   {
     name: "admin-reviews-new",
@@ -12992,7 +12992,7 @@ const plugins = [
   primevue_FwNO_dH40VVjor4TV4eADpOG1SqPJc2e7i7dMMaI9lU
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-DJIhiv37.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-D74EYs-i.mjs').then((m) => m.default || m))
 };
 const LayoutLoader = defineComponent({
   name: "LayoutLoader",

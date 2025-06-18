@@ -72,7 +72,7 @@
               <Button
                 label="Sign in with Google"
                 icon="pi pi-google"
-                class="w-full p-button-outlined p-button-secondary mt-2"
+                class="w-full p-button-primary mt-2"
                 @click="handleGoogleSignIn"
                 type="button"
               />
