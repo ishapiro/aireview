@@ -35,7 +35,6 @@
 
           <Button
             @click="handleSignOut"
-            severity="secondary"
             label="Sign out"
             class="w-full p-button-outlined"
           />

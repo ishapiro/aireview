@@ -90,7 +90,6 @@
           label="Cancel"
           icon="pi pi-times"
           @click="showDialog = false"
-          severity="secondary"
           class="mr-2"
         />
         <Button

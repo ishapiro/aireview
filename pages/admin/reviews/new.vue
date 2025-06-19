@@ -79,7 +79,6 @@
               />
               <Button
                 type="button"
-                severity="secondary"
                 label="Save as Draft"
                 @click="handleSaveAsDraft"
               />

@@ -26,7 +26,16 @@
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <Card v-for="category in categories" :key="category.id" class="hover:shadow-lg transition-shadow">
             <template #header>
-              <img :src="category.image_url" :alt="category.name" class="w-full h-48 object-cover" />
+              <img 
+                v-if="category.image_url" 
+                :src="category.image_url" 
+                :alt="category.name" 
+                class="w-full h-48 object-cover"
+                @error="$event.target.style.display = 'none'"
+              />
+              <div v-else class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <i class="pi pi-image text-4xl text-gray-400"></i>
+              </div>
             </template>
             <template #title>
               {{ category.name }}
@@ -87,7 +96,6 @@
 <script setup>
 const client = useSupabaseClient()
 const config = useRuntimeConfig()
-console.log('NUXT_PUBLIC_SITE_URL:', config.public.siteUrl)
 
 // Fetch categories
 const { data: categories } = await useAsyncData('categories', async () => {

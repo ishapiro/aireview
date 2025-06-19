@@ -108,7 +108,6 @@
                   <Button
                     type="submit"
                     :loading="isChangingPassword"
-                    severity="secondary"
                     class="w-full"
                   >
                     Change Password
@@ -145,7 +144,6 @@
                 <Button
                   @click="handleManageSubscription"
                   class="w-full"
-                  severity="secondary"
                   label="Manage Subscription"
                 />
               </div>
@@ -166,15 +164,13 @@
                 >
                   <Button
                     class="w-full"
-                    severity="secondary"
                     label="Admin Dashboard"
                     icon="pi pi-cog"
                   />
                 </NuxtLink>
                 <Button
                   @click="handleDeleteAccount"
-                  class="w-full"
-                  severity="danger"
+                  class="w-full bg-red-600 text-white"
                   label="Delete Account"
                 />
               </div>
