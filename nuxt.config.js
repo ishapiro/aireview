@@ -54,7 +54,8 @@ export default defineNuxtConfig({
         '/about',
         '/privacy',
         '/terms',
-        '/reviews/*'
+        '/reviews/*',
+        '/categories/*'
       ]
     }
   },
