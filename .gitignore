@@ -17,6 +17,9 @@ logs
 .DS_Store
 .fleet
 .idea
+
+# Vercel
+**/.vercel
 .vercel
 
 # Local env files
@@ -29,4 +32,4 @@ logs
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json 
+!.vscode/launch.json
