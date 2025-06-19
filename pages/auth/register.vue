@@ -160,6 +160,7 @@ import { useToast } from 'primevue/usetoast'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
+const config = useRuntimeConfig()
 
 // Redirect if already logged in
 if (user.value) {
@@ -247,7 +248,13 @@ const handleSubmit = async () => {
 
 const handleGoogleSignUp = async () => {
   try {
-    const { error } = await client.auth.signInWithOAuth({ provider: 'google' })
+    const redirectTo = `${config.public.siteUrl}/`
+    const options = { provider: 'google', options: { redirectTo } }
+    console.log('[GoogleSignUp] config.public.siteUrl:', config.public.siteUrl)
+    console.log('[GoogleSignUp] redirectTo:', redirectTo)
+    console.log('[GoogleSignUp] options:', options)
+    const { data, error } = await client.auth.signInWithOAuth(options)
+    console.log('[GoogleSignUp] Supabase response:', { data, error })
     if (error) throw error
   } catch (error) {
     toast.add({

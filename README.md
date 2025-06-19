@@ -261,69 +261,46 @@ npm run build
 yarn build
 ```
 
-## 🚀 Deployment
+## 🚀 Deploying to Vercel (via CLI)
 
-### Vercel Deployment
+You can deploy this project to [Vercel](https://vercel.com/) using the Vercel CLI, without connecting to GitHub. Here are the steps:
 
-1. **Prerequisites**
-   - A Vercel account
-   - Your project pushed to a Git repository
-   - Supabase project set up
-
-2. **Environment Variables**
-   Create a `.env` file with the following variables:
-   ```env
-   SUPABASE_URL=your-project-url
-   SUPABASE_KEY=your-anon-key
-   NUXT_PUBLIC_SITE_URL=your-production-url
-   NODE_ENV=production
+1. **Install the Vercel CLI**
+   ```bash
+   npm install -g vercel
    ```
 
-3. **Deploy to Vercel**
+2. **Login to Vercel**
    ```bash
-   # Install Vercel CLI
-   npm i -g vercel
-
-   # Deploy
-   vercel
+   vercel login
    ```
+   Follow the prompts to authenticate with your email.
 
-   Or connect your GitHub repository to Vercel for automatic deployments.
-
-4. **Production Build**
+3. **Build the Project**
    ```bash
-   # Build for production
-   npm run build
-
-   # Preview production build
-   npm run preview
-   ```
-
-### Development
-
-1. **Local Setup**
-   ```bash
-   # Install dependencies
    npm install
-
-   # Start development server
-   npm run dev
+   npm run build
    ```
 
-2. **Environment Variables**
-   Copy `.env.example` to `.env` and fill in your values:
+4. **Deploy to Vercel**
    ```bash
-   cp .env.example .env
+   vercel deploy --prebuilt
    ```
+   - The first time, you may be prompted to set up the project. Accept the defaults or adjust as needed.
+   - To deploy to your production domain, use:
+     ```bash
+     vercel deploy --prebuilt --prod
+     ```
 
-3. **Available Scripts**
-   - `npm run dev` - Start development server
-   - `npm run build` - Build for production
-   - `npm run preview` - Preview production build
-   - `npm run lint` - Run ESLint
-   - `npm run lint:fix` - Fix ESLint issues
-   - `npm run generate` - Generate static site
-   - `npm run start` - Start production server
+5. **Configuration**
+   - The project includes a `vercel.json` file with recommended settings for Nuxt 3.
+   - You can adjust environment variables and other settings in the Vercel dashboard or in `vercel.json`.
+
+6. **After Deployment**
+   - Vercel will provide a deployment URL in the terminal output.
+   - Visit the URL to see your live site!
+
+For more details, see the [Vercel CLI documentation](https://vercel.com/docs/cli).
 
 ## 🔧 Configuration
 
@@ -509,3 +486,93 @@ Before diving into the setup, please be aware of these critical configuration re
    - Test form components with password managers enabled
    - Verify accessibility compliance with browser tools
    - Handle unknown routes gracefully with a catch-all route 
+
+## 🔐 Google OAuth & Supabase Configuration (Local Debugging & Production)
+
+This project supports Google OAuth login via Supabase in both local development and production (Vercel) environments. Follow these steps to ensure authentication works everywhere and is easy to debug.
+
+### 1. Supabase Dashboard Settings
+
+- **Site URL:** Set to your production site (e.g., `https://cogitations-reviews.vercel.app`).
+- **Redirect URLs:** Add the following (wildcards recommended for flexibility):
+  ```
+  http://localhost:3000/**
+  https://cogitations-reviews.vercel.app/**
+  https://*-yourteam.vercel.app/**   # For Vercel preview deployments
+  ```
+  - **Why use wildcards?** Wildcards (`**`) allow all paths and subpaths, making it easier to support local development, production, and preview deployments without having to add each URL individually. This is especially useful for Vercel preview URLs, which change on every deploy.
+  - See the [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls#wildcards-in-redirect-urls) for more details and examples.
+
+### 2. Google Cloud Console OAuth Settings
+
+- Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
+- Edit your OAuth 2.0 Client ID.
+- **Authorized JavaScript origins:**
+  - `http://localhost:3000`
+  - `https://cogitations-reviews.vercel.app`
+- **Authorized redirect URIs:**
+  - `http://localhost:3000/auth/callback`
+  - `https://cogitations-reviews.vercel.app/auth/callback`
+  - (Add any other preview or staging URLs as needed. Wildcards are NOT supported here.)
+
+### 3. Environment Variables
+
+- **Local Development (`.env`):**
+  ```
+  NUXT_PUBLIC_SITE_URL=http://localhost:3000
+  ```
+- **Vercel Production:**
+  - In the Vercel dashboard, set:
+    ```
+    NUXT_PUBLIC_SITE_URL=https://cogitations-reviews.vercel.app
+    ```
+
+### 4. Nuxt Runtime Config
+
+Your `nuxt.config.js` should expose the site URL:
+```js
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  }
+})
+```
+
+### 5. Using the Redirect in Code
+
+Wherever you call Google OAuth, use:
+```js
+const config = useRuntimeConfig()
+const redirectTo = `${config.public.siteUrl}/auth/callback` // or just `/` if you handle at root
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: { redirectTo }
+})
+```
+
+### 6. Debugging Tips
+
+- **To debug locally:**
+  - Run `npm run dev`.
+  - Make sure `.env` is set to `http://localhost:3000` and restart the dev server after changes.
+  - Check the browser console for `NUXT_PUBLIC_SITE_URL` logs.
+  - If you are redirected to production from localhost, double-check your `.env`, Supabase, and Google Cloud settings.
+- **To debug on Vercel:**
+  - Deploy with `vercel deploy --prebuilt --prod`.
+  - Ensure the Vercel environment variable is set to your production URL.
+  - Check the browser console for `NUXT_PUBLIC_SITE_URL` logs.
+- **If you see a redirect to the wrong site:**
+  - Make sure the exact callback URL is in both Supabase and Google Cloud settings.
+  - Use wildcards in Supabase for flexibility, but not in Google Cloud.
+  - Always restart your dev server after changing `.env`.
+
+### 7. References
+- [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
+- [Supabase Docs: Troubleshooting Redirects](https://supabase.com/docs/guides/troubleshooting/why-am-i-being-redirected-to-the-wrong-url-when-using-auth-redirectto-option-_vqIeO)
+- [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
+
+---
+
+**With this setup, you can debug Google OAuth locally with `npm run dev` and deploy to Vercel for production, with authentication working in both environments.** 

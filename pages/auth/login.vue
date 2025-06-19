@@ -102,6 +102,7 @@ console.log('Login page script loaded');
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
+const config = useRuntimeConfig()
 
 console.log('User value at script start:', user.value)
 
@@ -161,7 +162,14 @@ const handleSubmit = async () => {
 
 const handleGoogleSignIn = async () => {
   try {
-    const { error } = await client.auth.signInWithOAuth({ provider: 'google' })
+    const redirectTo = `${config.public.siteUrl}/`
+    const options = { provider: 'google', options: { redirectTo } }
+    console.log('[GoogleSignIn] config.public.siteUrl:', config.public.siteUrl)
+    console.log('[GoogleSignIn] redirectTo:', redirectTo)
+    console.log('[GoogleSignIn] options:', options)
+
+    const { data, error } = await client.auth.signInWithOAuth(options)
+    console.log('[GoogleSignIn] Supabase response:', { data, error })
     if (error) throw error
   } catch (error) {
     toast.add({

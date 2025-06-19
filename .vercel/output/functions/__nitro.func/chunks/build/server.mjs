@@ -1,4 +1,4 @@
-import { toRef, isRef, inject, hasInjectionContext, getCurrentInstance, defineComponent, createElementBlock, shallowRef, provide, cloneVNode, h, defineAsyncComponent, computed, unref, shallowReactive, ref, Suspense, Fragment, createApp, readonly, mergeProps, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, isReadonly, isShallow, isReactive, toRaw, onMounted, nextTick, watch, withCtx, getCurrentScope, useSSRContext, openBlock, renderSlot, createTextVNode, toDisplayString, createElementVNode, resolveComponent, resolveDirective, withDirectives, createBlock, createCommentVNode, normalizeClass, Teleport, Transition, normalizeProps, TransitionGroup, renderList, createSlots, toHandlers } from 'vue';
+import { hasInjectionContext, inject, toRef, isRef, getCurrentInstance, defineComponent, createElementBlock, shallowRef, provide, cloneVNode, h, defineAsyncComponent, computed, unref, shallowReactive, ref, Suspense, Fragment, createApp, readonly, mergeProps, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, isReadonly, isShallow, isReactive, toRaw, onMounted, nextTick, watch, withCtx, getCurrentScope, useSSRContext, openBlock, renderSlot, createTextVNode, toDisplayString, createElementVNode, resolveComponent, resolveDirective, withDirectives, createBlock, createCommentVNode, normalizeClass, Teleport, Transition, normalizeProps, TransitionGroup, renderList, createSlots, toHandlers } from 'vue';
 import { c as createError$1, h as hasProtocol, i as isScriptProtocol, k as joinURL, w as withQuery, s as sanitizeStatusCode, l as getContext, $ as $fetch, m as createHooks, n as executeAsync, o as setCookie, p as getHeader, t as toRouteMatcher, q as createRouter$1, r as defu, v as destr, x as klona, y as getRequestHeader, z as isEqual, A as getCookie, B as deleteCookie } from '../nitro/nitro.mjs';
 import { b as baseURL } from '../routes/renderer.mjs';
 import { useRoute as useRoute$1, RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
@@ -459,12 +459,12 @@ const _routes = [
     name: "about",
     path: "/about",
     meta: __nuxt_page_meta$2 || {},
-    component: () => import('./about-8tNV4uow.mjs')
+    component: () => import('./about-C102581B.mjs')
   },
   {
     name: "index",
     path: "/",
-    component: () => import('./index-BE21elc0.mjs')
+    component: () => import('./index-Dm2d8edQ.mjs')
   },
   {
     name: "terms",
@@ -475,7 +475,7 @@ const _routes = [
   {
     name: "search",
     path: "/search",
-    component: () => import('./search-pCgCI6h3.mjs')
+    component: () => import('./search-C8Q_KMBe.mjs')
   },
   {
     name: "privacy",
@@ -486,67 +486,67 @@ const _routes = [
   {
     name: "profile",
     path: "/profile",
-    component: () => import('./profile-CuwrB_bV.mjs')
+    component: () => import('./profile-DR0gLie3.mjs')
   },
   {
     name: "slug",
     path: "/:slug(.*)*",
-    component: () => import('./_...slug_-DF9EhuXG.mjs')
+    component: () => import('./_...slug_-3XAtcKhR.mjs')
   },
   {
     name: "auth-login",
     path: "/auth/login",
-    component: () => import('./login-3IobgRLm.mjs')
+    component: () => import('./login-ChOvVw59.mjs')
   },
   {
     name: "admin",
     path: "/admin",
-    component: () => import('./index-C8jUTeqN.mjs')
+    component: () => import('./index-DH37DEZu.mjs')
   },
   {
     name: "auth-confirm",
     path: "/auth/confirm",
-    component: () => import('./confirm-Cffhnscq.mjs')
+    component: () => import('./confirm-CMEJVuPM.mjs')
   },
   {
     name: "auth-register",
     path: "/auth/register",
-    component: () => import('./register-wZV5YiwQ.mjs')
+    component: () => import('./register-CJ13A0a3.mjs')
   },
   {
     name: "reviews-slug",
     path: "/reviews/:slug()",
-    component: () => import('./_slug_-D1Gpj6Le.mjs')
+    component: () => import('./_slug_-AcjvUKwZ.mjs')
   },
   {
     name: "admin-reviews-new",
     path: "/admin/reviews/new",
-    component: () => import('./new-SSNrn_pW.mjs')
+    component: () => import('./new-CRxsaA1e.mjs')
   },
   {
     name: "admin-users",
     path: "/admin/users",
-    component: () => import('./index-Pc7hg_OH.mjs')
+    component: () => import('./index-Bj8UzulL.mjs')
   },
   {
     name: "auth-verify-email",
     path: "/auth/verify-email",
-    component: () => import('./verify-email-C_54Ow8n.mjs')
+    component: () => import('./verify-email-Bw9r81IL.mjs')
   },
   {
     name: "admin-reviews-id",
     path: "/admin/reviews/:id()",
-    component: () => import('./_id_-b14D-085.mjs')
+    component: () => import('./_id_-C-HRCnPZ.mjs')
   },
   {
     name: "admin-reviews",
     path: "/admin/reviews",
-    component: () => import('./index-Ow75swXF.mjs')
+    component: () => import('./index-Db2V4snM.mjs')
   },
   {
     name: "admin-categories",
     path: "/admin/categories",
-    component: () => import('./index-kFSWNmjQ.mjs')
+    component: () => import('./index-q7kw6IID.mjs')
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -679,7 +679,7 @@ const globalMiddleware = [
   manifest_45route_45rule
 ];
 const namedMiddleware = {
-  admin: () => import('./admin-BKnFFXXf.mjs')
+  admin: () => import('./admin-CPN_Jx3P.mjs')
 };
 const plugin = /* @__PURE__ */ defineNuxtPlugin({
   name: "nuxt:router",
@@ -12992,7 +12992,7 @@ const plugins = [
   primevue_FwNO_dH40VVjor4TV4eADpOG1SqPJc2e7i7dMMaI9lU
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-DJmmQumr.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-BjGQpxxP.mjs').then((m) => m.default || m))
 };
 const LayoutLoader = defineComponent({
   name: "LayoutLoader",
@@ -13260,7 +13260,7 @@ const _sfc_main$1 = {
     const statusMessage = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import('./error-404-bbWGK6xr.mjs'));
+    const _Error404 = defineAsyncComponent(() => import('./error-404-CcK9-i2-.mjs'));
     const _Error = defineAsyncComponent(() => import('./error-500-tLWA56Pn.mjs'));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
@@ -13343,5 +13343,5 @@ let entry;
 }
 const entry$1 = (ssrContext) => entry(ssrContext);
 
-export { useRouter as a, useSupabaseUser as b, useToast as c, useConfirm as d, entry$1 as default, useNuxtApp as e, asyncDataDefaults as f, createError as g, defineNuxtRouteMiddleware as h, useRuntimeConfig as i, nuxtLinkDefaults as j, navigateTo as n, resolveRouteObject as r, tryUseNuxtApp as t, useRoute as u };
+export { useRoute as a, useRouter as b, useSupabaseUser as c, useToast as d, entry$1 as default, useConfirm as e, useNuxtApp as f, asyncDataDefaults as g, createError as h, defineNuxtRouteMiddleware as i, nuxtLinkDefaults as j, navigateTo as n, resolveRouteObject as r, tryUseNuxtApp as t, useRuntimeConfig as u };
 //# sourceMappingURL=server.mjs.map

@@ -86,6 +86,8 @@
 
 <script setup>
 const client = useSupabaseClient()
+const config = useRuntimeConfig()
+console.log('NUXT_PUBLIC_SITE_URL:', config.public.siteUrl)
 
 // Fetch categories
 const { data: categories } = await useAsyncData('categories', async () => {
