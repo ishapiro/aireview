@@ -12,6 +12,9 @@
           </div>
 
           <div class="flex items-center space-x-4">
+            <NuxtLink to="/">
+              <Button icon="pi pi-home" rounded aria-label="Home" />
+            </NuxtLink>
             <NuxtLink to="/search">
               <Button icon="pi pi-search" rounded aria-label="Search" />
             </NuxtLink>
@@ -19,17 +22,14 @@
             <template v-if="user">
               <NuxtLink to="/profile">
                 <Button 
-                  icon="pi pi-user" 
-                  text 
+                  icon="pi pi-user"  
                   rounded 
                   aria-label="Profile"
-                  :severity="user ? 'success' : undefined"
                 />
               </NuxtLink>
               <Button
                 @click="handleSignOut"
                 icon="pi pi-sign-out"
-                text
                 rounded
                 aria-label="Sign out"
               />

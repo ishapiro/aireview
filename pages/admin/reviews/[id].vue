@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Edit Review</h1>
       <NuxtLink to="/admin/reviews">
-        <Button label="Back to Reviews" icon="pi pi-arrow-left" severity="secondary" />
+        <Button label="Back to Reviews" icon="pi pi-arrow-left" />
       </NuxtLink>
     </div>
 
@@ -125,7 +125,6 @@
               />
               <Button
                 type="button"
-                severity="secondary"
                 :label="form.is_published ? 'Unpublish' : 'Publish'"
                 @click="handlePublishToggle"
               />

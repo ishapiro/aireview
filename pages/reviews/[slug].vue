@@ -86,6 +86,14 @@
         <div v-html="renderedContent"></div>
       </div>
 
+      <!-- Edit Button for Review Owner -->
+      <div v-if="user?.id === review?.user_id" class="mb-8 flex justify-end">
+        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-secondary">
+          <i class="pi pi-pencil mr-2"></i>
+          Edit Review
+        </NuxtLink>
+      </div>
+
       <!-- Comments Section -->
       <div class="border-t pt-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Comments</h2>

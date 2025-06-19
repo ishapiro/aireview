@@ -1,20 +1,29 @@
 <template>
-  <div class="card review-card">
-    <NuxtLink :to="`/reviews/${review.slug}`" @click="handleCardClick">
+  <div class="card review-card no-underline">
+    <NuxtLink 
+      class="no-underline" 
+      :to="review.is_published ? `/reviews/${review.slug}` : `/admin/reviews/${review.id}`" 
+      @click="handleCardClick">
       <div class="relative">
-        <img
-          v-if="review.thumbnail_url"
-          :src="review.thumbnail_url"
-          :alt="review.title"
-          class="w-full h-48 object-cover rounded-lg mb-4"
-        />
-        <div v-if="review.ai_generated" class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
-          <i class="pi pi-robot mr-1"></i>
-          AI Review
+        <div v-if="!review.is_published" class="no-underline bg-red-600 text-white px-2 py-1 rounded text-sm">
+          <i class="pi pi-file-edit mr-1"></i>
+          DRAFT
         </div>
+          <div class="flex items-center gap-2">
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ review.title }}</h3>
+          </div>
+            <img
+              v-if="review.thumbnail_url"
+              :src="review.thumbnail_url"
+              :alt="review.title"
+              class="w-full h-48 object-cover rounded-lg mb-4"
+            />
+            <div v-if="review.ai_generated" class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
+              <i class="pi pi-robot mr-1"></i>
+              AI AugmentedReview
+            </div>
       </div>
       
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ review.title }}</h3>
       <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content?.substring(0, 200) }}...</p>
       
       <div class="flex items-center justify-between">
