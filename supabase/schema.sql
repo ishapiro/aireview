@@ -60,6 +60,7 @@ end $$;
 
 -- Drop existing functions (safe to do even if tables don't exist)
 drop function if exists public.handle_new_user() cascade;
+drop function if exists public.increment_view_count(uuid) cascade;
 drop function if exists public.update_updated_at_column() cascade;
 drop function if exists public.handle_helpful_vote() cascade;
 drop function if exists public.handle_activity_log() cascade;
@@ -101,6 +102,7 @@ begin
         helpful_count integer default 0,
         views_count integer default 0,
         is_published boolean default true,
+        ai_generated boolean default false,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null,
         updated_at timestamp with time zone default timezone('utc'::text, now()) not null
     );
@@ -165,6 +167,11 @@ begin
     -- Activity log table
     if not exists (select 1 from information_schema.columns where table_name = 'activity_log' and column_name = 'updated_at') then
         alter table public.activity_log add column updated_at timestamp with time zone default timezone('utc'::text, now()) not null;
+    end if;
+
+    -- Reviews table
+    if not exists (select 1 from information_schema.columns where table_name = 'reviews' and column_name = 'ai_generated') then
+        alter table public.reviews add column ai_generated boolean default false;
     end if;
 end $$;
 
@@ -383,7 +390,7 @@ begin
             end case;
     end case;
 
-    -- Insert activity log
+    
     insert into public.activity_log (user_id, type, description, metadata)
     values (
         auth.uid(),

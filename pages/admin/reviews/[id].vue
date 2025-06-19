@@ -116,6 +116,20 @@
               </p>
             </div>
 
+            <!-- AI Generated Toggle -->
+            <div class="field mb-6">
+              <div class="flex items-center">
+                <InputSwitch
+                  v-model="form.ai_generated"
+                  class="mr-2"
+                />
+                <label class="text-sm font-medium text-gray-700">AI Generated</label>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">
+                Mark this review as created with AI assistance
+              </p>
+            </div>
+
             <!-- Actions -->
             <div class="flex items-center space-x-4">
               <Button
@@ -159,7 +173,8 @@ const form = ref({
   content: '',
   category_id: null,
   rating: null,
-  is_published: true
+  is_published: true,
+  ai_generated: false
 })
 
 const isSubmitting = ref(false)
@@ -202,7 +217,8 @@ onMounted(async () => {
     content: data.content,
     category_id: data.category_id,
     rating: data.rating,
-    is_published: data.is_published
+    is_published: data.is_published,
+    ai_generated: data.ai_generated
   }
 })
 
@@ -230,7 +246,8 @@ const handleSubmit = async () => {
         content: form.value.content,
         category_id: form.value.category_id,
         rating: form.value.rating,
-        is_published: form.value.is_published
+        is_published: form.value.is_published,
+        ai_generated: form.value.ai_generated
       })
       .eq('id', reviewId)
     if (error) throw error

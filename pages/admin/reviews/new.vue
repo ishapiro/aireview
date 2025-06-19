@@ -58,6 +58,19 @@
               />
             </div>
 
+            <div class="field">
+              <div class="flex items-center">
+                <InputSwitch
+                  v-model="form.ai_generated"
+                  class="mr-2"
+                />
+                <label class="text-sm font-medium text-gray-700">AI Generated</label>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">
+                Mark this review as created with AI assistance
+              </p>
+            </div>
+
             <div class="flex items-center space-x-4 mt-6">
               <Button
                 type="submit"
@@ -93,7 +106,8 @@ const form = ref({
   content: '',
   category_id: null,
   rating: null,
-  is_published: true
+  is_published: true,
+  ai_generated: false
 })
 
 const isSubmitting = ref(false)
@@ -128,7 +142,8 @@ const handleSubmit = async () => {
         category_id: form.value.category_id,
         rating: form.value.rating,
         user_id: user.value.id,
-        is_published: form.value.is_published
+        is_published: form.value.is_published,
+        ai_generated: form.value.ai_generated
       })
 
     if (error) throw error
