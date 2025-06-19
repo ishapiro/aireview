@@ -222,6 +222,21 @@ onMounted(async () => {
     return
   }
 
+  // Increment view count
+  try {
+    const { error: updateError } = await client
+      .rpc('increment_view_count', { review_id: review.value.id })
+    
+    if (updateError) {
+      console.error('[reviews/[slug]] Error incrementing view count:', updateError)
+    } else {
+      // Update local view count
+      review.value.views_count += 1
+    }
+  } catch (error) {
+    console.error('[reviews/[slug]] Error incrementing view count:', error)
+  }
+
   // Check if user has starred the review
   if (user.value) {
     console.log('[reviews/[slug]] Checking helpful vote for user:', user.value.id)

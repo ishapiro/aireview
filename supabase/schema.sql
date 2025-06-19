@@ -32,6 +32,7 @@ begin
         drop policy if exists "Users can create reviews" on public.reviews;
         drop policy if exists "Users can update own reviews" on public.reviews;
         drop policy if exists "Users can delete own reviews" on public.reviews;
+        drop policy if exists "Anyone can increment view count" on public.reviews;
     end if;
 
     if exists (select 1 from information_schema.tables where table_name = 'comments' and table_schema = 'public') then
@@ -52,8 +53,8 @@ begin
 
     if exists (select 1 from information_schema.tables where table_name = 'activity_log' and table_schema = 'public') then
         drop trigger if exists update_activity_log_updated_at on public.activity_log;
-        drop policy if exists "Activity logs are viewable by admins only" on public.activity_log;
-        drop policy if exists "Only system can insert activity logs" on public.activity_log;
+        drop policy if exists "Activity logs are viewable by admins" on public.activity_log;
+        drop policy if exists "System can insert activity logs" on public.activity_log;
     end if;
 end $$;
 
@@ -229,6 +230,14 @@ create policy "Users can delete own reviews"
     on public.reviews for delete
     using (auth.uid() = user_id);
 
+create policy "Anyone can increment view count"
+    on public.reviews for update
+    using (true)
+    with check (
+        -- Only allow updating the views_count column and incrementing by 1
+        views_count = (select views_count + 1 from public.reviews where id = id)
+    );
+
 create policy "Comments are viewable by everyone"
     on public.comments for select
     using (true);
@@ -257,7 +266,7 @@ create policy "Users can delete own helpful votes"
     on public.helpful_votes for delete
     using (auth.uid() = user_id);
 
-create policy "Activity logs are viewable by admins only"
+create policy "Activity logs are viewable by admins"
     on public.activity_log for select
     using (exists (
         select 1 from public.profiles
@@ -272,14 +281,18 @@ create policy "System can insert activity logs"
 create function public.handle_new_user()
 returns trigger as $$
 begin
-    insert into public.profiles (id, full_name, email, avatar_url)
-    values (
-        new.id,
-        new.raw_user_meta_data->>'full_name',
-        new.email,
-        new.raw_user_meta_data->>'avatar_url'
-    );
+    insert into public.profiles (id, full_name, avatar_url)
+    values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
     return new;
+end;
+$$ language plpgsql security definer;
+
+create function public.increment_view_count(review_id uuid)
+returns void as $$
+begin
+    update public.reviews
+    set views_count = views_count + 1
+    where id = review_id;
 end;
 $$ language plpgsql security definer;
 
