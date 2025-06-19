@@ -30,14 +30,21 @@ onMounted(async () => {
 
       // Create profile if it doesn't exist
       if (!profile) {
+        const profileData = {
+          id: user.id,
+          full_name: user.user_metadata.full_name || `${user.user_metadata.first_name || ''} ${user.user_metadata.last_name || ''}`.trim(),
+          email: user.email,
+          avatar_url: user.user_metadata.avatar_url || null
+        }
+
+        // Clean up the full_name if it's empty
+        if (!profileData.full_name || profileData.full_name.trim() === '') {
+          profileData.full_name = user.email.split('@')[0] // Use email prefix as fallback
+        }
+
         const { error: profileError } = await client
           .from('profiles')
-          .insert({
-            id: user.id,
-            full_name: user.user_metadata.full_name,
-            email: user.email,
-            avatar_url: user.user_metadata.avatar_url
-          })
+          .insert(profileData)
 
         if (profileError) throw profileError
       }

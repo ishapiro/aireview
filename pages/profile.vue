@@ -9,6 +9,44 @@
           <template #content>
             <div class="space-y-6">
               <h2 class="text-xl font-semibold text-gray-900">Profile Information</h2>
+              
+              <!-- Avatar Section -->
+              <div class="field">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+                <div class="flex items-center space-x-4">
+                  <div class="relative">
+                    <img 
+                      :src="form.avatar_url || '/default-avatar.svg'" 
+                      :alt="form.fullName"
+                      class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                      @error="$event.target.src = '/default-avatar.svg'"
+                    />
+                    <div v-if="isUploading" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                      <i class="pi pi-spin pi-spinner text-white"></i>
+                    </div>
+                  </div>
+                  <div class="flex flex-col space-y-2">
+                    <Button
+                      type="button"
+                      label="Upload Image"
+                      icon="pi pi-upload"
+                      @click="handleAvatarUpload"
+                      :loading="isUploading"
+                      class="p-button-outlined"
+                    />
+                    <Button
+                      v-if="form.avatar_url"
+                      type="button"
+                      label="Remove"
+                      icon="pi pi-trash"
+                      @click="handleRemoveAvatar"
+                      class="p-button-outlined p-button-danger"
+                    />
+                  </div>
+                </div>
+                <small class="text-gray-500">Upload a profile picture (JPG, PNG, GIF up to 5MB)</small>
+              </div>
+
               <form @submit.prevent="handleSubmit" class="space-y-6">
                 <div class="field">
                   <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
@@ -198,6 +236,7 @@ const profile = ref({})
 const error = ref('')
 const isSubmitting = ref(false)
 const isChangingPassword = ref(false)
+const isUploading = ref(false)
 
 const form = ref({
   fullName: '',
@@ -328,6 +367,7 @@ const handlePasswordChange = async () => {
 }
 
 const handleAvatarUpload = async () => {
+  isUploading.value = true
   try {
     const file = await new Promise((resolve) => {
       const input = document.createElement('input')
@@ -337,20 +377,40 @@ const handleAvatarUpload = async () => {
       input.click()
     })
 
-    if (!file) return
+    if (!file) {
+      isUploading.value = false
+      return
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'File size must be less than 5MB', life: 3000 })
+      isUploading.value = false
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Please select a valid image file', life: 3000 })
+      isUploading.value = false
+      return
+    }
 
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.value.id}-${Math.random()}.${fileExt}`
+    const fileName = `${user.value.id}-${Date.now()}.${fileExt}`
     const filePath = `avatars/${fileName}`
 
     const { error: uploadError } = await client.storage
-      .from('profiles')
-      .upload(filePath, file)
+      .from('reviews')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
 
     if (uploadError) throw uploadError
 
     const { data: { publicUrl } } = client.storage
-      .from('profiles')
+      .from('reviews')
       .getPublicUrl(filePath)
 
     form.value.avatar_url = publicUrl
@@ -358,7 +418,14 @@ const handleAvatarUpload = async () => {
   } catch (error) {
     console.error('Error uploading avatar:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Error uploading avatar. Please try again.', life: 3000 })
+  } finally {
+    isUploading.value = false
   }
+}
+
+const handleRemoveAvatar = () => {
+  form.value.avatar_url = null
+  toast.add({ severity: 'success', summary: 'Success', detail: 'Avatar removed successfully!', life: 3000 })
 }
 
 const handleUpgrade = () => {

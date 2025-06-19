@@ -1,3 +1,5 @@
+-- Last updated: 2024-06-13 20:13 UTC (update this comment with each change)
+
 -- Begin transaction
 begin;
 
@@ -450,3 +452,46 @@ create trigger update_activity_log_updated_at
 
 -- Commit transaction
 commit;
+
+-- Create storage bucket if it doesn't exist (outside transaction)
+insert into storage.buckets (id, name, public)
+values ('reviews', 'reviews', true)
+on conflict (id) do nothing;
+
+-- Drop existing storage policies if they exist
+
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
+
+-- Create storage policies for the reviews bucket (outside transaction)
+create policy "Public Access"
+on storage.objects for select
+using ( bucket_id = 'reviews' );
+
+create policy "Authenticated users can upload files"
+on storage.objects for insert
+with check ( bucket_id = 'reviews' AND auth.role() = 'authenticated' );
+
+create policy "Users can update own files"
+on storage.objects for update
+using (
+  bucket_id = 'reviews'
+  AND (
+    name LIKE ('avatars/' || auth.uid()::text || '-%')
+    OR
+    name LIKE (auth.uid()::text || '/%')
+  )
+);
+
+create policy "Users can delete own files"
+on storage.objects for delete
+using (
+  bucket_id = 'reviews'
+  AND (
+    name LIKE ('avatars/' || auth.uid()::text || '-%')
+    OR
+    name LIKE (auth.uid()::text || '/%')
+  )
+);

@@ -5,7 +5,7 @@
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
-            <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80">
+            <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80 focus:outline-none">
               <span class="text-2xl font-bold text-primary-600">C</span>
               <span class="ml-2 text-xl font-bold text-gray-900">Cogitations</span>
             </NuxtLink>

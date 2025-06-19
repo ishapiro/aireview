@@ -78,6 +78,43 @@
                 />
               </div>
 
+              <!-- Avatar Upload -->
+              <div>
+                <label class="block text-sm text-gray-600 mb-3">Profile Picture (Optional)</label>
+                <div class="flex items-center space-x-4">
+                  <div class="relative">
+                    <img 
+                      :src="form.avatar_url || '/default-avatar.svg'" 
+                      :alt="form.firstName"
+                      class="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                      @error="$event.target.src = '/default-avatar.svg'"
+                    />
+                    <div v-if="isUploading" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                      <i class="pi pi-spin pi-spinner text-white"></i>
+                    </div>
+                  </div>
+                  <div class="flex flex-col space-y-2">
+                    <Button
+                      type="button"
+                      label="Upload Image"
+                      icon="pi pi-upload"
+                      @click="handleAvatarUpload"
+                      :loading="isUploading"
+                      class="p-button-outlined p-button-sm"
+                    />
+                    <Button
+                      v-if="form.avatar_url"
+                      type="button"
+                      label="Remove"
+                      icon="pi pi-trash"
+                      @click="handleRemoveAvatar"
+                      class="p-button-outlined p-button-danger p-button-sm"
+                    />
+                  </div>
+                </div>
+                <small class="text-gray-500">Upload a profile picture (JPG, PNG, GIF up to 5MB)</small>
+              </div>
+
               <!-- Password -->
               <div>
                 <label for="password" class="block text-sm text-gray-600 mb-1">Password</label>
@@ -175,11 +212,13 @@ const form = ref({
   website: '',
   password: '',
   confirmPassword: '',
-  terms: false
+  terms: false,
+  avatar_url: ''
 })
 
 const submitted = ref(false)
 const isLoading = ref(false)
+const isUploading = ref(false)
 
 const isValidEmail = (email) => {
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
@@ -228,7 +267,8 @@ const handleSubmit = async () => {
         last_name: form.value.lastName,
         email: form.value.email,
         phone: form.value.phone,
-        website: form.value.website
+        website: form.value.website,
+        avatar_url: form.value.avatar_url
       })
 
     if (profileError) throw profileError
@@ -264,5 +304,67 @@ const handleGoogleSignUp = async () => {
       life: 3000
     })
   }
+}
+
+const handleAvatarUpload = async () => {
+  isUploading.value = true
+  try {
+    const file = await new Promise((resolve) => {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = (e) => resolve(e.target.files[0])
+      input.click()
+    })
+
+    if (!file) {
+      isUploading.value = false
+      return
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'File size must be less than 5MB', life: 3000 })
+      isUploading.value = false
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Please select a valid image file', life: 3000 })
+      isUploading.value = false
+      return
+    }
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = `temp-${Date.now()}.${fileExt}`
+    const filePath = `avatars/${fileName}`
+
+    const { error: uploadError } = await client.storage
+      .from('reviews')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = client.storage
+      .from('reviews')
+      .getPublicUrl(filePath)
+
+    form.value.avatar_url = publicUrl
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Avatar uploaded successfully!', life: 3000 })
+  } catch (error) {
+    console.error('Error uploading avatar:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Error uploading avatar. Please try again.', life: 3000 })
+  } finally {
+    isUploading.value = false
+  }
+}
+
+const handleRemoveAvatar = () => {
+  form.value.avatar_url = ''
+  toast.add({ severity: 'success', summary: 'Success', detail: 'Avatar removed successfully!', life: 3000 })
 }
 </script> 

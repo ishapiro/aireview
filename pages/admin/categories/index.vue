@@ -12,13 +12,10 @@
             <thead>
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Image
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Slug
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
+                  Name / Slug
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -28,13 +25,25 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="category in categories" :key="category.id">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ category.name }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ category.slug }}</div>
+                  <div class="w-16 h-16">
+                    <img 
+                      v-if="category.image_url" 
+                      :src="category.image_url" 
+                      :alt="category.name"
+                      class="w-16 h-16 object-cover rounded"
+                      @error="$event.target.style.display = 'none'"
+                    />
+                    <div v-else class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                      <i class="pi pi-image text-gray-400"></i>
+                    </div>
+                  </div>
                 </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900">{{ category.description }}</div>
+                  <div class="mb-1">
+                    <div class="text-sm font-medium text-gray-900">{{ category.name }}</div>
+                    <div class="text-sm text-gray-500">{{ category.slug }}</div>
+                  </div>
+                  <div class="text-sm text-gray-700 mt-2">{{ category.description }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <button
@@ -83,6 +92,41 @@
               rows="3"
             />
           </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
+            <div class="flex items-center space-x-4">
+              <div class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                <img
+                  v-if="form.image_url"
+                  :src="form.image_url"
+                  class="w-32 h-32 object-cover rounded-lg"
+                />
+                <div v-else class="text-center">
+                  <i class="pi pi-image text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-sm text-gray-500">No image</p>
+                </div>
+              </div>
+              <div class="flex flex-col space-y-2">
+                <Button
+                  type="button"
+                  label="Upload Image"
+                  icon="pi pi-upload"
+                  @click="handleImageUpload"
+                  class="btn-secondary"
+                />
+                <Button
+                  v-if="form.image_url"
+                  type="button"
+                  label="Remove Image"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  @click="form.image_url = ''"
+                  class="btn-secondary"
+                />
+              </div>
+            </div>
+          </div>
         </form>
       </template>
       <template #footer>
@@ -120,7 +164,8 @@ const editingCategory = ref(null)
 
 const form = ref({
   name: '',
-  description: ''
+  description: '',
+  image_url: ''
 })
 
 // Fetch categories
@@ -144,7 +189,8 @@ const handleEdit = (category) => {
   editingCategory.value = category
   form.value = {
     name: category.name,
-    description: category.description || ''
+    description: category.description || '',
+    image_url: category.image_url || ''
   }
   showDialog.value = true
 }
@@ -156,7 +202,8 @@ const handleSubmit = async () => {
     const categoryData = {
       name: form.value.name,
       slug: generateSlug(form.value.name),
-      description: form.value.description
+      description: form.value.description,
+      image_url: form.value.image_url
     }
 
     let error
@@ -188,7 +235,7 @@ const handleSubmit = async () => {
 
     showDialog.value = false
     editingCategory.value = null
-    form.value = { name: '', description: '' }
+    form.value = { name: '', description: '', image_url: '' }
 
     toast.add({
       severity: 'success',
@@ -241,5 +288,43 @@ const handleDelete = (id) => {
       }
     }
   })
+}
+
+const handleImageUpload = async () => {
+  try {
+    const file = await new Promise((resolve) => {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = (e) => resolve(e.target.files[0])
+      input.click()
+    })
+
+    if (!file) return
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random()}.${fileExt}`
+    const filePath = `categories/${fileName}`
+
+    const { error: uploadError } = await client.storage
+      .from('reviews')
+      .upload(filePath, file)
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = client.storage
+      .from('reviews')
+      .getPublicUrl(filePath)
+
+    form.value.image_url = publicUrl
+  } catch (error) {
+    console.error('Error uploading image:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Error uploading image. Please try again.',
+      life: 3000
+    })
+  }
 }
 </script> 
