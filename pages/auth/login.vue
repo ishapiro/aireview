@@ -25,6 +25,7 @@
                   placeholder="Your Email"
                   :class="{ 'p-invalid': submitted && !form.email }"
                   class="w-full"
+                  autocomplete="username"
                 />
                 <small class="text-red-500" v-if="submitted && !form.email">Email is required</small>
                 <small class="text-red-500" v-else-if="submitted && !isValidEmail(form.email)">Please enter a valid email</small>
@@ -49,6 +50,7 @@
                   toggleMask
                   :class="{ 'p-invalid': submitted && !form.password }"
                   class="w-full"
+                  :inputProps="{ autocomplete: 'current-password' }"
                 />
                 <small class="text-red-500" v-if="submitted && !form.password">Password is required</small>
                 <small class="text-red-500" v-else-if="submitted && form.password.length < 6">Password must be at least 6 characters</small>

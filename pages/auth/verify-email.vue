@@ -48,35 +48,63 @@
 </template>
 
 <script setup>
+import { useToast } from 'primevue/usetoast'
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
 
-// Redirect if not logged in
-if (!user.value) {
-  navigateTo('/auth/login')
-}
+// Store email in localStorage if user is not logged in yet
+const email = ref('')
+
+onMounted(() => {
+  // Check if we have email in localStorage (from registration)
+  const storedEmail = localStorage.getItem('registration_email')
+  if (storedEmail) {
+    email.value = storedEmail
+  }
+  
+  // If user is logged in, use their email
+  if (user.value?.email) {
+    email.value = user.value.email
+  }
+})
 
 const isResending = ref(false)
 
 const handleResendEmail = async () => {
+  if (!email.value) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No email address found. Please try registering again.',
+      life: 3000
+    })
+    return
+  }
+
   isResending.value = true
 
   try {
+    console.log('Attempting to resend confirmation email to:', email.value)
+    
     const { error } = await client.auth.resend({
       type: 'signup',
-      email: user.value.email
+      email: email.value
     })
+
+    console.log('Resend response:', { error })
 
     if (error) throw error
 
     toast.add({
       severity: 'success',
       summary: 'Success',
-      detail: 'Verification email sent!',
-      life: 3000
+      detail: 'Verification email sent! Check your inbox and spam folder.',
+      life: 5000
     })
   } catch (error) {
+    console.error('Resend email error:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -89,6 +117,8 @@ const handleResendEmail = async () => {
 }
 
 const handleSignOut = async () => {
+  // Clear stored email
+  localStorage.removeItem('registration_email')
   await client.auth.signOut()
   navigateTo('/auth/login')
 }

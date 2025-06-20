@@ -227,11 +227,13 @@
 import { ref, onMounted, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
+import { useImageUpload } from '@/composables/useImageUpload'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
 const confirm = useConfirm()
+const { uploadAvatar } = useImageUpload()
 const profile = ref({})
 const error = ref('')
 const isSubmitting = ref(false)
@@ -369,55 +371,13 @@ const handlePasswordChange = async () => {
 const handleAvatarUpload = async () => {
   isUploading.value = true
   try {
-    const file = await new Promise((resolve) => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => resolve(e.target.files[0])
-      input.click()
-    })
-
-    if (!file) {
-      isUploading.value = false
-      return
+    const publicUrl = await uploadAvatar(user.value.id)
+    if (publicUrl) {
+      form.value.avatar_url = publicUrl
     }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'File size must be less than 5MB', life: 3000 })
-      isUploading.value = false
-      return
-    }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Please select a valid image file', life: 3000 })
-      isUploading.value = false
-      return
-    }
-
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${user.value.id}-${Date.now()}.${fileExt}`
-    const filePath = `avatars/${fileName}`
-
-    const { error: uploadError } = await client.storage
-      .from('reviews')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      })
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = client.storage
-      .from('reviews')
-      .getPublicUrl(filePath)
-
-    form.value.avatar_url = publicUrl
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Avatar uploaded successfully!', life: 3000 })
   } catch (error) {
-    console.error('Error uploading avatar:', error)
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Error uploading avatar. Please try again.', life: 3000 })
+    // Error handling is already done in the composable
+    console.error('Error in handleAvatarUpload:', error)
   } finally {
     isUploading.value = false
   }
@@ -440,7 +400,7 @@ const handleManageSubscription = () => {
 
 const handleDeleteAccount = async () => {
   const confirmed = await new Promise((resolve) => {
-    const dialog = useConfirm({
+    confirm.require({
       message: 'Are you sure you want to delete your account? This action cannot be undone.',
       header: 'Delete Account',
       icon: 'pi pi-exclamation-triangle',

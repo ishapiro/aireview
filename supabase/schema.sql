@@ -77,6 +77,8 @@ begin
         email text unique,
         bio text,
         avatar_url text,
+        phone text,
+        website text,
         is_admin boolean default false,
         is_premium boolean default false,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -156,6 +158,12 @@ begin
 
     -- Add columns if they don't exist
     -- Profiles table
+    if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'phone') then
+        alter table public.profiles add column phone text;
+    end if;
+    if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'website') then
+        alter table public.profiles add column website text;
+    end if;
     if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'is_admin') then
         alter table public.profiles add column is_admin boolean default false;
     end if;
@@ -290,8 +298,15 @@ create policy "System can insert activity logs"
 create function public.handle_new_user()
 returns trigger as $$
 begin
-    insert into public.profiles (id, full_name, avatar_url)
-    values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+    insert into public.profiles (id, full_name, email, phone, website, avatar_url)
+    values (
+        new.id, 
+        new.raw_user_meta_data->>'full_name', 
+        new.email,
+        new.raw_user_meta_data->>'phone',
+        new.raw_user_meta_data->>'website',
+        new.raw_user_meta_data->>'avatar_url'
+    );
     return new;
 end;
 $$ language plpgsql security definer;
@@ -464,6 +479,7 @@ DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can upload files" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update own files" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
+DROP POLICY IF EXISTS "Anonymous users can upload temp files" ON storage.objects;
 
 -- Create storage policies for the reviews bucket (outside transaction)
 create policy "Public Access"
@@ -494,4 +510,11 @@ using (
     OR
     name LIKE (auth.uid()::text || '/%')
   )
+);
+
+create policy "Users can delete temp files"
+on storage.objects for delete
+using (
+  bucket_id = 'reviews'
+  AND name LIKE 'avatars/temp-%'
 );

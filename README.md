@@ -217,21 +217,52 @@ yarn install
 
 ### 3. Supabase Setup
 
-1. Create a new Supabase project at [https://app.supabase.com](https://app.supabase.com)
-2. Get your project URL and anon key from Project Settings > API
-3. Create a `.env` file in the root directory:
+1. **Create a new Supabase project** at [https://app.supabase.com](https://app.supabase.com)
+2. **Get your project URL and anon key** from Project Settings > API
+3. **Create a `.env` file** in the root directory:
 
 ```env
 SUPABASE_URL=your-project-url
 SUPABASE_KEY=your-anon-key
+NUXT_PUBLIC_SUPABASE_URL=your-project-url
+NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NUXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-4. Initialize the database schema:
+4. **Initialize the database schema**:
    - Navigate to the SQL editor in your Supabase dashboard
    - Copy the contents of `supabase/schema.sql`
    - Execute the SQL commands to set up your database schema
 
-5. Set up Google OAuth (for Google Sign-In):
+5. **Configure Authentication Settings**:
+
+   **A. Email Authentication Setup:**
+   - Go to Authentication > Settings > Email Auth
+   - Enable "Enable email signup"
+   - Enable "Enable email confirmations"
+   - Set "Secure email change" to your preference
+   - Configure "Minimum password length" (default: 6)
+
+   **B. URL Configuration:**
+   - Go to Authentication > Settings > URL Configuration
+   - Set "Site URL" to `http://localhost:3000` (for development)
+   - Add "Redirect URLs":
+     ```
+     http://localhost:3000/**
+     https://your-production-domain.com/**
+     ```
+   - Add "Additional redirect URLs":
+     ```
+     http://localhost:3000
+     https://your-production-domain.com
+     ```
+
+   **C. Email Templates (Optional):**
+   - Go to Authentication > Settings > Email Templates
+   - Customize "Confirm signup" template if desired
+   - Test email templates to ensure they work correctly
+
+6. **Set up Google OAuth** (for Google Sign-In):
    - In your Supabase dashboard, go to Authentication → Providers
    - Find Google and enable it
    - Go to [Google Cloud Console](https://console.cloud.google.com)
@@ -243,7 +274,53 @@ SUPABASE_KEY=your-anon-key
    - Copy the Client ID and Client Secret
    - Paste these credentials back in Supabase Google Provider settings
 
-### 4. Development Server
+7. **Production Configuration**:
+   - Update "Site URL" to your production domain
+   - Add production redirect URLs
+   - Set environment variables in your hosting platform (Vercel, etc.)
+   - Update Google OAuth settings with production URLs
+
+### 4. Authentication Troubleshooting
+
+**Common Issues and Solutions:**
+
+1. **Email verification not working:**
+   - Check Authentication > Settings > Email Auth is enabled
+   - Verify URL Configuration has correct redirect URLs
+   - Check Authentication > Logs for email sending errors
+   - Ensure your domain is not blocked by email providers
+
+2. **Redirect URL errors:**
+   - Add wildcards (`**`) to redirect URLs for flexibility
+   - Include both `http://localhost:3000` and `https://localhost:3000`
+   - Add your production domain to redirect URLs
+
+3. **Environment variables not loading:**
+   - Ensure `.env` file is in the root directory
+   - Restart development server after changing `.env`
+   - Check `nuxt.config.js` has proper `runtimeConfig` setup
+
+4. **Google OAuth not working:**
+   - Verify Google Cloud Console settings
+   - Check redirect URIs match exactly
+   - Ensure Google+ API is enabled
+   - Verify Client ID and Secret are correct
+
+5. **Rate limiting issues:**
+   - Check Authentication > Settings > Rate Limits
+   - Adjust limits if needed for development
+   - Monitor Authentication > Logs for rate limit errors
+
+**Testing Authentication:**
+
+The application includes built-in testing functions (commented out in production):
+- Test Supabase configuration
+- Test email verification settings
+- Test registration process with debug logging
+
+To enable testing, uncomment the test buttons in `pages/auth/register.vue`.
+
+### 5. Development Server
 
 ```bash
 npm run dev
@@ -253,7 +330,7 @@ yarn dev
 
 The application will be available at `http://localhost:3000`
 
-### 5. Production Build
+### 6. Production Build
 
 ```bash
 npm run build

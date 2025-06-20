@@ -153,10 +153,12 @@
 <script setup>
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { useImageUpload } from '@/composables/useImageUpload'
 
 const client = useSupabaseClient()
 const toast = useToast()
 const confirm = useConfirm()
+const { uploadCategoryImage } = useImageUpload()
 
 const showDialog = ref(false)
 const isSubmitting = ref(false)
@@ -292,39 +294,13 @@ const handleDelete = (id) => {
 
 const handleImageUpload = async () => {
   try {
-    const file = await new Promise((resolve) => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => resolve(e.target.files[0])
-      input.click()
-    })
-
-    if (!file) return
-
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `categories/${fileName}`
-
-    const { error: uploadError } = await client.storage
-      .from('reviews')
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = client.storage
-      .from('reviews')
-      .getPublicUrl(filePath)
-
-    form.value.image_url = publicUrl
+    const publicUrl = await uploadCategoryImage()
+    if (publicUrl) {
+      form.value.image_url = publicUrl
+    }
   } catch (error) {
-    console.error('Error uploading image:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Error uploading image. Please try again.',
-      life: 3000
-    })
+    // Error handling is already done in the composable
+    console.error('Error in handleImageUpload:', error)
   }
 }
 </script> 

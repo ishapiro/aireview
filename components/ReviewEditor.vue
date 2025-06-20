@@ -163,6 +163,7 @@ const props = defineProps({
 
 const emit = defineEmits(['submit'])
 const client = useSupabaseClient()
+const { uploadThumbnail } = useImageUpload()
 
 const form = ref({
   title: props.review.title,
@@ -193,34 +194,13 @@ const renderedContent = computed(() => {
 
 const handleImageUpload = async () => {
   try {
-    const file = await new Promise((resolve) => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => resolve(e.target.files[0])
-      input.click()
-    })
-
-    if (!file) return
-
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `thumbnails/${fileName}`
-
-    const { error: uploadError } = await client.storage
-      .from('reviews')
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = client.storage
-      .from('reviews')
-      .getPublicUrl(filePath)
-
-    form.value.thumbnail_url = publicUrl
+    const publicUrl = await uploadThumbnail()
+    if (publicUrl) {
+      form.value.thumbnail_url = publicUrl
+    }
   } catch (error) {
-    console.error('Error uploading image:', error)
-    alert('Error uploading image. Please try again.')
+    // Error handling is already done in the composable
+    console.error('Error in handleImageUpload:', error)
   }
 }
 
