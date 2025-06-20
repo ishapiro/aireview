@@ -79,7 +79,13 @@
 
             <!-- Content -->
             <div class="field mb-4">
-              <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+              <div class="flex items-center justify-between mb-2">
+                <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                <AIContentGenerator
+                  v-model="form.content"
+                  @ai-generated="form.ai_generated = true"
+                />
+              </div>
               <Textarea
                 id="content"
                 v-model="form.content"
