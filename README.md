@@ -4,7 +4,8 @@ A modern product reviews and recommendations platform built with Nuxt 3, Supabas
 
 ## 🌟 Features
 
-- User authentication and authorization
+- User authentication and authorization (email/password + Google OAuth)
+- Email duplicate detection system
 - Product review creation and management
 - Search functionality
 - User profiles
@@ -15,181 +16,10 @@ A modern product reviews and recommendations platform built with Nuxt 3, Supabas
 ## 🛠️ Tech Stack
 
 - **Frontend Framework**: [Nuxt 3](https://nuxt.com/)
-- **UI Components**: [PrimeVue](https://primevue.org/)
+- **UI Components**: [PrimeVue](https://primevue.org/) (unstyled mode)
 - **Styling**: [TailwindCSS](https://tailwindcss.com/)
 - **Backend/Database**: [Supabase](https://supabase.com/)
-
-## 🎨 PrimeVue with Tailwind CSS Integration
-
-This project uses PrimeVue in unstyled mode with Tailwind CSS for styling. Here's how the integration is set up:
-
-### Required Dependencies
-
-```bash
-npm install primevue@^3.46.0 primeicons@^6.0.1 nuxt-primevue@^3.0.0 @tailwindcss/forms postcss postcss-import tailwindcss-primeui --save-dev
-```
-
-### Configuration Files
-
-1. **Nuxt Configuration** (`nuxt.config.js`):
-```javascript
-export default defineNuxtConfig({
-  modules: [
-    '@nuxtjs/tailwindcss',
-    'nuxt-primevue'
-  ],
-  primevue: {
-    usePrimeVue: true,
-    options: {
-      unstyled: true,
-      ripple: true
-    },
-    components: {
-      include: ['Button', 'Card', /* other components */]
-    }
-  },
-  css: [
-    '@/assets/css/main.css',
-    'primeicons/primeicons.css'
-  ]
-})
-```
-
-2. **Tailwind Configuration** (`tailwind.config.js`):
-```javascript
-module.exports = {
-  darkMode: 'class',
-  content: [
-    // ... your content paths
-    'node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}'
-  ],
-  theme: {
-    extend: {
-      colors: {
-        'primary-50': 'var(--p-primary-50)',
-        // ... other color variables
-      }
-    }
-  },
-  plugins: [
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/forms'),
-    require('tailwindcss-primeui')
-  ]
-}
-```
-
-3. **PostCSS Configuration** (`postcss.config.js`):
-```javascript
-module.exports = {
-  plugins: {
-    'postcss-import': {},
-    'tailwindcss/nesting': {},
-    tailwindcss: {},
-    autoprefixer: {}
-  }
-}
-```
-
-4. **Main CSS** (`assets/css/main.css`):
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  /* PrimeVue color variables */
-  --p-primary-50: #f0f9ff;
-  /* ... other color variables */
-}
-
-/* Light Mode */
-:root {
-  --p-text-color: var(--p-surface-700);
-  /* ... other theme variables */
-}
-
-/* Dark Mode */
-.dark {
-  --p-text-color: var(--p-surface-0);
-  /* ... other dark mode variables */
-}
-```
-
-5. **PrimeVue Plugin** (`plugins/primevue.js`):
-```javascript
-import { defineNuxtPlugin } from '#app'
-import PrimeVue from 'primevue/config'
-import ToastService from 'primevue/toastservice'
-import ConfirmationService from 'primevue/confirmationservice'
-
-export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(PrimeVue, {
-    unstyled: true,
-    ripple: true,
-    inputStyle: 'filled'
-  })
-  nuxtApp.vueApp.use(ToastService)
-  nuxtApp.vueApp.use(ConfirmationService)
-})
-```
-
-### Usage Tips
-
-1. **Component Styling**:
-   - Use Tailwind classes directly on PrimeVue components
-   - For custom styling, use the `class` prop on PrimeVue components
-   - Use the `unstyled` prop for complete control over styling
-
-2. **Dark Mode**:
-   - Add the `dark` class to your root element to enable dark mode
-   - Use the `dark:` prefix in Tailwind classes for dark mode styles
-
-3. **Form Elements**:
-   - Use the `@tailwindcss/forms` plugin for consistent form styling
-   - PrimeVue form components work well with Tailwind's form styles
-
-4. **Common Issues**:
-   - If styles aren't applying, check that the component is included in the PrimeVue configuration
-   - For custom components, ensure they're included in the Tailwind content paths
-   - Use the browser's dev tools to inspect the applied classes and styles
-   - If you see "Plugin has already been applied" warnings, ensure your PrimeVue plugin checks for existing installations
-   - If you see PostCSS configuration warnings, move your PostCSS config into the Nuxt config file
-
-### Troubleshooting
-
-1. **PostCSS Configuration Warning**:
-   Instead of using a separate `postcss.config.js` file, include the PostCSS configuration in your `nuxt.config.js`:
-
-   ```javascript
-   export default defineNuxtConfig({
-     // ... other config
-     postcss: {
-       plugins: {
-         'postcss-import': {},
-         'tailwindcss/nesting': {},
-         tailwindcss: {},
-         autoprefixer: {}
-       }
-     }
-   })
-   ```
-
-2. **PrimeVue Plugin Warnings**:
-   To prevent "Plugin has already been applied" warnings, check for existing installations in your PrimeVue plugin:
-
-   ```javascript
-   export default defineNuxtPlugin((nuxtApp) => {
-     if (!nuxtApp.vueApp._context.provides.primevue) {
-       nuxtApp.vueApp.use(PrimeVue, {
-         unstyled: true,
-         ripple: true,
-         inputStyle: 'filled'
-       })
-     }
-     // ... other services
-   })
-   ```
+- **Authentication**: Supabase Auth with Google OAuth
 
 ## 📋 Prerequisites
 
@@ -197,250 +27,225 @@ export default defineNuxtPlugin((nuxtApp) => {
 - npm or yarn
 - Git
 - Supabase account
+- Google Cloud Console account (for OAuth)
 
 ## 🚀 Getting Started
 
-### 1. Clone the Repository
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/[your-username]/cogitations-reviews.git
 cd cogitations-reviews
-```
-
-### 2. Install Dependencies
-
-```bash
 npm install
-# or
-yarn install
 ```
 
-### 3. Supabase Setup
+### 2. Environment Setup
 
-1. **Create a new Supabase project** at [https://app.supabase.com](https://app.supabase.com)
-2. **Get your project URL and anon key** from Project Settings > API
-3. **Create a `.env` file** in the root directory:
+Create a `.env` file in the root directory:
 
 ```env
-SUPABASE_URL=your-project-url
-SUPABASE_KEY=your-anon-key
 NUXT_PUBLIC_SUPABASE_URL=your-project-url
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NUXT_PUBLIC_SITE_URL=http://localhost:3000
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-4. **Initialize the database schema**:
-   - Navigate to the SQL editor in your Supabase dashboard
-   - Copy the contents of `supabase/schema.sql`
-   - Execute the SQL commands to set up your database schema
+### 3. Supabase Configuration
 
-5. **Configure Authentication Settings**:
+1. **Create a Supabase project** at [https://app.supabase.com](https://app.supabase.com)
+2. **Get your credentials** from Project Settings > API:
+   - Project URL → `NUXT_PUBLIC_SUPABASE_URL`
+   - Anon key → `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Service role key → `SUPABASE_SERVICE_ROLE_KEY`
 
-   **A. Email Authentication Setup:**
-   - Go to Authentication > Settings > Email Auth
-   - Enable "Enable email signup"
-   - Enable "Enable email confirmations"
-   - Set "Secure email change" to your preference
-   - Configure "Minimum password length" (default: 6)
+3. **Initialize database schema**:
+   - Go to SQL Editor in your Supabase dashboard
+   - Copy and execute the contents of `supabase/schema.sql`
 
-   **B. URL Configuration:**
-   - Go to Authentication > Settings > URL Configuration
-   - Set "Site URL" to `http://localhost:3000` (for development)
-   - Add "Redirect URLs":
-     ```
-     http://localhost:3000/**
-     https://your-production-domain.com/**
-     ```
-   - Add "Additional redirect URLs":
-     ```
-     http://localhost:3000
-     https://your-production-domain.com
-     ```
+4. **Configure Authentication**:
+   - **Email Auth**: Enable "Enable email signup" and "Enable email confirmations"
+   - **URL Configuration**: Set Site URL to `http://localhost:3000`
+   - **Redirect URLs**: Add `http://localhost:3000/**`
 
-   **C. Email Templates (Optional):**
-   - Go to Authentication > Settings > Email Templates
-   - Customize "Confirm signup" template if desired
-   - Test email templates to ensure they work correctly
+5. **Set up Google OAuth**:
+   - Enable Google provider in Authentication > Providers
+   - Configure OAuth credentials in [Google Cloud Console](https://console.cloud.google.com)
+   - Add redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`
 
-6. **Set up Google OAuth** (for Google Sign-In):
-   - In your Supabase dashboard, go to Authentication → Providers
-   - Find Google and enable it
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project or select existing one
-   - Enable the Google+ API
-   - Go to Credentials → Create Credentials → OAuth client ID
-   - Choose "Web application"
-   - Add authorized redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`
-   - Copy the Client ID and Client Secret
-   - Paste these credentials back in Supabase Google Provider settings
-
-7. **Production Configuration**:
-   - Update "Site URL" to your production domain
-   - Add production redirect URLs
-   - Set environment variables in your hosting platform (Vercel, etc.)
-   - Update Google OAuth settings with production URLs
-
-### 4. Authentication Troubleshooting
-
-**Common Issues and Solutions:**
-
-1. **Email verification not working:**
-   - Check Authentication > Settings > Email Auth is enabled
-   - Verify URL Configuration has correct redirect URLs
-   - Check Authentication > Logs for email sending errors
-   - Ensure your domain is not blocked by email providers
-
-2. **Redirect URL errors:**
-   - Add wildcards (`**`) to redirect URLs for flexibility
-   - Include both `http://localhost:3000` and `https://localhost:3000`
-   - Add your production domain to redirect URLs
-
-3. **Environment variables not loading:**
-   - Ensure `.env` file is in the root directory
-   - Restart development server after changing `.env`
-   - Check `nuxt.config.js` has proper `runtimeConfig` setup
-
-4. **Google OAuth not working:**
-   - Verify Google Cloud Console settings
-   - Check redirect URIs match exactly
-   - Ensure Google+ API is enabled
-   - Verify Client ID and Secret are correct
-
-5. **Rate limiting issues:**
-   - Check Authentication > Settings > Rate Limits
-   - Adjust limits if needed for development
-   - Monitor Authentication > Logs for rate limit errors
-
-6. **Email duplicate detection not working:**
-   - Verify `SUPABASE_SERVICE_ROLE_KEY` is set in environment variables
-   - Check server console for API endpoint errors
-   - Ensure the service role key has admin privileges
-   - Verify the API endpoint is accessible at `/api/auth/check-email`
-   - Check browser console for client-side response handling
-
-7. **Service role key errors:**
-   - Ensure the key is from Settings → API → service_role (not anon)
-   - Verify the key is properly formatted in `.env` file (no extra spaces)
-   - Check that `nuxt.config.js` exposes the key in runtimeConfig
-   - Restart development server after adding the key
-
-**Testing Authentication:**
-
-The application includes built-in testing functions (commented out in production):
-- Test Supabase configuration
-- Test email verification settings
-- Test registration process with debug logging
-
-To enable testing, uncomment the test buttons in `pages/auth/register.vue`.
-
-### 5. Development Server
+### 4. Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-The application will be available at `http://localhost:3000`
+Visit `http://localhost:3000` to see your application.
 
-### 6. Production Build
+## 🔐 Email Duplicate Detection System
 
-```bash
-npm run build
-# or
-yarn build
+This project implements a robust system to prevent users from creating multiple accounts with the same email address when using different authentication methods.
+
+### How It Works
+
+1. **Server-Side API** (`server/api/auth/check-email.post.js`):
+   - Uses Supabase service role key to access admin API
+   - Checks if an email already exists
+   - Identifies OAuth providers (Google) vs email/password accounts
+
+2. **Client-Side Integration** (`pages/auth/register.vue`):
+   - Calls server API before registration
+   - Shows appropriate warnings for existing accounts
+   - Prevents duplicate account creation
+
+3. **Fallback Mechanism**:
+   - Works even without service role key
+   - Falls back to Supabase's built-in duplicate detection
+
+### Key Implementation Details
+
+**Environment Variables in Nuxt 3:**
+```javascript
+// Client-side
+const config = useRuntimeConfig()
+const supabaseUrl = config.public.supabaseUrl
+
+// Server-side
+const config = useRuntimeConfig()
+const serviceRoleKey = config.supabaseServiceRoleKey
 ```
 
-## 🚀 Deploying to Vercel (via CLI)
+**$fetch Response Handling:**
+```javascript
+// Correct way in Nuxt 3
+const response = await $fetch('/api/auth/check-email', {
+  method: 'POST',
+  body: { email }
+})
+```
 
-You can deploy this project to [Vercel](https://vercel.com/) using the Vercel CLI, without connecting to GitHub. Here are the steps:
+## 🎨 PrimeVue + TailwindCSS Integration
 
-1. **Install the Vercel CLI**
+This project uses PrimeVue in unstyled mode with TailwindCSS for complete styling control.
+
+### Configuration
+
+**Nuxt Config** (`nuxt.config.js`):
+```javascript
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/tailwindcss', 'nuxt-primevue'],
+  primevue: {
+    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
+    options: { unstyled: true, ripple: true },
+    components: {
+      include: ['Button', 'Card', 'InputText', 'Password', 'Checkbox']
+    }
+  },
+  css: [
+    'primevue/resources/primevue.css',
+    'primeicons/primeicons.css',
+    '@/assets/css/main.css'
+  ]
+})
+```
+
+**Tailwind Config** (`tailwind.config.js`):
+```javascript
+module.exports = {
+  content: [
+    'node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}',
+    // ... your content paths
+  ],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('tailwindcss-primeui')
+  ]
+}
+```
+
+### Usage
+
+```vue
+<template>
+  <Button class="bg-blue-500 hover:bg-blue-600 text-white">
+    Custom Styled Button
+  </Button>
+</template>
+```
+
+## 🚀 Deployment
+
+### Vercel Deployment
+
+1. **Install Vercel CLI**:
    ```bash
    npm install -g vercel
    ```
 
-2. **Login to Vercel**
+2. **Build and Deploy**:
    ```bash
-   vercel login
-   ```
-   Follow the prompts to authenticate with your email.
-
-3. **Build the Project**
-   ```bash
-   npm install
    npm run build
+   vercel deploy --prebuilt --prod
    ```
 
-4. **Deploy to Vercel**
-   ```bash
-   vercel deploy --prebuilt
-   ```
-   - The first time, you may be prompted to set up the project. Accept the defaults or adjust as needed.
-   - To deploy to your production domain, use:
-     ```bash
-     vercel deploy --prebuilt --prod
-     ```
+3. **Set Environment Variables** in Vercel dashboard:
+   - `NUXT_PUBLIC_SUPABASE_URL`
+   - `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NUXT_PUBLIC_SITE_URL` (production URL)
+   - `SUPABASE_SERVICE_ROLE_KEY`
 
-5. **Configuration**
-   - The project includes a `vercel.json` file with recommended settings for Nuxt 3.
-   - You can adjust environment variables and other settings in the Vercel dashboard or in `vercel.json`.
+### Production Configuration
 
-6. **After Deployment**
-   - Vercel will provide a deployment URL in the terminal output.
-   - Visit the URL to see your live site!
+1. **Update Supabase Settings**:
+   - Site URL: Your production domain
+   - Redirect URLs: Add your production domain with wildcards
 
-For more details, see the [Vercel CLI documentation](https://vercel.com/docs/cli).
+2. **Update Google OAuth**:
+   - Add production domain to authorized origins
+   - Add production callback URLs
 
-## 🔧 Configuration
+## 🔧 Troubleshooting
 
-### PrimeVue Components
+### Common Issues
 
-The project uses specific PrimeVue components configured in `nuxt.config.ts`. If you need additional components, add them to the components array in the configuration:
+1. **Environment Variables Not Loading**:
+   - Restart dev server after changing `.env`
+   - Use `useRuntimeConfig()` not `process.env`
 
-```typescript
-['nuxt-primevue', {
-  components: {
-    include: ['Button', 'Card', /* other components */]
-  }
-}]
-```
+2. **Email Duplicate Detection Not Working**:
+   - Verify `SUPABASE_SERVICE_ROLE_KEY` is set
+   - Check server console for API errors
+   - Ensure service role key has admin privileges
 
-### Supabase Authentication
+3. **PrimeVue Styling Issues**:
+   - Check CSS layer order in `nuxt.config.js`
+   - Ensure components are included in PrimeVue config
+   - Use browser dev tools to inspect applied styles
 
-Protected routes are configured in `nuxt.config.ts`. To modify which routes require authentication, update the `exclude` array in the Supabase configuration:
+4. **Google OAuth Redirect Errors**:
+   - Verify redirect URLs in both Supabase and Google Cloud Console
+   - Use wildcards in Supabase, exact URLs in Google Cloud
+   - Check environment variables are set correctly
 
-```typescript
-supabase: {
-  redirectOptions: {
-    login: '/auth/login',
-    callback: '/auth/confirm',
-    exclude: [/* public routes */]
-  }
-}
-```
+### Debugging Tips
+
+- Check browser console for configuration warnings
+- Use server console logs for API debugging
+- Test authentication flows in both development and production
+- Verify all environment variables are properly set
 
 ## 📁 Project Structure
 
 ```
 cogitations-reviews/
-├── app.vue              # App entry point
-├── assets/             # Static assets
-├── components/         # Vue components
-├── layouts/            # Page layouts
-├── pages/             # Application pages
-├── public/            # Public static files
-├── supabase/          # Supabase configuration
-└── utils/             # Utility functions
-```
-
-## 🔐 Environment Variables
-
-Required environment variables:
-
-```env
-SUPABASE_URL=your-supabase-project-url
-SUPABASE_KEY=your-supabase-anon-key
+├── app.vue                 # App entry point
+├── assets/                 # Static assets and CSS
+├── components/             # Vue components
+├── layouts/                # Page layouts
+├── pages/                  # Application pages
+├── plugins/                # Nuxt plugins
+├── public/                 # Public static files
+├── server/                 # Server-side API endpoints
+├── supabase/               # Supabase configuration
+└── utils/                  # Utility functions
 ```
 
 ## 🤝 Contributing
@@ -455,304 +260,9 @@ SUPABASE_KEY=your-supabase-anon-key
 
 [MIT License](LICENSE)
 
-## 🆘 Support
+## 🔗 References
 
-For support, please open an issue in the GitHub repository or contact the maintainers.
-
-## ⚠️ Important Configuration Notes
-
-Before diving into the setup, please be aware of these critical configuration requirements that will save you time and prevent common issues:
-
-### PrimeVue + Nuxt 3 + Tailwind Integration
-
-1. **Version Compatibility**
-   ```bash
-   npm install primevue@^3.49.1 primeicons@^6.0.1 nuxt-primevue@^3.0.0 @tailwindcss/forms postcss@^8.5.6 postcss-import tailwindcss-primeui --save-dev
-   ```
-   - Use PrimeVue 3.49.1 or later to avoid PT configuration issues
-   - Ensure postcss version is compatible with your Nuxt version
-
-2. **Critical Configuration Order**
-   The order of configuration is crucial to prevent styling conflicts:
-
-   ```javascript
-   // nuxt.config.js
-   export default defineNuxtConfig({
-     modules: [
-       '@nuxtjs/supabase',
-       '@nuxtjs/tailwindcss',
-       'nuxt-primevue'
-     ],
-     primevue: {
-       cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
-       components: {
-         include: ['Button', 'Card', /* other components */]
-       },
-       options: {
-         unstyled: true,
-         ripple: true,
-         inputStyle: 'filled',
-         pt: {}  // Required for Nuxt 3.12+
-       }
-     },
-     router: {
-       options: {
-         strict: false  // Handle unknown paths gracefully
-       }
-     }
-   })
-   ```
-
-3. **CSS Layer Ordering**
-   - Tailwind base must load before PrimeVue
-   - PrimeVue styles must load before Tailwind utilities
-   - Use the `cssLayerOrder` option to manage this
-
-4. **Common Issues & Solutions**
-
-   a. **PT Configuration Error**
-   ```
-   [nuxt] Could not access 'pt'. The only available runtime config keys are 'public' and 'app'
-   ```
-   Solution: Move PT configuration from `runtimeConfig` to PrimeVue options:
-   ```javascript
-   primevue: {
-     options: {
-       pt: {}  // Place PT configuration here
-     }
-   }
-   ```
-
-   b. **Password Input Accessibility**
-   For password forms, always include:
-   - Hidden username field with `autocomplete="username"`
-   - Proper autocomplete attributes on password fields:
-     ```vue
-     <Password
-       :inputProps="{ autocomplete: 'current-password' }"
-       // or 'new-password' for new password fields
-     />
-     ```
-
-   c. **Style Conflicts**
-   If Tailwind is overriding PrimeVue styles:
-   ```javascript
-   primevue: {
-     cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities'
-   }
-   ```
-
-   d. **Component Loading Issues**
-   Ensure components are explicitly included:
-   ```javascript
-   primevue: {
-     components: {
-       include: ['Button', 'Card', 'Password', /* etc */]
-     }
-   }
-   ```
-
-   e. **Vue Router Warnings**
-   To handle unknown paths (including Chrome DevTools paths):
-   1. Set `router.options.strict: false` in nuxt.config.js
-   2. Create a catch-all route (`pages/[...slug].vue`):
-      ```vue
-      <template>
-        <div class="min-h-screen flex items-center justify-center">
-          <div class="text-center">
-            <h1 class="text-4xl font-bold mb-4">404</h1>
-            <p class="mb-8">Page not found</p>
-            <NuxtLink to="/">
-              <Button label="Go Home" icon="pi pi-home" />
-            </NuxtLink>
-          </div>
-        </div>
-      </template>
-      ```
-
-5. **Development Best Practices**
-   - Always check browser console for configuration warnings
-   - Use browser dev tools to inspect CSS layer ordering
-   - Test form components with password managers enabled
-   - Verify accessibility compliance with browser tools
-   - Handle unknown routes gracefully with a catch-all route 
-
-## 🔐 Google OAuth & Supabase Configuration (Local Debugging & Production)
-
-This project supports Google OAuth login via Supabase in both local development and production (Vercel) environments. Follow these steps to ensure authentication works everywhere and is easy to debug.
-
-### 1. Environment Variables Required
-
-**Local Development (`.env`):**
-```
-NUXT_PUBLIC_SUPABASE_URL=your-project-url
-NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NUXT_PUBLIC_SITE_URL=http://localhost:3000
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for email checking
-```
-
-**Vercel Production:**
-- In the Vercel dashboard, set all the above environment variables
-- The `SUPABASE_SERVICE_ROLE_KEY` is required for the email checking functionality
-
-**Important:** The service role key has admin privileges and should never be exposed to the client. It's only used in server-side API endpoints.
-
-### 2. Email Duplicate Detection System
-
-This project implements a robust email duplicate detection system to prevent users from creating multiple accounts with the same email address when using different authentication methods (email/password vs Google OAuth).
-
-#### How It Works:
-
-1. **Server-Side API Endpoint** (`server/api/auth/check-email.post.js`):
-   - Uses Supabase service role key to access admin API
-   - Checks if an email already exists in the database
-   - Identifies whether the existing account uses OAuth providers (Google)
-   - Returns detailed information about the existing account
-
-2. **Client-Side Integration** (`pages/auth/register.vue`):
-   - Calls the server API before attempting registration
-   - Shows appropriate warnings for existing accounts:
-     - Google OAuth accounts: "This email is already registered via Google. Please login instead."
-     - Email/password accounts: "This email is already registered. Please sign in instead."
-   - Prevents duplicate account creation
-
-3. **Fallback Mechanism**:
-   - If service role key is not available, falls back to Supabase's built-in duplicate detection
-   - Ensures the system works even without the admin API access
-
-#### Key Learnings:
-
-**Environment Variable Access in Nuxt 3:**
-- **Client-side**: Use `useRuntimeConfig()` to access `NUXT_PUBLIC_*` variables
-- **Server-side**: Use `useRuntimeConfig()` to access both public and private variables
-- **Never use `process.env` directly** in Nuxt 3 applications
-
-**$fetch Response Handling:**
-- `$fetch` in Nuxt 3 returns response data directly, not wrapped in `{data, error}`
-- Don't destructure as `const { data, error } = await $fetch(...)`
-- Use `const response = await $fetch(...)` instead
-
-**Supabase Service Role Key:**
-- Required for admin API access (listing users, checking existing accounts)
-- Must be kept secure and never exposed to client-side code
-- Only used in server-side API endpoints
-- Different from the anon key - has full admin privileges
-
-**Error Handling Best Practices:**
-- Implement graceful fallbacks when admin API is not available
-- Provide clear user guidance for different types of existing accounts
-- Use comprehensive logging for debugging server-side issues
-
-#### Implementation Details:
-
-**Server API Endpoint Structure:**
-```javascript
-// server/api/auth/check-email.post.js
-import { createClient } from '@supabase/supabase-js'
-
-export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const supabase = createClient(config.public.supabaseUrl, config.supabaseServiceRoleKey)
-  
-  // Check for existing users and return detailed response
-})
-```
-
-**Runtime Config Setup:**
-```javascript
-// nuxt.config.js
-export default defineNuxtConfig({
-  runtimeConfig: {
-    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    public: {
-      // ... other public config
-    }
-  }
-})
-```
-
-**Client-Side Integration:**
-```javascript
-// pages/auth/register.vue
-const checkEmailExists = async (email) => {
-  const response = await $fetch('/api/auth/check-email', {
-    method: 'POST',
-    body: { email }
-  })
-  return response
-}
-```
-
-### 3. Supabase Dashboard Settings
-
-- **Site URL:** Set to your production site (e.g., `https://cogitations-reviews.vercel.app`).
-- **Redirect URLs:** Add the following (wildcards recommended for flexibility):
-  ```
-  http://localhost:3000/**
-  https://cogitations-reviews.vercel.app/**
-  https://*-yourteam.vercel.app/**   # For Vercel preview deployments
-  ```
-  - **Why use wildcards?** Wildcards (`**`) allow all paths and subpaths, making it easier to support local development, production, and preview deployments without having to add each URL individually. This is especially useful for Vercel preview URLs, which change on every deploy.
-  - See the [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls#wildcards-in-redirect-urls) for more details and examples.
-
-### 4. Google Cloud Console OAuth Settings
-
-- Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
-- Edit your OAuth 2.0 Client ID.
-- **Authorized JavaScript origins:**
-  - `http://localhost:3000`
-  - `https://cogitations-reviews.vercel.app`
-- **Authorized redirect URIs:**
-  - `http://localhost:3000/auth/callback`
-  - `https://cogitations-reviews.vercel.app/auth/callback`
-  - (Add any other preview or staging URLs as needed. Wildcards are NOT supported here.)
-
-### 5. Nuxt Runtime Config
-
-Your `nuxt.config.js` should expose the site URL:
-```js
-export default defineNuxtConfig({
-  runtimeConfig: {
-    public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    }
-  }
-})
-```
-
-### 6. Using the Redirect in Code
-
-Wherever you call Google OAuth, use:
-```js
-const config = useRuntimeConfig()
-const redirectTo = `${config.public.siteUrl}/auth/callback` // or just `/` if you handle at root
-await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: { redirectTo }
-})
-```
-
-### 7. Debugging Tips
-
-- **To debug locally:**
-  - Run `npm run dev`.
-  - Make sure `.env` is set to `http://localhost:3000` and restart the dev server after changes.
-  - Check the browser console for `NUXT_PUBLIC_SITE_URL` logs.
-  - If you are redirected to production from localhost, double-check your `.env`, Supabase, and Google Cloud settings.
-- **To debug on Vercel:**
-  - Deploy with `vercel deploy --prebuilt --prod`.
-  - Ensure the Vercel environment variable is set to your production URL.
-  - Check the browser console for `NUXT_PUBLIC_SITE_URL` logs.
-- **If you see a redirect to the wrong site:**
-  - Make sure the exact callback URL is in both Supabase and Google Cloud settings.
-  - Use wildcards in Supabase for flexibility, but not in Google Cloud.
-  - Always restart your dev server after changing `.env`.
-
-### 8. References
-- [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
-- [Supabase Docs: Troubleshooting Redirects](https://supabase.com/docs/guides/troubleshooting/why-am-i-being-redirected-to-the-wrong-url-when-using-auth-redirectto-option-_vqIeO)
-- [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
-
----
-
-**With this setup, you can debug Google OAuth locally with `npm run dev` and deploy to Vercel for production, with authentication working in both environments.** 
+- [Nuxt 3 Documentation](https://nuxt.com/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [PrimeVue Documentation](https://primevue.org/)
+- [TailwindCSS Documentation](https://tailwindcss.com/docs) 
