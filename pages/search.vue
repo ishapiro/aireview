@@ -19,15 +19,28 @@
 
             <div class="field">
               <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-              <Dropdown
-                id="category"
-                v-model="searchForm.category"
-                :options="categories"
-                optionLabel="name"
-                optionValue="id"
-                placeholder="All Categories"
-                class="w-full"
-              />
+              <div class="flex items-center gap-2">
+                <Dropdown
+                  id="category"
+                  v-model="searchForm.category"
+                  :options="categories"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="All Categories"
+                  class="flex-1"
+                />
+                <Button
+                  v-if="searchForm.category"
+                  type="button"
+                  icon="pi pi-times"
+                  severity="primary"
+                  @click="clearCategory"
+                  :pt="{
+                    root: { class: 'px-3' }
+                  }"
+                  title="Clear category"
+                />
+              </div>
             </div>
 
             <div class="field">
@@ -264,4 +277,9 @@ watch(searchForm, (newValue) => {
 
   router.push({ query })
 }, { deep: true })
+
+// Clear category
+const clearCategory = () => {
+  searchForm.value.category = null
+}
 </script> 
