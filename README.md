@@ -2,11 +2,14 @@
 
 A modern product reviews and recommendations platform built with Nuxt 3, Supabase, PrimeVue, and TailwindCSS.
 
+Integrates AI for both review generation and user driven updates.
+
 ## 🌟 Features
 
 - User authentication and authorization (email/password + Google OAuth)
 - Email duplicate detection system
 - Product review creation and management
+- AI-powered content generation for reviews
 - Search functionality
 - User profiles
 - Admin dashboard
@@ -20,6 +23,7 @@ A modern product reviews and recommendations platform built with Nuxt 3, Supabas
 - **Styling**: [TailwindCSS](https://tailwindcss.com/)
 - **Backend/Database**: [Supabase](https://supabase.com/)
 - **Authentication**: Supabase Auth with Google OAuth
+- **CloudFlare**: OpenAI Proxy implemented as a worker
 
 ## 📋 Prerequisites
 
@@ -48,6 +52,7 @@ NUXT_PUBLIC_SUPABASE_URL=your-project-url
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NUXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN=your-cloudflare-token
 ```
 
 ### 3. Supabase Configuration
@@ -122,6 +127,64 @@ const response = await $fetch('/api/auth/check-email', {
 })
 ```
 
+## 🤖 AI Content Generation
+
+This project includes an AI-powered content generation feature that helps users create review content using OpenAI's GPT models.
+
+### Features
+
+- **Interactive Dialog**: Opens a modal dialog for entering AI prompts
+- **Real-time Generation**: Generates content using the specified AI endpoint
+- **Content Preview**: Shows rendered markdown preview of generated content
+- **Multiple Actions**: 
+  - Use generated content directly
+  - Append to existing content
+  - Refine prompt and regenerate
+- **Error Handling**: Displays clear error messages for failed requests
+- **Loading States**: Shows spinner during content generation
+
+### How It Works
+
+1. **Prompt Input**: Users enter a custom prompt describing the desired review content
+2. **API Integration**: Sends request to `cogitations-review-ai.cogitations.workers.dev`
+3. **Response Handling**: Processes and displays the AI-generated content
+4. **Content Integration**: Allows users to use or append the generated content to their review
+
+### Implementation Details
+
+**Component Location**: `components/ReviewEditor.vue`
+
+**API Configuration**:
+```javascript
+const requestBody = {
+  prompt: userPrompt,
+  model: 'gpt-3.5-turbo'
+}
+
+const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${config.public.apiAuthToken}`
+  },
+  body: JSON.stringify(requestBody)
+})
+```
+
+**Environment Variable**: `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN` - Required for API authentication
+
+### Usage
+
+1. Click the "Generate with AI" button next to the content field
+2. Enter your prompt describing the review content you want to generate
+3. Click "Generate Content" to send the request
+4. Review the generated content in the preview
+5. Choose to:
+   - **Use This Content**: Replace existing content with AI-generated content
+   - **Append to Existing**: Add AI content to the end of existing content
+   - **Refine Prompt**: Modify the prompt and generate new content
+6. The "AI Generated" checkbox is automatically checked when using AI content
+
 ## 🎨 PrimeVue + TailwindCSS Integration
 
 This project uses PrimeVue in unstyled mode with TailwindCSS for complete styling control.
@@ -191,6 +254,7 @@ module.exports = {
    - `NUXT_PUBLIC_SUPABASE_ANON_KEY`
    - `NUXT_PUBLIC_SITE_URL` (production URL)
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN`
 
 ### Production Configuration
 

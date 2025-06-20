@@ -97,7 +97,13 @@
 
       <!-- Content -->
       <div>
-        <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+        <div class="flex items-center justify-between mb-2">
+          <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+          <AIContentGenerator
+            v-model="form.content"
+            @ai-generated="form.ai_generated = true"
+          />
+        </div>
         <div class="mt-1 grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <textarea
