@@ -311,6 +311,19 @@ NUXT_PUBLIC_SITE_URL=http://localhost:3000
    - Adjust limits if needed for development
    - Monitor Authentication > Logs for rate limit errors
 
+6. **Email duplicate detection not working:**
+   - Verify `SUPABASE_SERVICE_ROLE_KEY` is set in environment variables
+   - Check server console for API endpoint errors
+   - Ensure the service role key has admin privileges
+   - Verify the API endpoint is accessible at `/api/auth/check-email`
+   - Check browser console for client-side response handling
+
+7. **Service role key errors:**
+   - Ensure the key is from Settings → API → service_role (not anon)
+   - Verify the key is properly formatted in `.env` file (no extra spaces)
+   - Check that `nuxt.config.js` exposes the key in runtimeConfig
+   - Restart development server after adding the key
+
 **Testing Authentication:**
 
 The application includes built-in testing functions (commented out in production):
@@ -584,7 +597,93 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for email checking
 
 **Important:** The service role key has admin privileges and should never be exposed to the client. It's only used in server-side API endpoints.
 
-### 2. Supabase Dashboard Settings
+### 2. Email Duplicate Detection System
+
+This project implements a robust email duplicate detection system to prevent users from creating multiple accounts with the same email address when using different authentication methods (email/password vs Google OAuth).
+
+#### How It Works:
+
+1. **Server-Side API Endpoint** (`server/api/auth/check-email.post.js`):
+   - Uses Supabase service role key to access admin API
+   - Checks if an email already exists in the database
+   - Identifies whether the existing account uses OAuth providers (Google)
+   - Returns detailed information about the existing account
+
+2. **Client-Side Integration** (`pages/auth/register.vue`):
+   - Calls the server API before attempting registration
+   - Shows appropriate warnings for existing accounts:
+     - Google OAuth accounts: "This email is already registered via Google. Please login instead."
+     - Email/password accounts: "This email is already registered. Please sign in instead."
+   - Prevents duplicate account creation
+
+3. **Fallback Mechanism**:
+   - If service role key is not available, falls back to Supabase's built-in duplicate detection
+   - Ensures the system works even without the admin API access
+
+#### Key Learnings:
+
+**Environment Variable Access in Nuxt 3:**
+- **Client-side**: Use `useRuntimeConfig()` to access `NUXT_PUBLIC_*` variables
+- **Server-side**: Use `useRuntimeConfig()` to access both public and private variables
+- **Never use `process.env` directly** in Nuxt 3 applications
+
+**$fetch Response Handling:**
+- `$fetch` in Nuxt 3 returns response data directly, not wrapped in `{data, error}`
+- Don't destructure as `const { data, error } = await $fetch(...)`
+- Use `const response = await $fetch(...)` instead
+
+**Supabase Service Role Key:**
+- Required for admin API access (listing users, checking existing accounts)
+- Must be kept secure and never exposed to client-side code
+- Only used in server-side API endpoints
+- Different from the anon key - has full admin privileges
+
+**Error Handling Best Practices:**
+- Implement graceful fallbacks when admin API is not available
+- Provide clear user guidance for different types of existing accounts
+- Use comprehensive logging for debugging server-side issues
+
+#### Implementation Details:
+
+**Server API Endpoint Structure:**
+```javascript
+// server/api/auth/check-email.post.js
+import { createClient } from '@supabase/supabase-js'
+
+export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
+  const supabase = createClient(config.public.supabaseUrl, config.supabaseServiceRoleKey)
+  
+  // Check for existing users and return detailed response
+})
+```
+
+**Runtime Config Setup:**
+```javascript
+// nuxt.config.js
+export default defineNuxtConfig({
+  runtimeConfig: {
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    public: {
+      // ... other public config
+    }
+  }
+})
+```
+
+**Client-Side Integration:**
+```javascript
+// pages/auth/register.vue
+const checkEmailExists = async (email) => {
+  const response = await $fetch('/api/auth/check-email', {
+    method: 'POST',
+    body: { email }
+  })
+  return response
+}
+```
+
+### 3. Supabase Dashboard Settings
 
 - **Site URL:** Set to your production site (e.g., `https://cogitations-reviews.vercel.app`).
 - **Redirect URLs:** Add the following (wildcards recommended for flexibility):
@@ -596,7 +695,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for email checking
   - **Why use wildcards?** Wildcards (`**`) allow all paths and subpaths, making it easier to support local development, production, and preview deployments without having to add each URL individually. This is especially useful for Vercel preview URLs, which change on every deploy.
   - See the [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls#wildcards-in-redirect-urls) for more details and examples.
 
-### 3. Google Cloud Console OAuth Settings
+### 4. Google Cloud Console OAuth Settings
 
 - Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
 - Edit your OAuth 2.0 Client ID.
@@ -608,7 +707,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for email checking
   - `https://cogitations-reviews.vercel.app/auth/callback`
   - (Add any other preview or staging URLs as needed. Wildcards are NOT supported here.)
 
-### 4. Nuxt Runtime Config
+### 5. Nuxt Runtime Config
 
 Your `nuxt.config.js` should expose the site URL:
 ```js
@@ -621,7 +720,7 @@ export default defineNuxtConfig({
 })
 ```
 
-### 5. Using the Redirect in Code
+### 6. Using the Redirect in Code
 
 Wherever you call Google OAuth, use:
 ```js
@@ -633,7 +732,7 @@ await supabase.auth.signInWithOAuth({
 })
 ```
 
-### 6. Debugging Tips
+### 7. Debugging Tips
 
 - **To debug locally:**
   - Run `npm run dev`.
@@ -649,7 +748,7 @@ await supabase.auth.signInWithOAuth({
   - Use wildcards in Supabase for flexibility, but not in Google Cloud.
   - Always restart your dev server after changing `.env`.
 
-### 7. References
+### 8. References
 - [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
 - [Supabase Docs: Troubleshooting Redirects](https://supabase.com/docs/guides/troubleshooting/why-am-i-being-redirected-to-the-wrong-url-when-using-auth-redirectto-option-_vqIeO)
 - [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)

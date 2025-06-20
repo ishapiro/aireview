@@ -461,18 +461,6 @@ const testSupabaseConfig = async () => {
   console.log('Config:', config.public)
   console.log('Supabase client:', client)
   
-  // Check environment variables through runtime config
-  console.log('Environment check:')
-  console.log('- NUXT_PUBLIC_SUPABASE_URL:', config.public.supabaseUrl ? 'Set' : 'Not set')
-  console.log('- NUXT_PUBLIC_SUPABASE_ANON_KEY:', config.public.supabaseAnonKey ? 'Set' : 'Not set')
-  console.log('- NUXT_PUBLIC_SITE_URL:', config.public.siteUrl)
-  
-  // Also check process.env for comparison
-  console.log('Process.env check:')
-  console.log('- NUXT_PUBLIC_SUPABASE_URL:', process.env.NUXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set')
-  console.log('- NUXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Not set')
-  console.log('- NUXT_PUBLIC_SITE_URL:', process.env.NUXT_PUBLIC_SITE_URL || 'Not set')
-  
   try {
     // Test if we can access Supabase
     const { data, error } = await client.auth.getSession()
