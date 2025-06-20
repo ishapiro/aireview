@@ -64,11 +64,11 @@
         </span>
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-2" v-if="Array.isArray(review.categories)">
+      <div class="mt-4 flex flex-nowrap gap-2 overflow-x-auto pb-2" v-if="Array.isArray(review.categories) && review.categories.length > 0">
         <span
           v-for="category in review.categories"
           :key="category.id"
-          class="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
+          class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
         >
           {{ category.name }}
         </span>
