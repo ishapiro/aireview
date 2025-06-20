@@ -62,6 +62,18 @@
               />
             </div>
 
+            <!-- Summary -->
+            <div class="field mb-4">
+              <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
+              <Textarea
+                id="summary"
+                v-model="form.summary"
+                rows="3"
+                class="w-full"
+                placeholder="Enter a brief summary of your review (optional)"
+              />
+            </div>
+
             <!-- Category -->
             <div class="field mb-4">
               <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
@@ -83,6 +95,9 @@
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                 <AIContentGenerator
                   v-model="form.content"
+                  :summary-value="form.summary"
+                  :generate-summary="true"
+                  @update:summary-value="form.summary = $event"
                   @ai-generated="form.ai_generated = true"
                 />
               </div>
@@ -176,6 +191,7 @@ const route = useRoute()
 const review = ref(null)
 const form = ref({
   title: '',
+  summary: '',
   content: '',
   category_id: null,
   rating: null,
@@ -220,6 +236,7 @@ onMounted(async () => {
   review.value = data
   form.value = {
     title: data.title,
+    summary: data.summary,
     content: data.content,
     category_id: data.category_id,
     rating: data.rating,
@@ -249,6 +266,7 @@ const handleSubmit = async () => {
       .update({
         title: form.value.title,
         slug: generateSlug(form.value.title),
+        summary: form.value.summary,
         content: form.value.content,
         category_id: form.value.category_id,
         rating: form.value.rating,

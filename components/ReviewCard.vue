@@ -26,7 +26,7 @@
         />
       </div>
       
-      <p class="text-gray-600 mb-4 line-clamp-3">{{ review.content?.substring(0, 200) }}...</p>
+      <p class="text-gray-600 mb-4 line-clamp-3">{{ reviewSummary }}</p>
       
       <div class="flex items-center justify-between">
         <div class="flex items-center">
@@ -79,6 +79,7 @@
 
 <script setup>
 import { format } from 'date-fns'
+import { stripMarkdown } from '@/utils/string'
 
 const props = defineProps({
   review: {
@@ -94,4 +95,24 @@ const handleCardClick = (event) => {
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
 }
+
+// Computed property to get review summary
+const reviewSummary = computed(() => {
+  // Use summary field if it has content
+  if (props.review.summary && props.review.summary.trim()) {
+    return props.review.summary.length > 200 
+      ? props.review.summary.substring(0, 200) + '...' 
+      : props.review.summary
+  }
+  
+  // Fall back to stripped content from full content field
+  if (props.review.content) {
+    const strippedContent = stripMarkdown(props.review.content)
+    return strippedContent.length > 200 
+      ? strippedContent.substring(0, 200) + '...' 
+      : strippedContent
+  }
+  
+  return ''
+})
 </script> 

@@ -136,12 +136,14 @@ This project includes an AI-powered content generation feature that helps users 
 - **Interactive Dialog**: Opens a modal dialog for entering AI prompts
 - **Real-time Generation**: Generates content using the specified AI endpoint
 - **Content Preview**: Shows rendered markdown preview of generated content
+- **Summary Generation**: Automatically generates both content and summary
 - **Multiple Actions**: 
   - Use generated content directly
   - Append to existing content
   - Refine prompt and regenerate
 - **Error Handling**: Displays clear error messages for failed requests
 - **Loading States**: Shows spinner during content generation
+- **Cross-Page Integration**: Available on all review creation and editing pages
 
 ### How It Works
 
@@ -149,10 +151,16 @@ This project includes an AI-powered content generation feature that helps users 
 2. **API Integration**: Sends request to `cogitations-review-ai.cogitations.workers.dev`
 3. **Response Handling**: Processes and displays the AI-generated content
 4. **Content Integration**: Allows users to use or append the generated content to their review
+5. **Summary Generation**: When enabled, generates both content and summary simultaneously
 
 ### Implementation Details
 
-**Component Location**: `components/ReviewEditor.vue`
+**Shared Component**: `components/AIContentGenerator.vue`
+
+**Available Pages**:
+- `components/ReviewEditor.vue` - Main review editor component
+- `pages/admin/reviews/new.vue` - Create new review page
+- `pages/admin/reviews/[id].vue` - Edit existing review page
 
 **API Configuration**:
 ```javascript
@@ -165,7 +173,7 @@ const response = await fetch('https://cogitations-review-ai.cogitations.workers.
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${config.public.apiAuthToken}`
+    'Authorization': `Bearer ${config.public.cogitationsCloudflareToken}`
   },
   body: JSON.stringify(requestBody)
 })
@@ -173,9 +181,20 @@ const response = await fetch('https://cogitations-review-ai.cogitations.workers.
 
 **Environment Variable**: `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN` - Required for API authentication
 
+**Component Usage**:
+```vue
+<AIContentGenerator
+  v-model="form.content"
+  :summary-value="form.summary"
+  :generate-summary="true"
+  @update:summary-value="form.summary = $event"
+  @ai-generated="form.ai_generated = true"
+/>
+```
+
 ### Usage
 
-1. Click the "Generate with AI" button next to the content field
+1. Click the "Generate with AI" button next to the content field on any review page
 2. Enter your prompt describing the review content you want to generate
 3. Click "Generate Content" to send the request
 4. Review the generated content in the preview
@@ -184,6 +203,15 @@ const response = await fetch('https://cogitations-review-ai.cogitations.workers.
    - **Append to Existing**: Add AI content to the end of existing content
    - **Refine Prompt**: Modify the prompt and generate new content
 6. The "AI Generated" checkbox is automatically checked when using AI content
+7. When summary generation is enabled, both content and summary are populated
+
+### Summary Generation
+
+The AI system can generate both detailed content and concise summaries:
+- **Summary**: Brief 2-3 sentence overview of the review
+- **Content**: Detailed markdown-formatted review content
+- **Automatic Parsing**: AI response is parsed to extract both sections
+- **Fallback**: If parsing fails, full response is used as content
 
 ## 🎨 PrimeVue + TailwindCSS Integration
 

@@ -22,6 +22,17 @@
             </div>
 
             <div class="field">
+              <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
+              <Textarea
+                id="summary"
+                v-model="form.summary"
+                rows="3"
+                class="w-full"
+                placeholder="Enter a brief summary of your review (optional)"
+              />
+            </div>
+
+            <div class="field">
               <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
               <Dropdown
                 id="category"
@@ -40,6 +51,9 @@
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                 <AIContentGenerator
                   v-model="form.content"
+                  :summary-value="form.summary"
+                  :generate-summary="true"
+                  @update:summary-value="form.summary = $event"
                   @ai-generated="form.ai_generated = true"
                 />
               </div>
@@ -108,6 +122,7 @@ const router = useRouter()
 
 const form = ref({
   title: '',
+  summary: '',
   content: '',
   category_id: null,
   rating: null,
@@ -143,6 +158,7 @@ const handleSubmit = async () => {
       .insert({
         title: form.value.title,
         slug: generateSlug(form.value.title),
+        summary: form.value.summary,
         content: form.value.content,
         category_id: form.value.category_id,
         rating: form.value.rating,

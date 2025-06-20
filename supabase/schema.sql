@@ -99,6 +99,7 @@ begin
         id uuid default gen_random_uuid() primary key,
         title text not null,
         slug text unique not null,
+        summary text,
         content text not null,
         rating integer not null check (rating >= 1 and rating <= 5),
         user_id uuid references public.profiles(id) on delete cascade not null,
@@ -182,6 +183,9 @@ begin
     -- Reviews table
     if not exists (select 1 from information_schema.columns where table_name = 'reviews' and column_name = 'ai_generated') then
         alter table public.reviews add column ai_generated boolean default false;
+    end if;
+    if not exists (select 1 from information_schema.columns where table_name = 'reviews' and column_name = 'summary') then
+        alter table public.reviews add column summary text;
     end if;
 end $$;
 
@@ -479,6 +483,7 @@ DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can upload files" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update own files" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete temp files" ON storage.objects;
 DROP POLICY IF EXISTS "Anonymous users can upload temp files" ON storage.objects;
 
 -- Create storage policies for the reviews bucket (outside transaction)

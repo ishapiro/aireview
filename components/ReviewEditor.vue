@@ -101,6 +101,9 @@
           <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
           <AIContentGenerator
             v-model="form.content"
+            :summary-value="form.summary"
+            :generate-summary="true"
+            @update:summary-value="form.summary = $event"
             @ai-generated="form.ai_generated = true"
           />
         </div>

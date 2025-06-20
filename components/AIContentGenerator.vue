@@ -150,10 +150,18 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  summaryValue: {
+    type: String,
+    default: ''
+  },
+  generateSummary: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'ai-generated'])
+const emit = defineEmits(['update:modelValue', 'update:summaryValue', 'ai-generated'])
 
 const config = useRuntimeConfig()
 
@@ -178,8 +186,15 @@ const generateAIContent = async () => {
   aiError.value = ''
 
   try {
+    let prompt = aiPrompt.value
+    
+    // If summary generation is enabled, modify the prompt
+    if (props.generateSummary) {
+      prompt = `${aiPrompt.value}\n\nPlease provide both a detailed review content and a brief summary (2-3 sentences) in the following format:\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]`
+    }
+
     const requestBody = {
-      prompt: aiPrompt.value,
+      prompt: prompt,
       model: 'gpt-3.5-turbo'
     }
 
@@ -205,7 +220,23 @@ const generateAIContent = async () => {
     console.log('Response data:', JSON.stringify(data, null, 2))
     
     // Extract content from OpenAI API response structure
-    aiResponse.value = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
+    const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
+    
+    if (props.generateSummary) {
+      // Parse the response to extract summary and content
+      const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
+      const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)$/i)
+      
+      if (summaryMatch && contentMatch) {
+        aiResponse.value = contentMatch[1].trim()
+        emit('update:summaryValue', summaryMatch[1].trim())
+      } else {
+        // Fallback: use the full response as content
+        aiResponse.value = fullResponse
+      }
+    } else {
+      aiResponse.value = fullResponse
+    }
   } catch (error) {
     console.error('Error generating AI content:', error)
     aiError.value = `Error generating content: ${error.message}`
