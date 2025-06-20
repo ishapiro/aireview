@@ -568,7 +568,23 @@ Before diving into the setup, please be aware of these critical configuration re
 
 This project supports Google OAuth login via Supabase in both local development and production (Vercel) environments. Follow these steps to ensure authentication works everywhere and is easy to debug.
 
-### 1. Supabase Dashboard Settings
+### 1. Environment Variables Required
+
+**Local Development (`.env`):**
+```
+NUXT_PUBLIC_SUPABASE_URL=your-project-url
+NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NUXT_PUBLIC_SITE_URL=http://localhost:3000
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for email checking
+```
+
+**Vercel Production:**
+- In the Vercel dashboard, set all the above environment variables
+- The `SUPABASE_SERVICE_ROLE_KEY` is required for the email checking functionality
+
+**Important:** The service role key has admin privileges and should never be exposed to the client. It's only used in server-side API endpoints.
+
+### 2. Supabase Dashboard Settings
 
 - **Site URL:** Set to your production site (e.g., `https://cogitations-reviews.vercel.app`).
 - **Redirect URLs:** Add the following (wildcards recommended for flexibility):
@@ -580,7 +596,7 @@ This project supports Google OAuth login via Supabase in both local development 
   - **Why use wildcards?** Wildcards (`**`) allow all paths and subpaths, making it easier to support local development, production, and preview deployments without having to add each URL individually. This is especially useful for Vercel preview URLs, which change on every deploy.
   - See the [Supabase Docs: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls#wildcards-in-redirect-urls) for more details and examples.
 
-### 2. Google Cloud Console OAuth Settings
+### 3. Google Cloud Console OAuth Settings
 
 - Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
 - Edit your OAuth 2.0 Client ID.
@@ -591,18 +607,6 @@ This project supports Google OAuth login via Supabase in both local development 
   - `http://localhost:3000/auth/callback`
   - `https://cogitations-reviews.vercel.app/auth/callback`
   - (Add any other preview or staging URLs as needed. Wildcards are NOT supported here.)
-
-### 3. Environment Variables
-
-- **Local Development (`.env`):**
-  ```
-  NUXT_PUBLIC_SITE_URL=http://localhost:3000
-  ```
-- **Vercel Production:**
-  - In the Vercel dashboard, set:
-    ```
-    NUXT_PUBLIC_SITE_URL=https://cogitations-reviews.vercel.app
-    ```
 
 ### 4. Nuxt Runtime Config
 

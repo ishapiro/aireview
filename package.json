@@ -5,6 +5,9 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "cleanup": "pkill -f 'nuxt dev' || true; pkill -f 'vite' || true",
+    "dev:clean": "npm run cleanup && sleep 1 && nuxt dev",
+    "dev:port": "nuxt dev --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

@@ -60,7 +60,7 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    compatibilityDate: '2025-06-17',
+    compatibilityDate: '2025-06-20',
     preset: 'vercel'
   },
   router: {
@@ -69,6 +69,7 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,

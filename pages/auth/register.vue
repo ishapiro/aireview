@@ -46,15 +46,20 @@
               <!-- Email -->
               <div>
                 <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email</label>
-                <InputText
-                  id="email"
-                  v-model="form.email"
-                  type="email"
-                  placeholder="Your Email"
-                  :class="{ 'p-invalid': submitted && !form.email }"
-                  class="w-full"
-                  autocomplete="username"
-                />
+                <div class="relative">
+                  <InputText
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    placeholder="Your Email"
+                    :class="{ 'p-invalid': submitted && !form.email }"
+                    class="w-full"
+                    autocomplete="username"
+                  />
+                  <div v-if="isCheckingEmail" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <i class="pi pi-spin pi-spinner text-gray-400"></i>
+                  </div>
+                </div>
                 <small class="text-red-500" v-if="submitted && !form.email">Email is required</small>
                 <small class="text-red-500" v-if="submitted && form.email && !isValidEmail(form.email)">Please enter a valid email</small>
               </div>
@@ -146,35 +151,22 @@
                 :loading="isLoading"
               />
 
-              <!-- Test Button for Debugging -->
-              <!-- <Button
-                type="button"
-                label="Test Supabase Config"
-                class="w-full p-button-outlined p-button-secondary mt-2"
-                @click="testSupabaseConfig"
-              />
-
-              <!-- Test Email Verification Settings -->
-              <Button
-                type="button"
-                label="Test Email Verification"
-                class="w-full p-button-outlined p-button-secondary mt-2"
-                @click="testEmailVerification"
-              />
-
-              <!-- Test Registration Process -->
-              <Button
-                type="button"
-                label="Test Registration (Debug)"
-                class="w-full p-button-outlined p-button-secondary mt-2"
-                @click="testRegistrationProcess"
-              /> -->
+              <!-- Horizontal Rule -->
+              <div class="relative my-4">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                  <span class="px-2 bg-gray-50 text-gray-500">or</span>
+                </div>
+              </div>
 
               <!-- Google Sign Up -->
               <Button
+                v-if="form.firstName || form.lastName || form.email || form.phone || form.website"
                 label="Sign up with Google"
                 icon="pi pi-google"
-                class="w-full p-button-outlined p-button-secondary mt-2"
+                class="w-full mt-2"
                 @click="handleGoogleSignUp"
                 type="button"
               />
@@ -222,10 +214,36 @@ const form = ref({
 
 const submitted = ref(false)
 const isLoading = ref(false)
+const isCheckingEmail = ref(false)
 
 const isValidEmail = (email) => {
   const emailPattern = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
   return emailPattern.test(email)
+}
+
+// Check if email already exists
+const checkEmailExists = async (email) => {
+  if (!email || !isValidEmail(email)) return null
+  
+  isCheckingEmail.value = true
+  
+  try {
+    console.log('Calling email check API for:', email)
+    const response = await $fetch('/api/auth/check-email', {
+      method: 'POST',
+      body: { email }
+    })
+    
+    console.log('Email check API response:', response)
+    
+    console.log('Email check result:', response)
+    return response
+  } catch (error) {
+    console.error('Email check error:', error)
+    return null
+  } finally {
+    isCheckingEmail.value = false
+  }
 }
 
 const handleSubmit = async () => {
@@ -258,6 +276,48 @@ const handleSubmit = async () => {
     console.log('Site URL from config:', config.public.siteUrl)
     console.log('Supabase URL from config:', config.public.supabaseUrl)
     console.log('Supabase client initialized:', !!client)
+
+    // Check if email already exists before attempting registration
+    console.log('Checking if email already exists...')
+    const emailCheck = await checkEmailExists(form.value.email)
+    
+    console.log('Email check completed, result:', emailCheck)
+    console.log('Email check exists:', emailCheck?.exists)
+    console.log('Email check hasOAuth:', emailCheck?.hasOAuth)
+    console.log('Email check providers:', emailCheck?.providers)
+    
+    if (emailCheck?.exists) {
+      console.log('Email already exists:', emailCheck)
+      
+      if (emailCheck.hasOAuth && emailCheck.providers.includes('google')) {
+        console.log('Showing Google OAuth warning toast')
+        toast.add({
+          severity: 'warn',
+          summary: 'Account Already Exists',
+          detail: 'This email is already registered with via Google.  Please login instead.',
+          life: 8000
+        })
+        console.log('Returning early due to existing Google account')
+        return
+      } else {
+        console.log('Showing regular account exists warning toast')
+        toast.add({
+          severity: 'warn',
+          summary: 'Account Already Exists',
+          detail: 'This email is already registered. Please sign in instead or use "Forgot Password" if you need to reset your password.',
+          life: 8000
+        })
+        console.log('Returning early due to existing account')
+        return
+      }
+    }
+    
+    console.log('No existing email found, proceeding with registration')
+    
+    // If we're using fallback mode (no service role key), log it
+    if (emailCheck?.fallback) {
+      console.log('Using fallback mode - service role key not available, relying on Supabase built-in duplicate detection')
+    }
 
     const signUpOptions = {
       email: form.value.email,
@@ -298,6 +358,7 @@ const handleSubmit = async () => {
       console.log('User ID:', data.user.id)
       console.log('User email:', data.user.email)
       console.log('Email confirmed:', data.user.email_confirmed_at)
+      
       console.log('Redirecting to verify-email page')
       
       // Store email in localStorage for the verify-email page
@@ -327,16 +388,47 @@ const handleSubmit = async () => {
       stack: error.stack
     })
     
-    // Check if it's an email-related error
-    if (error.message?.includes('email') || error.message?.includes('Email')) {
-      console.error('This appears to be an email-related error')
+    // Enhanced error handling for specific scenarios
+    let userFriendlyMessage = error.message
+    
+    // Check for existing user from OAuth
+    if (error.message?.includes('already registered') || 
+        error.message?.includes('already exists') ||
+        error.message?.includes('User already registered') ||
+        error.status === 422) {
+      userFriendlyMessage = 'This email is already registered. If you signed up with Google, please use the "Sign up with Google" button instead. If you forgot your password, you can reset it on the login page.'
+    }
+    
+    // Check for invalid email format
+    else if (error.message?.includes('Invalid email') || 
+             error.message?.includes('invalid email')) {
+      userFriendlyMessage = 'Please enter a valid email address.'
+    }
+    
+    // Check for weak password
+    else if (error.message?.includes('password') && 
+             (error.message?.includes('weak') || error.message?.includes('short'))) {
+      userFriendlyMessage = 'Password must be at least 6 characters long.'
+    }
+    
+    // Check for rate limiting
+    else if (error.message?.includes('rate limit') || 
+             error.message?.includes('too many requests')) {
+      userFriendlyMessage = 'Too many registration attempts. Please wait a few minutes before trying again.'
+    }
+    
+    // Check for network/connection issues
+    else if (error.message?.includes('network') || 
+             error.message?.includes('connection') ||
+             error.message?.includes('fetch')) {
+      userFriendlyMessage = 'Network error. Please check your internet connection and try again.'
     }
     
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: error.message,
-      life: 3000
+      summary: 'Registration Failed',
+      detail: userFriendlyMessage,
+      life: 5000
     })
   } finally {
     isLoading.value = false
