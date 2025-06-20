@@ -183,7 +183,7 @@ const { data } = await useAsyncData(`review-${route.params.slug}`, async () => {
     .select(`
       *,
       author:profiles(*),
-      categories(*)
+      categories:review_categories(categories(id, name, slug))
     `)
     .eq('slug', route.params.slug)
     .eq('is_published', true)
@@ -199,6 +199,10 @@ const { data } = await useAsyncData(`review-${route.params.slug}`, async () => {
       life: 3000
     })
     return null
+  }
+  
+  if (data) {
+    data.categories = data.categories.map(c => c.categories)
   }
   return data
 })

@@ -19,28 +19,16 @@
 
             <div class="field">
               <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-              <div class="flex items-center gap-2">
-                <Dropdown
-                  id="category"
-                  v-model="searchForm.category"
-                  :options="categories"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="All Categories"
-                  class="flex-1"
-                />
-                <Button
-                  v-if="searchForm.category"
-                  type="button"
-                  icon="pi pi-times"
-                  severity="primary"
-                  @click="clearCategory"
-                  :pt="{
-                    root: { class: 'px-3' }
-                  }"
-                  title="Clear category"
-                />
-              </div>
+              <MultiSelect
+                id="category"
+                v-model="searchForm.category_ids"
+                :options="categories"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="All Categories"
+                class="w-full"
+                display="chip"
+              />
             </div>
 
             <div class="field">
@@ -121,6 +109,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
+import MultiSelect from 'primevue/multiselect'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -128,7 +117,7 @@ const router = useRouter()
 
 const searchForm = ref({
   query: '',
-  category: null,
+  category_ids: [],
   rating: null,
   sort: 'created_at',
   order: 'desc'
@@ -198,7 +187,7 @@ const fetchResults = async () => {
       .select(`
         *,
         profiles:user_id (full_name, avatar_url),
-        categories (name, slug)
+        categories:review_categories(categories(id, name, slug))
       `, { count: 'exact' })
 
     // Apply filters
@@ -208,8 +197,8 @@ const fetchResults = async () => {
 
     query = query.eq('is_published', true)
 
-    if (searchForm.value.category) {
-      query = query.eq('category_id', searchForm.value.category)
+    if (searchForm.value.category_ids && searchForm.value.category_ids.length > 0) {
+      query = query.in('review_categories.category_id', searchForm.value.category_ids)
     }
 
     if (searchForm.value.rating) {
@@ -238,7 +227,7 @@ const fetchResults = async () => {
       return
     }
 
-    searchResults.value = data || []
+    searchResults.value = data.map(r => ({ ...r, categories: r.categories.map(c => c.categories) })) || []
     totalResults.value = count || 0
   } catch (error) {
     console.error('Error fetching search results:', error)
@@ -255,10 +244,13 @@ const fetchResults = async () => {
 
 // Initialize search from URL parameters
 onMounted(() => {
-  const { query, category, rating, sort } = route.query
+  const { query, category_ids, rating, sort } = route.query
   
   if (query) searchForm.value.query = query
-  if (category) searchForm.value.category = parseInt(category)
+  if (category_ids) {
+    const ids = Array.isArray(category_ids) ? category_ids : [category_ids]
+    searchForm.value.category_ids = ids
+  }
   if (rating) searchForm.value.rating = parseInt(rating)
   if (sort) searchForm.value.sort = sort
 
@@ -270,7 +262,7 @@ onMounted(() => {
 // Update URL when search parameters change
 watch(searchForm, (newValue) => {
   const query = { ...newValue }
-  if (!query.category) delete query.category
+  if (!query.category_ids || query.category_ids.length === 0) delete query.category_ids
   if (!query.rating) delete query.rating
   if (!query.query) delete query.query
   if (query.sort === 'created_at') delete query.sort
@@ -280,6 +272,6 @@ watch(searchForm, (newValue) => {
 
 // Clear category
 const clearCategory = () => {
-  searchForm.value.category = null
+  searchForm.value.category_ids = []
 }
 </script> 

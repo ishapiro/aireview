@@ -62,32 +62,42 @@ const isLoading = ref(true)
 
 // Fetch category and its reviews
 const { data } = await useAsyncData('category-' + route.params.slug, async () => {
-  // First, fetch the category
-  const { data: categoryData, error: categoryError } = await client
+  // Fetch the category with its associated reviews
+  const { data: categoryData, error } = await client
     .from('categories')
-    .select('*')
+    .select(`
+      *,
+      reviews:review_categories!inner(
+        review:reviews!inner(
+          *,
+          author:profiles(full_name, avatar_url),
+          categories:review_categories(categories(id, name, slug))
+        )
+      )
+    `)
     .eq('slug', route.params.slug)
+    .eq('reviews.review.is_published', true)
     .single()
 
-  if (categoryError) {
-    console.error('Error fetching category:', categoryError)
+  if (error) {
+    console.error('Error fetching category and reviews:', error)
     return { category: null, reviews: [] }
   }
 
-  // Then fetch reviews for this category
-  const { data: reviewsData, error: reviewsError } = await client
-    .from('reviews')
-    .select('*, profiles:user_id (full_name, avatar_url), categories (name, slug)')
-    .eq('category_id', categoryData.id)
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
+  // Extract and process reviews
+  const fetchedReviews = categoryData.reviews.map(r => {
+    const review = r.review
+    review.categories = review.categories.map(c => c.categories)
+    return review
+  })
 
-  if (reviewsError) {
-    console.error('Error fetching reviews:', reviewsError)
-    return { category: categoryData, reviews: [] }
-  }
+  // Sort reviews by creation date
+  fetchedReviews.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  return { category: categoryData, reviews: reviewsData }
+  // The category data no longer needs the reviews array attached
+  delete categoryData.reviews;
+
+  return { category: categoryData, reviews: fetchedReviews }
 })
 
 // Update the refs with the fetched data

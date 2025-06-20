@@ -114,12 +114,12 @@ const { data: latestReviews } = await useAsyncData('latest-reviews', async () =>
     .select(`
       *,
       profiles:user_id (full_name, avatar_url),
-      categories (name, slug)
+      categories:review_categories(categories(id, name, slug))
     `)
     .order('created_at', { ascending: false })
     .limit(6)
   
-  return data
+  return data.map(r => ({ ...r, categories: r.categories.map(c => c.categories) }))
 })
 
 // Fetch top rated reviews
@@ -129,11 +129,11 @@ const { data: topRatedReviews } = await useAsyncData('top-rated-reviews', async 
     .select(`
       *,
       profiles:user_id (full_name, avatar_url),
-      categories (name, slug)
+      categories:review_categories(categories(id, name, slug))
     `)
     .order('rating', { ascending: false })
     .limit(6)
   
-  return data
+  return data.map(r => ({ ...r, categories: r.categories.map(c => c.categories) }))
 })
 </script> 

@@ -33,16 +33,16 @@
             </div>
 
             <div class="field">
-              <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-              <Dropdown
+              <label for="category" class="block text-sm font-medium text-gray-700">Categories</label>
+              <MultiSelect
                 id="category"
-                v-model="form.category_id"
+                v-model="form.category_ids"
                 :options="categories"
                 option-label="name"
                 option-value="id"
-                placeholder="Select a category"
+                placeholder="Select categories"
                 class="w-full"
-                required
+                display="chip"
               />
             </div>
 
@@ -117,6 +117,7 @@
 
 <script setup>
 import { useToast } from 'primevue/usetoast'
+import MultiSelect from 'primevue/multiselect'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -127,7 +128,7 @@ const form = ref({
   title: '',
   summary: '',
   content: '',
-  category_id: null,
+  category_ids: [],
   rating: null,
   is_published: true,
   ai_generated: false
@@ -156,19 +157,16 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    const { error } = await client
-      .from('reviews')
-      .insert({
-        title: form.value.title,
-        slug: generateSlug(form.value.title),
-        summary: form.value.summary,
-        content: form.value.content,
-        category_id: form.value.category_id,
-        rating: form.value.rating,
-        user_id: user.value.id,
-        is_published: form.value.is_published,
-        ai_generated: form.value.ai_generated
-      })
+    const { error } = await client.rpc('create_review_with_categories', {
+      new_title: form.value.title,
+      new_summary: form.value.summary,
+      new_content: form.value.content,
+      new_rating: form.value.rating,
+      new_is_published: form.value.is_published,
+      new_ai_generated: form.value.ai_generated,
+      new_category_ids: form.value.category_ids,
+      author_id: user.value.id
+    })
 
     if (error) throw error
 

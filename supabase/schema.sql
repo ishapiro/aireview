@@ -58,6 +58,12 @@ begin
         drop policy if exists "Activity logs are viewable by admins" on public.activity_log;
         drop policy if exists "System can insert activity logs" on public.activity_log;
     end if;
+
+    if exists (select 1 from information_schema.tables where table_name = 'review_categories' and table_schema = 'public') then
+        drop policy if exists "Review categories are viewable by everyone" on public.review_categories;
+        drop policy if exists "Users can manage categories for their own reviews" on public.review_categories;
+        drop policy if exists "Admins can manage all review categories" on public.review_categories;
+    end if;
 end $$;
 
 -- Drop existing functions (safe to do even if tables don't exist)
@@ -66,6 +72,9 @@ drop function if exists public.increment_view_count(uuid) cascade;
 drop function if exists public.update_updated_at_column() cascade;
 drop function if exists public.handle_helpful_vote() cascade;
 drop function if exists public.handle_activity_log() cascade;
+drop function if exists public.update_review_with_categories(uuid, text, text, text, integer, boolean, boolean, uuid[]) cascade;
+drop function if exists public.create_review_with_categories(text, text, text, integer, boolean, boolean, uuid[], uuid) cascade;
+drop function if exists public.slugify(text) cascade;
 
 -- Safe migrations: Create or modify tables
 do $$ 
@@ -103,13 +112,19 @@ begin
         content text not null,
         rating integer not null check (rating >= 1 and rating <= 5),
         user_id uuid references public.profiles(id) on delete cascade not null,
-        category_id uuid references public.categories(id) on delete set null,
         helpful_count integer default 0,
         views_count integer default 0,
         is_published boolean default true,
         ai_generated boolean default false,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null,
         updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+    );
+
+    create table if not exists public.review_categories (
+        review_id uuid not null references public.reviews(id) on delete cascade,
+        category_id uuid not null references public.categories(id) on delete cascade,
+        created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+        primary key (review_id, category_id)
     );
 
     create table if not exists public.comments (
@@ -196,6 +211,7 @@ alter table public.reviews enable row level security;
 alter table public.comments enable row level security;
 alter table public.helpful_votes enable row level security;
 alter table public.activity_log enable row level security;
+alter table public.review_categories enable row level security;
 
 -- Create policies (safe to run after dropping existing ones)
 create policy "Public profiles are viewable by everyone"
@@ -229,6 +245,24 @@ create policy "Only admins can delete categories"
     using (exists (
         select 1 from public.profiles
         where id = auth.uid() and is_admin = true
+    ));
+
+create policy "Review categories are viewable by everyone"
+    on public.review_categories for select
+    using (true);
+
+create policy "Users can manage categories for their own reviews"
+    on public.review_categories for all
+    using (exists (
+        select 1 from public.reviews
+        where reviews.id = review_categories.review_id and reviews.user_id = auth.uid()
+    ));
+
+create policy "Admins can manage all review categories"
+    on public.review_categories for all
+    using (exists (
+        select 1 from public.profiles
+        where profiles.id = auth.uid() and profiles.is_admin = true
     ));
 
 create policy "Published reviews are viewable by everyone"
@@ -428,6 +462,75 @@ begin
 end;
 $$ language plpgsql security definer;
 
+create or replace function public.update_review_with_categories(
+    review_id uuid,
+    new_title text,
+    new_summary text,
+    new_content text,
+    new_rating integer,
+    new_is_published boolean,
+    new_ai_generated boolean,
+    new_category_ids uuid[]
+)
+returns void as $$
+begin
+    -- Update the review details in the reviews table
+    update public.reviews
+    set
+        title = new_title,
+        summary = new_summary,
+        content = new_content,
+        rating = new_rating,
+        is_published = new_is_published,
+        ai_generated = new_ai_generated,
+        updated_at = timezone('utc'::text, now())
+    where id = review_id;
+
+    -- Remove existing category associations for this review
+    delete from public.review_categories
+    where review_categories.review_id = update_review_with_categories.review_id;
+
+    -- Insert new category associations
+    if array_length(new_category_ids, 1) > 0 then
+        insert into public.review_categories (review_id, category_id)
+        select update_review_with_categories.review_id, unnest(new_category_ids);
+    end if;
+end;
+$$ language plpgsql;
+
+create or replace function public.create_review_with_categories(
+    new_title text,
+    new_summary text,
+    new_content text,
+    new_rating integer,
+    new_is_published boolean,
+    new_ai_generated boolean,
+    new_category_ids uuid[],
+    author_id uuid
+)
+returns uuid as $$
+declare
+    new_review_id uuid;
+    new_slug text;
+begin
+    -- Generate slug from title
+    new_slug := slugify(new_title);
+
+    -- Insert the review and get its ID
+    insert into public.reviews (title, summary, content, rating, is_published, ai_generated, user_id, slug)
+    values (new_title, new_summary, new_content, new_rating, new_is_published, new_ai_generated, author_id, new_slug)
+    returning id into new_review_id;
+
+    -- Insert category associations
+    if array_length(new_category_ids, 1) > 0 then
+        insert into public.review_categories (review_id, category_id)
+        select new_review_id, unnest(new_category_ids);
+    end if;
+
+    return new_review_id;
+end;
+$$ language plpgsql;
+
 -- Create triggers (safe to run after dropping existing ones)
 create trigger on_auth_user_created
     after insert on auth.users
@@ -523,3 +626,25 @@ using (
   bucket_id = 'reviews'
   AND name LIKE 'avatars/temp-%'
 );
+
+--
+-- Slugify Function
+--
+CREATE OR REPLACE FUNCTION public.slugify(
+  v TEXT
+) RETURNS TEXT AS $$
+BEGIN
+  -- Remove accents
+  v := translate(v, 'àáâãäåāăąçćčđďèéêëēĕėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż', 'aaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz');
+  --
+  -- Replace anything that's not a letter, number, hyphen or underscore with a hyphen
+  v := lower(regexp_replace(v, '[^a-z0-9_-]+', '-', 'g'));
+  --
+  -- Replace multiple hyphens with a single hyphen
+  v := regexp_replace(v, '[-]+', '-', 'g');
+  --
+  -- Remove leading and trailing hyphens
+  v := regexp_replace(v, '^-|-$', '', 'g');
+  RETURN v;
+END;
+$$ LANGUAGE plpgsql;

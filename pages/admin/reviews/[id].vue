@@ -76,16 +76,16 @@
 
             <!-- Category -->
             <div class="field mb-4">
-              <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-              <Dropdown
+              <label for="category" class="block text-sm font-medium text-gray-700">Categories</label>
+              <MultiSelect
                 id="category"
-                v-model="form.category_id"
+                v-model="form.category_ids"
                 :options="categories"
                 option-label="name"
                 option-value="id"
-                placeholder="Select a category"
+                placeholder="Select categories"
                 class="w-full"
-                required
+                display="chip"
               />
             </div>
 
@@ -184,6 +184,7 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'
 import { format } from 'date-fns'
+import MultiSelect from 'primevue/multiselect'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -196,7 +197,7 @@ const form = ref({
   title: '',
   summary: '',
   content: '',
-  category_id: null,
+  category_ids: [],
   rating: null,
   is_published: true,
   ai_generated: false
@@ -213,19 +214,19 @@ const { data: categories } = await useAsyncData('categories', async () => {
   return data
 })
 
-// Fetch review by ID with author information
+// Fetch review by ID with author and categories
 onMounted(async () => {
   const reviewId = route.params.id
-  console.log('[admin/reviews/[id]] Attempting to fetch review with ID:', reviewId)
   const { data, error } = await client
     .from('reviews')
     .select(`
       *,
-      author:profiles(*)
+      author:profiles(*),
+      review_categories(category_id)
     `)
     .eq('id', reviewId)
     .single()
-  console.log('[admin/reviews/[id]] Fetch result:', data, 'Error:', error)
+
   if (error || !data) {
     toast.add({
       severity: 'error',
@@ -241,56 +242,44 @@ onMounted(async () => {
     title: data.title,
     summary: data.summary,
     content: data.content,
-    category_id: data.category_id,
+    category_ids: data.review_categories.map(rc => rc.category_id),
     rating: data.rating,
     is_published: data.is_published,
     ai_generated: data.ai_generated
   }
 })
 
-const formatDate = (date) => {
-  if (!date) return 'N/A'
-  return format(new Date(date), 'MMM d, yyyy h:mm a')
-}
-
-const generateSlug = (title) => {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
-
 const handleSubmit = async () => {
+  if (!form.value || isSubmitting.value) return
   isSubmitting.value = true
-  const reviewId = route.params.id
+
   try {
-    const { error } = await client
-      .from('reviews')
-      .update({
-        title: form.value.title,
-        slug: generateSlug(form.value.title),
-        summary: form.value.summary,
-        content: form.value.content,
-        category_id: form.value.category_id,
-        rating: form.value.rating,
-        is_published: form.value.is_published,
-        ai_generated: form.value.ai_generated
-      })
-      .eq('id', reviewId)
+    const { error } = await client.rpc('update_review_with_categories', {
+      review_id: route.params.id,
+      new_title: form.value.title,
+      new_summary: form.value.summary,
+      new_content: form.value.content,
+      new_rating: form.value.rating,
+      new_is_published: form.value.is_published,
+      new_ai_generated: form.value.ai_generated,
+      new_category_ids: form.value.category_ids
+    })
+
     if (error) throw error
+
     toast.add({
       severity: 'success',
       summary: 'Success',
-      detail: `Review ${form.value.is_published ? 'published' : 'saved as draft'} successfully`,
+      detail: 'Review updated successfully',
       life: 3000
     })
     router.push('/admin/reviews')
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Error',
+      summary: 'Error updating review',
       detail: error.message,
-      life: 3000
+      life: 5000
     })
   } finally {
     isSubmitting.value = false
@@ -300,5 +289,10 @@ const handleSubmit = async () => {
 const handlePublishToggle = async () => {
   form.value.is_published = !form.value.is_published
   await handleSubmit()
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return format(new Date(dateString), 'MMMM d, yyyy')
 }
 </script> 
