@@ -3,7 +3,7 @@
     <!-- AI Generation Button -->
     <button
       type="button"
-      @click="showAIDialog = true"
+      @click="openAIDialog"
       class="btn-secondary flex items-center gap-2"
     >
       <i class="pi pi-robot"></i>
@@ -51,6 +51,22 @@
         <!-- AI Response -->
         <div v-if="aiResponse" class="space-y-4">
           <div class="border-t pt-4">
+            <!-- Suggested Rating Display -->
+            <div v-if="suggestedRating" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 class="text-sm font-medium text-blue-900 mb-2">Suggested Rating:</h4>
+              <div class="flex items-center space-x-1">
+                <i 
+                  v-for="star in 5" 
+                  :key="star"
+                  class="text-xl"
+                  :class="star <= suggestedRating ? 'text-yellow-400' : 'text-gray-300'"
+                >
+                  <i class="pi pi-star-fill"></i>
+                </i>
+                <span class="ml-2 text-sm text-blue-700">({{ suggestedRating }}/5)</span>
+              </div>
+            </div>
+            
             <h3 class="text-lg font-medium text-gray-900 mb-2">AI Generated Content:</h3>
             <div class="bg-gray-50 p-4 rounded-lg border">
               <div class="prose prose-sm max-w-none">
@@ -158,10 +174,18 @@ const props = defineProps({
   generateSummary: {
     type: Boolean,
     default: false
+  },
+  title: {
+    type: String,
+    default: ''
+  },
+  ratingValue: {
+    type: Number,
+    default: null
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'update:summaryValue', 'ai-generated'])
+const emit = defineEmits(['update:modelValue', 'update:summaryValue', 'update:ratingValue', 'ai-generated'])
 
 const config = useRuntimeConfig()
 
@@ -173,11 +197,23 @@ const aiError = ref('')
 const isGenerating = ref(false)
 const showRefineInput = ref(false)
 const refinePrompt = ref('')
+const suggestedRating = ref(null)
 
 // Render AI response preview
 const renderedAIResponse = computed(() => {
   return marked(aiResponse.value || '')
 })
+
+// Preload prompt with title when dialog opens
+const openAIDialog = () => {
+  showAIDialog.value = true
+  // Preload prompt with title if available
+  if (props.title && props.title.trim()) {
+    aiPrompt.value = `Write a review for: ${props.title.trim()}\n\n`
+  } else {
+    aiPrompt.value = ''
+  }
+}
 
 const generateAIContent = async () => {
   if (!aiPrompt.value.trim() || isGenerating.value) return
@@ -188,9 +224,14 @@ const generateAIContent = async () => {
   try {
     let prompt = aiPrompt.value
     
+    // Add rating instruction to the prompt
+    prompt = `${prompt}\n\nPlease provide an overall rating between 1 and 5 stars for this product. Include your reasoning for the rating and add the rating at the bottom of the review.`
+    
     // If summary generation is enabled, modify the prompt
     if (props.generateSummary) {
-      prompt = `${aiPrompt.value}\n\nPlease provide both a detailed review content and a brief summary (2-3 sentences) in the following format:\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]`
+      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nRATING:\n[Your rating as a number 1-5]\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
+    } else {
+      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nRATING:\n[Your rating as a number 1-5]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
     }
 
     const requestBody = {
@@ -222,11 +263,22 @@ const generateAIContent = async () => {
     // Extract content from OpenAI API response structure
     const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
     
+    // Parse the response to extract rating, summary, and content
+    const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
+    const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
+    const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)$/i)
+    
+    // Extract rating
+    if (ratingMatch) {
+      const rating = parseInt(ratingMatch[1])
+      if (rating >= 1 && rating <= 5) {
+        suggestedRating.value = rating
+        emit('update:ratingValue', rating)
+      }
+    }
+    
     if (props.generateSummary) {
       // Parse the response to extract summary and content
-      const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
-      const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)$/i)
-      
       if (summaryMatch && contentMatch) {
         aiResponse.value = contentMatch[1].trim()
         emit('update:summaryValue', summaryMatch[1].trim())
@@ -235,7 +287,13 @@ const generateAIContent = async () => {
         aiResponse.value = fullResponse
       }
     } else {
-      aiResponse.value = fullResponse
+      // For non-summary mode, extract content after rating
+      if (contentMatch) {
+        aiResponse.value = contentMatch[1].trim()
+      } else {
+        // Fallback: use the full response as content
+        aiResponse.value = fullResponse
+      }
     }
   } catch (error) {
     console.error('Error generating AI content:', error)
@@ -285,5 +343,6 @@ const closeAIDialog = () => {
   aiError.value = ''
   showRefineInput.value = false
   refinePrompt.value = ''
+  suggestedRating.value = null
 }
 </script> 

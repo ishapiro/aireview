@@ -53,7 +53,10 @@
                   v-model="form.content"
                   :summary-value="form.summary"
                   :generate-summary="true"
+                  :title="form.title"
+                  :rating-value="form.rating"
                   @update:summary-value="form.summary = $event"
+                  @update:rating-value="form.rating = $event"
                   @ai-generated="form.ai_generated = true"
                 />
               </div>
