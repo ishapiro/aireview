@@ -274,7 +274,6 @@ module.exports = {
 2. **Build and Deploy**:
    ```bash
    npm run build
-   vercel deploy --prebuilt --prod
    ```
 
 3. **Set Environment Variables** in Vercel dashboard:

@@ -62,40 +62,49 @@ const isLoading = ref(true)
 
 // Fetch category and its reviews
 const { data } = await useAsyncData('category-' + route.params.slug, async () => {
-  // Fetch the category with its associated reviews
-  const { data: categoryData, error } = await client
+  // First, fetch the category to ensure it exists
+  const { data: categoryData, error: categoryError } = await client
     .from('categories')
-    .select(`
-      *,
-      reviews:review_categories!inner(
-        review:reviews!inner(
-          *,
-          author:profiles(full_name, avatar_url),
-          categories:review_categories(categories(id, name, slug))
-        )
-      )
-    `)
+    .select('*')
     .eq('slug', route.params.slug)
-    .eq('reviews.review.is_published', true)
     .single()
 
-  if (error) {
-    console.error('Error fetching category and reviews:', error)
+  // If the category doesn't exist, we can stop here.
+  if (categoryError) {
+    console.error('Error fetching category:', categoryError)
     return { category: null, reviews: [] }
   }
 
-  // Extract and process reviews
-  const fetchedReviews = categoryData.reviews.map(r => {
-    const review = r.review
-    review.categories = review.categories.map(c => c.categories)
-    return review
-  })
+  // Then, fetch all published reviews linked to this category
+  const { data: reviewsData, error: reviewsError } = await client
+    .from('review_categories')
+    .select(`
+      review:reviews!inner(
+        *,
+        author:profiles(full_name, avatar_url),
+        categories:review_categories(categories(id, name, slug))
+      )
+    `)
+    .eq('category_id', categoryData.id)
+    .eq('review.is_published', true)
+    .order('created_at', { referencedTable: 'reviews', ascending: false });
 
-  // Sort reviews by creation date
-  fetchedReviews.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  // The category data no longer needs the reviews array attached
-  delete categoryData.reviews;
+  if (reviewsError) {
+    console.error('Error fetching reviews for category:', reviewsError)
+    // We still have the category data, so we can show the page with an empty review list.
+    return { category: categoryData, reviews: [] }
+  }
+
+  // The query returns review_categories objects, so we need to extract the review from each
+  const fetchedReviews = reviewsData.map(item => {
+    const review = item.review;
+    if (review && Array.isArray(review.categories)) {
+      review.categories = review.categories.map(c => c.categories).filter(Boolean);
+    }
+    return review;
+  }).filter(Boolean);
+
 
   return { category: categoryData, reviews: fetchedReviews }
 })
