@@ -59,10 +59,17 @@ export default defineNuxtConfig({
         '/reviews/*',
         '/categories/*'
       ]
+    },
+    clientOptions: {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     }
   },
   nitro: {
-    compatibilityDate: '2025-06-20',
+    compatibilityDate: '2025-06-22',
     preset: 'vercel'
   },
   router: {

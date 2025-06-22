@@ -356,4 +356,39 @@ cogitations-reviews/
 - [Nuxt 3 Documentation](https://nuxt.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [PrimeVue Documentation](https://primevue.org/)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs) 
+- [TailwindCSS Documentation](https://tailwindcss.com/docs)
+
+## 🐞 Troubleshooting
+
+### `[unimport] failed to find "useSupabaseSession"` Error
+
+This error can occur intermittently during development, especially after stopping and restarting the `npm run dev` server. It's caused by an instability in how Nuxt's auto-import feature interacts with the `@nuxtjs/supabase` module's session management.
+
+Standard solutions like clearing the Nuxt cache (`npx nuxi cleanup`) or reinstalling dependencies (`rm -rf node_modules && npm install`) may not permanently fix this issue.
+
+#### ✅ The Permanent Solution
+
+The most reliable solution is to explicitly define the client-side session handling behavior for the Supabase module in your `nuxt.config.js` file.
+
+Add the following `clientOptions` to the `supabase` configuration object:
+
+```javascript
+// nuxt.config.js
+
+export default defineNuxtConfig({
+  // ... other config
+  supabase: {
+    // ... other supabase config
+    clientOptions: {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
+  },
+  // ... other config
+})
+```
+
+This configuration enforces a stable session management strategy, which prevents the auto-import errors from occurring during server restarts in the development environment. 

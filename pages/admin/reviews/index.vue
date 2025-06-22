@@ -78,12 +78,36 @@
                     Delete
                   </button>
                   <span v-else class="text-gray-400 text-xs italic" title="Published reviews cannot be deleted">
-                    (Published - cannot delete)
+                    (Published)
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-4">
+          <span class="text-sm text-gray-600">
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalReviews) }} of {{ totalReviews }} reviews
+          </span>
+          <div class="flex items-center space-x-2">
+            <Button
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              icon="pi pi-chevron-left"
+              size="small"
+            />
+            <span class="text-sm text-gray-600">
+              Page {{ currentPage }} of {{ totalPages }}
+            </span>
+            <Button
+              @click="nextPage"
+              :disabled="currentPage >= totalPages"
+              icon="pi pi-chevron-right"
+              size="small"
+            />
+          </div>
         </div>
       </template>
     </Card>
@@ -94,6 +118,7 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { format } from 'date-fns'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -102,19 +127,59 @@ const client = useSupabaseClient()
 const toast = useToast()
 const confirm = useConfirm()
 
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = 10
+const totalReviews = ref(0)
+const reviews = ref([])
+
+const totalPages = computed(() => Math.ceil(totalReviews.value / itemsPerPage))
+
 // Fetch reviews with author and category information
-const { data: reviews } = await useAsyncData('admin-reviews', async () => {
-  const { data } = await client
+const fetchReviews = async () => {
+  const from = (currentPage.value - 1) * itemsPerPage
+  const to = from + itemsPerPage - 1
+
+  const { data, error, count } = await client
     .from('reviews')
     .select(`
       *,
       author:profiles(*),
       category:categories(*)
-    `)
+    `, { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(from, to)
   
-  return data
-})
+  if (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to fetch reviews',
+      life: 3000
+    })
+    return
+  }
+
+  reviews.value = data
+  totalReviews.value = count
+}
+
+// Initial fetch
+fetchReviews()
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+    fetchReviews()
+  }
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+    fetchReviews()
+  }
+}
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
@@ -135,8 +200,8 @@ const handleDelete = (id) => {
 
         if (error) throw error
 
-        // Remove the review from the list
-        reviews.value = reviews.value.filter(review => review.id !== id)
+        // Refetch reviews to update the page
+        fetchReviews()
 
         toast.add({
           severity: 'success',
