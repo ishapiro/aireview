@@ -243,18 +243,22 @@ onMounted(async () => {
 
   // Check if user has starred the review
   if (user.value) {
-    console.log('[reviews/[slug]] Checking helpful vote for user:', user.value.id)
-    const { data: voteData, error: voteError } = await client
-      .from('helpful_votes')
-      .select('*')
-      .eq('review_id', review.value.id)
-      .eq('user_id', user.value.id)
-      .single()
-    
-    console.log('[reviews/[slug]] Vote check result:', { voteData, voteError })
-    hasUserStarred.value = !!voteData
-  } else {
-    console.log('[reviews/[slug]] No user logged in, skipping vote check')
+    try {
+      const { data: voteData, error: voteError } = await client
+        .from('helpful_votes')
+        .select('*')
+        .eq('review_id', review.value.id)
+        .eq('user_id', user.value.id)
+        .maybeSingle()
+      
+      if (voteError) {
+        console.error('[reviews/[slug]] Error checking helpful vote:', voteError)
+      }
+      
+      hasUserStarred.value = !!voteData
+    } catch (error) {
+      console.error('[reviews/[slug]] Exception during vote check:', error)
+    }
   }
 })
 

@@ -218,6 +218,36 @@
       </div>
     </div>
 
+    <!-- My Generated Review Lists -->
+    <Card class="mt-8">
+      <template #content>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">My Generated Review Lists</h3>
+        <div v-if="generatedLists.length > 0" class="space-y-6">
+          <div v-for="list in generatedLists" :key="list.id" class="border p-4 rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <p class="font-medium">{{ list.businessType }}</p>
+                <p class="text-sm text-gray-500">{{ formatDate(list.date) }}</p>
+              </div>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="review in list.reviews" :key="review.id">
+                <NuxtLink :to="`/reviews/${review.slug}`" class="text-primary-600 hover:underline">
+                  {{ review.title }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+          <div class="mt-4">
+            <Button label="Clear Saved Lists" @click="clearLocalStorage" severity="danger" outlined />
+          </div>
+        </div>
+        <div v-else>
+          <p class="text-gray-500">You have not generated any review lists yet. Go to the homepage to get started.</p>
+        </div>
+      </template>
+    </Card>
+
     <!-- Toast for notifications -->
     <Toast />
   </div>
@@ -228,6 +258,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useImageUpload } from '@/composables/useImageUpload'
+import { format } from 'date-fns'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -239,6 +270,7 @@ const error = ref('')
 const isSubmitting = ref(false)
 const isChangingPassword = ref(false)
 const isUploading = ref(false)
+const generatedLists = ref([])
 
 const form = ref({
   fullName: '',
@@ -277,6 +309,9 @@ const fetchProfile = async () => {
     }
     console.log('Fetched profile:', JSON.parse(JSON.stringify(data)))
     console.log('Assigned to form.value:', JSON.parse(JSON.stringify(form.value)))
+
+    // Load generated lists from local storage
+    loadFromLocalStorage()
   } catch (err) {
     console.error('Error fetching profile:', err)
     toast.add({
@@ -422,5 +457,42 @@ const handleDeleteAccount = async () => {
     error.value = err.message
     toast.add({ severity: 'error', summary: 'Error', detail: err.message, life: 3000 })
   }
+}
+
+const loadFromLocalStorage = () => {
+  const storageKey = `user-generated-reviews-${user.value.id}`
+  const storedData = localStorage.getItem(storageKey)
+  if (storedData) {
+    generatedLists.value = JSON.parse(storedData)
+  }
+}
+
+const clearLocalStorage = async () => {
+  const confirmed = await new Promise((resolve) => {
+    confirm.require({
+      message: 'Are you sure you want to delete all of your saved review lists? This cannot be undone.',
+      header: 'Clear Lists',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClass: 'p-button-danger',
+      accept: () => resolve(true),
+      reject: () => resolve(false)
+    })
+  })
+
+  if (confirmed) {
+    const storageKey = `user-generated-reviews-${user.value.id}`
+    localStorage.removeItem(storageKey)
+    generatedLists.value = []
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'All saved review lists have been cleared',
+      life: 3000
+    })
+  }
+}
+
+const formatDate = (dateString) => {
+  return format(new Date(dateString), 'MMMM d, yyyy @ h:mm a')
 }
 </script> 

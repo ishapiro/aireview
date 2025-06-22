@@ -16,7 +16,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@nuxtjs/supabase": "^1.5.2",
+    "@nuxtjs/supabase": "^1.5.3-20250617-152820-bc2d141",
     "@nuxtjs/tailwindcss": "^6.11.3",
     "@supabase/supabase-js": "^2.39.3",
     "date-fns": "^3.3.1",

@@ -15,10 +15,8 @@
               <Button label="Search Saved Reviews" size="large" />
             </NuxtLink>
           </div>
-          <div class="mt-8 flex justify-center">
-            <NuxtLink to="/user_ai_reviews">
-              <Button label="Automated AI Reviews for my Business" size="large" />
-            </NuxtLink>
+          <div class="mt-8 flex justify-center" v-if="user">
+            <UserReviewGenerator />
           </div>
         </div>
       </div>
@@ -99,7 +97,10 @@
 </template>
 
 <script setup>
+import UserReviewGenerator from '~/components/UserReviewGenerator.vue'
+
 const client = useSupabaseClient()
+const user = useSupabaseUser()
 const config = useRuntimeConfig()
 
 // Fetch categories

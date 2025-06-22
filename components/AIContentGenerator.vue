@@ -352,14 +352,14 @@ Only include the product names, no descriptions or additional text.`
       
       return productLines.map(line => {
         // Remove numbering and clean up
-        return line.replace(/^\d+\.\s*/, '').trim()
-      }).filter(product => product.length > 0)
+        return line.replace(/^\d+\.\s*/, '').trim().replace(/[^\w\s.-]/g, '')
+      }).filter(product => /[a-zA-Z0-9]/.test(product))
     } else {
       // Fallback: try to extract products from the response
       const lines = fullResponse.split('\n').filter(line => line.trim())
       return lines
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(product => product.length > 0 && !product.toLowerCase().includes('product'))
+        .map(line => line.replace(/^\d+\.\s*/, '').trim().replace(/[^\w\s.-]/g, ''))
+        .filter(product => /[a-zA-Z0-9]/.test(product) && !product.toLowerCase().includes('product'))
         .slice(0, 10)
     }
   } catch (error) {
@@ -396,7 +396,10 @@ RATING:
 [Number between 1-5]
 
 REASONING:
-[Brief explanation of why this rating was given]`
+[Brief explanation of why this rating was given]
+
+SUGGESTED CATEGORY:
+[The most appropriate category for this product, e.g., "Project Management Software"]`
 
     const requestBody = {
       prompt: prompt,
@@ -424,19 +427,22 @@ REASONING:
     const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
     const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)(?=\n\nRATING:|\nRATING:|$)/i)
     const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
-    const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*?)$/i)
+    const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*?)(?=\n\nSUGGESTED CATEGORY:|\nSUGGESTED CATEGORY:|$)/i)
+    const categoryMatch = fullResponse.match(/SUGGESTED CATEGORY:\s*([\s\S]*?)$/i)
 
     const title = titleMatch ? titleMatch[1].trim() : productName
     const summary = summaryMatch ? summaryMatch[1].trim() : ''
     const content = contentMatch ? contentMatch[1].trim() : fullResponse
     const rating = ratingMatch ? parseInt(ratingMatch[1]) : 3
     const reasoning = reasoningMatch ? reasoningMatch[1].trim() : ''
+    const suggestedCategory = categoryMatch ? categoryMatch[1].trim().replace(/[^\w\s.-]/g, '') : null
 
     return {
       title,
       summary,
       content: content + (reasoning ? `\n\n**Reasoning:** ${reasoning}` : ''),
-      rating: Math.max(1, Math.min(5, rating))
+      rating: Math.max(1, Math.min(5, rating)),
+      suggestedCategory
     }
   } catch (error) {
     console.error(`Error generating review for ${productName}:`, error)
