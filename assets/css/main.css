@@ -38,7 +38,7 @@
   }
   
   .btn-secondary {
-    @apply bg-surface-card hover:bg-surface-hover text-surface-text px-4 py-2 rounded transition-all;
+    @apply bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded transition-all;
   }
 
   /* Card styles */
@@ -60,7 +60,7 @@
   }
 
   .p-button.p-button-secondary {
-    @apply text-surface-text no-underline !important;
+    @apply bg-blue-400 hover:bg-blue-500 text-white no-underline !important;
   }
 
   .p-button.p-button-text {

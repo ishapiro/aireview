@@ -234,9 +234,11 @@ const generateAIContent = async () => {
       prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
     }
 
+    prompt = `${prompt}\n\nEnsue the rating and reasoning content is only included one time in the content.`;
+
     const requestBody = {
       prompt: prompt,
-      model: 'gpt-3.5-turbo'
+      model: 'gpt-4-turbo'
     }
 
     console.log('Request body:', JSON.stringify(requestBody, null, 2))
