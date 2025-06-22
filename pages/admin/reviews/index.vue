@@ -118,7 +118,7 @@
     </Card>
 
     <Toast />
-    <ConfirmDialog />
+    <ConfirmDialog class="w-4/5" />
   </div>
 </template>
 
@@ -210,6 +210,7 @@ const handleDelete = (id) => {
     message: `Are you sure you want to delete the unpublished review "${review?.title}"? This action cannot be undone.`,
     header: 'Confirm Deletion',
     icon: 'pi pi-exclamation-triangle',
+    rejectClass: 'p-button-info',
     accept: async () => {
       try {
         const { error } = await client

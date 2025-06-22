@@ -250,6 +250,8 @@
 
     <!-- Toast for notifications -->
     <Toast />
+
+    <ConfirmDialog class="w-4/5" />
   </div>
 </template>
 
@@ -441,6 +443,7 @@ const handleDeleteAccount = async () => {
       header: 'Delete Account',
       icon: 'pi pi-exclamation-triangle',
       acceptClass: 'p-button-danger',
+      rejectClass: 'p-button-info',
       accept: () => resolve(true),
       reject: () => resolve(false)
     })
@@ -475,6 +478,7 @@ const clearLocalStorage = async () => {
       header: 'Clear Lists',
       icon: 'pi pi-exclamation-triangle',
       acceptClass: 'p-button-danger',
+      rejectClass: 'p-button-info',
       accept: () => resolve(true),
       reject: () => resolve(false)
     })

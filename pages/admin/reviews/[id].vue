@@ -183,7 +183,7 @@
     </Card>
 
     <Toast />
-    <ConfirmDialog />
+    <ConfirmDialog class="w-4/5" />
 
     <div v-if="form === null" class="p-6 bg-red-50 border border-red-200 rounded text-red-700 mt-8">
       <strong>Error:</strong> Review not found or you do not have access.<br />
@@ -309,6 +309,7 @@ const handleDelete = () => {
     message: `Are you sure you want to delete the review "${form.value.title}"? This action cannot be undone.`,
     header: 'Confirm Deletion',
     icon: 'pi pi-exclamation-triangle',
+    rejectClass: 'p-button-info',
     accept: async () => {
       if (!form.value || isSubmitting.value) return
       isSubmitting.value = true

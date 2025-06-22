@@ -301,7 +301,7 @@
     </Dialog>
 
     <Toast />
-    <ConfirmDialog />
+    <ConfirmDialog class="w-4/5" />
 
     <!-- Category Populator Component -->
     <CategoryPopulator
@@ -459,6 +459,7 @@ const handleDelete = (id) => {
     message: 'Are you sure you want to delete this category? This will remove the category from all associated reviews but will not delete the reviews themselves.',
     header: 'Confirm Deletion',
     icon: 'pi pi-exclamation-triangle',
+    rejectClass: 'p-button-info',
     accept: async () => {
       try {
         // First, remove all category associations from reviews
