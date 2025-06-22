@@ -18,6 +18,9 @@
                   Name / Slug
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reviews
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -44,6 +47,12 @@
                     <div class="text-sm text-gray-500">{{ category.slug }}</div>
                   </div>
                   <div class="text-sm text-gray-700 mt-2">{{ category.description }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                       :class="category.review_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'">
+                    {{ category.review_count || 0 }} {{ category.review_count === 1 ? 'review' : 'reviews' }}
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <button
@@ -170,14 +179,21 @@ const form = ref({
   image_url: ''
 })
 
-// Fetch categories
+// Fetch categories with review counts
 const { data: categories } = await useAsyncData('admin-categories', async () => {
   const { data } = await client
     .from('categories')
-    .select('*')
+    .select(`
+      *,
+      review_count:review_categories(count)
+    `)
     .order('name')
   
-  return data
+  // Transform the data to flatten the review count
+  return data?.map(category => ({
+    ...category,
+    review_count: category.review_count?.[0]?.count || 0
+  })) || []
 })
 
 const generateSlug = (name) => {
@@ -230,10 +246,16 @@ const handleSubmit = async () => {
     // Refresh categories list
     const { data } = await client
       .from('categories')
-      .select('*')
+      .select(`
+        *,
+        review_count:review_categories(count)
+      `)
       .order('name')
     
-    categories.value = data
+    categories.value = data?.map(category => ({
+      ...category,
+      review_count: category.review_count?.[0]?.count || 0
+    })) || []
 
     showDialog.value = false
     editingCategory.value = null
