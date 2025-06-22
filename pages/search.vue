@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Search Reviews</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Search Existing Reviews</h1>
 
     <!-- Search Form -->
     <Card class="mb-8">

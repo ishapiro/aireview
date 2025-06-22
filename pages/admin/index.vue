@@ -32,10 +32,10 @@
               <NuxtLink to="/admin/reviews/new" class="btn-primary block text-center">
                 Create New Review
               </NuxtLink>
-              <NuxtLink to="/admin/categories" class="btn-secondary block text-center">
+              <NuxtLink to="/admin/categories" class="btn-primary block text-center">
                 Manage Categories
               </NuxtLink>
-              <NuxtLink to="/admin/users" class="btn-secondary block text-center">
+              <NuxtLink to="/admin/users" class="btn-primary block text-center">
                 Manage Users
               </NuxtLink>
               <CategoryPopulator />

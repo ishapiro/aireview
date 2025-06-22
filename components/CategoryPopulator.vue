@@ -4,9 +4,8 @@
     <button
       type="button"
       @click="openDialog"
-      class="btn-secondary flex items-center gap-2"
+      class="btn-primary block text-center w-full text-sm font-medium"
     >
-      <i class="pi pi-plus-circle"></i>
       Populate a Category
     </button>
 

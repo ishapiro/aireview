@@ -5,14 +5,19 @@
       <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
         <div class="text-center">
           <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            Find the Best AI Products for your Business
+            Find the Best AI Focused Software for your Business
           </h1>
           <p class="mt-5 max-w-xl mx-auto text-xl text-gray-500">
-            Read AI based, human augmented, reviews. Make informed decisions.
+            AI based, and human augmented, reviews. Make informed decisions.
           </p>
           <div class="mt-8 flex justify-center">
             <NuxtLink to="/search">
-              <Button label="Browse Reviews" size="large" />
+              <Button label="Search Saved Reviews" size="large" />
+            </NuxtLink>
+          </div>
+          <div class="mt-8 flex justify-center">
+            <NuxtLink to="/user_ai_reviews">
+              <Button label="Automated AI Reviews for my Business" size="large" />
             </NuxtLink>
           </div>
         </div>
