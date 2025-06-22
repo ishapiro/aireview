@@ -54,7 +54,7 @@
             <button
               v-if="user"
               @click="handleStarReview"
-              class="btn-secondary"
+              class="btn-primary"
               :class="{ 'bg-yellow-100': hasUserStarred }"
             >
               <i class="pi pi-star mr-1"></i>
@@ -88,7 +88,7 @@
 
       <!-- Edit Button for Review Owner -->
       <div v-if="user?.id === review?.user_id" class="mb-8 flex justify-end">
-        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-secondary">
+        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary">
           <i class="pi pi-pencil mr-2"></i>
           Edit Review
         </NuxtLink>

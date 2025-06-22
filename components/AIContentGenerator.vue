@@ -4,7 +4,7 @@
     <button
       type="button"
       @click="openAIDialog"
-      class="btn-secondary flex items-center gap-2"
+      class="btn-primary flex items-center gap-2"
     >
       <i class="pi pi-robot"></i>
       Generate with AI
@@ -88,7 +88,7 @@
             <button
               type="button"
               @click="appendAIContent"
-              class="btn-secondary flex items-center gap-2"
+              class="btn-primary flex items-center gap-2"
             >
               <i class="pi pi-plus"></i>
               Append to Existing
@@ -96,7 +96,7 @@
             <button
               type="button"
               @click="showRefinePromptInput"
-              class="btn-secondary flex items-center gap-2"
+              class="btn-primary flex items-center gap-2"
             >
               <i class="pi pi-refresh"></i>
               Refine Prompt
@@ -129,7 +129,7 @@
               <button
                 type="button"
                 @click="showRefineInput = false"
-                class="btn-secondary"
+                class="btn-primary"
               >
                 Cancel
               </button>
@@ -148,7 +148,7 @@
           <button
             type="button"
             @click="closeAIDialog"
-            class="btn-secondary"
+            class="btn-primary"
             :disabled="isGenerating"
           >
             Close

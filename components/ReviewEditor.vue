@@ -141,14 +141,16 @@
       </div>
 
       <!-- Submit Button -->
-      <div class="flex justify-end">
-        <button
+      <div class="flex justify-end mt-8">
+        <Button
           type="submit"
-          class="btn-primary"
-          :disabled="isSubmitting"
-        >
-          {{ isSubmitting ? 'Saving...' : 'Save Review' }}
-        </button>
+          label="Save Review"
+          :loading="isSaving"
+          icon="pi pi-check"
+        />
+        <NuxtLink :to="`/admin/reviews`" class="ml-4 btn-primary">
+          Cancel
+        </NuxtLink>
       </div>
     </form>
   </div>

@@ -116,4 +116,13 @@
 /* Custom styles for premium user badge */
 .premium-badge {
   @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-1 rounded-full text-xs font-bold;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  @apply bg-gray-50 text-gray-800;
+  font-family: 'Inter', sans-serif;
 } 

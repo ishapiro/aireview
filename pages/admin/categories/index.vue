@@ -122,14 +122,12 @@
                   label="Upload Image"
                   icon="pi pi-upload"
                   @click="handleImageUpload"
-                  class="btn-secondary"
                 />
                 <Button
                   type="button"
                   label="Search Unsplash"
                   icon="pi pi-search"
                   @click="openUnsplashDialog"
-                  class="btn-secondary"
                   :disabled="!form.name.trim() || !isUnsplashConfigured"
                   :title="!isUnsplashConfigured ? 'Unsplash API not configured' : 'Search for images on Unsplash'"
                 />
@@ -138,9 +136,7 @@
                   type="button"
                   label="Remove Image"
                   icon="pi pi-trash"
-                  severity="danger"
                   @click="form.image_url = ''"
-                  class="btn-secondary"
                 />
               </div>
             </div>
@@ -203,7 +199,6 @@
                 @click="previousPage"
                 :disabled="currentPage === 1 || isSearchingImages"
                 icon="pi pi-chevron-left"
-                severity="secondary"
                 size="small"
               />
               <span class="text-sm text-gray-600">
@@ -213,7 +208,6 @@
                 @click="nextPage"
                 :disabled="currentPage >= totalPages || isSearchingImages"
                 icon="pi pi-chevron-right"
-                severity="secondary"
                 size="small"
               />
             </div>
@@ -257,12 +251,10 @@
                 @click="useSelectedImage"
                 label="Use This Image"
                 icon="pi pi-check"
-                class="btn-primary"
               />
               <Button
                 @click="selectedImage = null"
                 label="Clear Selection"
-                severity="secondary"
               />
             </div>
           </div>
@@ -296,7 +288,6 @@
           <Button
             @click="closeUnsplashDialog"
             label="Close"
-            severity="secondary"
             :disabled="isSearchingImages"
           />
         </div>

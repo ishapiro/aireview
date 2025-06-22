@@ -71,7 +71,6 @@
                 @click="currentStep = 1"
                 :disabled="isGeneratingProducts"
                 label="Back"
-                severity="secondary"
                 icon="pi pi-arrow-left"
               />
             </div>
@@ -122,7 +121,6 @@
                 @click="currentStep = 2"
                 :disabled="isProcessing"
                 label="Back"
-                severity="secondary"
                 icon="pi pi-arrow-left"
               />
             </div>
@@ -204,7 +202,6 @@
             v-if="currentStep < 4"
             type="button"
             @click="closeDialog"
-            class="btn-secondary"
             :disabled="isProcessing"
             label="Cancel"
           />
