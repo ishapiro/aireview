@@ -13,73 +13,78 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Title
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Author
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Category
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rating
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="review in reviews" :key="review.id">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ review.title }}</div>
+                <td class="px-2 py-4 whitespace-nowrap">
+                  <div class="text-sm font-normal text-gray-900" :title="cleanTitle(removeMarkdown(review.title))">
+                    {{ truncate(cleanTitle(removeMarkdown(review.title)), 40) }}
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ review.author.full_name }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ review.category?.name }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   <div class="star-rating">
                     <i class="pi pi-star-fill mr-1"></i>
                     {{ review.rating }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   <Tag
                     :value="review.is_published ? 'Published' : 'Draft'"
                     :severity="review.is_published ? 'success' : 'warning'"
                   />
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <NuxtLink
-                    :to="`/admin/reviews/${review.id}`"
-                    class="text-primary-600 hover:text-primary-900 mr-4"
-                  >
-                    Edit
-                  </NuxtLink>
-                  <button
-                    v-if="!review.is_published"
-                    @click="handleDelete(review.id)"
-                    class="text-red-600 hover:text-red-900"
-                    title="Delete unpublished review"
-                  >
-                    Delete
-                  </button>
-                  <span v-else class="text-gray-400 text-xs italic" title="Published reviews cannot be deleted">
-                    (Published)
-                  </span>
+                <td class="px-2 py-4 whitespace-nowrap text-sm">
+                  <div class="flex items-center justify-center space-x-4">
+                    <NuxtLink
+                      :to="`/admin/reviews/${review.id}`"
+                      class="text-primary-600 hover:text-primary-900"
+                      title="Edit review"
+                    >
+                      <i class="pi pi-pencil text-base"></i>
+                    </NuxtLink>
+                    <button
+                      v-if="!review.is_published"
+                      @click="handleDelete(review.id)"
+                      class="text-red-600 hover:text-red-900"
+                      title="Delete unpublished review"
+                    >
+                      <i class="pi pi-trash text-base"></i>
+                    </button>
+                    <span v-else class="text-gray-400" title="Published reviews cannot be deleted">
+                      <i class="pi pi-lock text-base"></i>
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -118,10 +123,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { format } from 'date-fns'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { cleanTitle } from '~/utils/string'
 
 const client = useSupabaseClient()
 const toast = useToast()
@@ -179,6 +186,18 @@ const previousPage = () => {
     currentPage.value--
     fetchReviews()
   }
+}
+
+const removeMarkdown = (text) => {
+  if (!text || typeof text !== 'string') return ''
+  return text.replace(/\*/g, '')
+}
+
+const truncate = (text, length) => {
+  if (text.length <= length) {
+    return text
+  }
+  return text.substring(0, length) + '...'
 }
 
 const formatDate = (date) => {

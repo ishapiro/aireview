@@ -5,7 +5,7 @@
       v-if="!category"
       type="button"
       @click="openDialog"
-      class="btn-primary block text-center w-full text-sm font-medium border-0"
+      class="btn-primary block text-center w-full text-base font-medium border-0"
     >
       Populate a Category
     </button>
@@ -177,7 +177,7 @@
                       :binary="false"
                     />
                     <div class="flex-1">
-                      <h5 class="text-sm font-medium text-gray-900">{{ review.title }}</h5>
+                      <h5 class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</h5>
                       <div class="flex items-center mt-1">
                         <div class="flex items-center space-x-1">
                           <i 
@@ -294,7 +294,7 @@
               </div>
               <ProgressBar :value="((currentReviewIndex + 1) / selectedReviews.length) * 100" />
               <p class="text-sm text-gray-600">
-                Currently processing: <strong>{{ currentReviewTitle }}</strong>
+                Currently processing: <strong>{{ cleanTitle(currentReviewTitle) }}</strong>
               </p>
             </div>
 
@@ -342,7 +342,7 @@
                 >
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
-                      <h5 class="text-sm font-medium text-gray-900">{{ review.title }}</h5>
+                      <h5 class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</h5>
                       <div class="flex items-center mt-1">
                         <div class="flex items-center space-x-1">
                           <i 
@@ -379,7 +379,7 @@
                 >
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
-                      <h5 class="text-sm font-medium text-gray-900">{{ review.title }}</h5>
+                      <h5 class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</h5>
                       <div class="flex items-center mt-1">
                         <div class="flex items-center space-x-1">
                           <i 
@@ -441,6 +441,11 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useSupabaseClient, useSupabaseUser } from '#imports'
+import { format } from 'date-fns'
+import { cleanTitle } from '~/utils/string'
+
 // Props
 const props = defineProps({
   category: {
@@ -605,6 +610,7 @@ const startReviewRegeneration = async () => {
         const { error: updateError } = await client
           .from('reviews')
           .update({
+            title: reviewData.title,
             summary: reviewData.summary,
             content: reviewData.content,
             rating: reviewData.rating,
@@ -740,7 +746,7 @@ const startReviewGeneration = async () => {
       if (reviewData) {
         // Create the review in the database
         const { data: newReview, error: createError } = await client.rpc('create_review_with_categories', {
-          new_title: reviewData.title,
+          new_title: cleanTitle(removeMarkdown(reviewData.title)),
           new_summary: reviewData.summary,
           new_content: reviewData.content,
           new_rating: reviewData.rating,
@@ -769,5 +775,10 @@ const startReviewGeneration = async () => {
 
   currentStep.value = 4
   isProcessing.value = false
+}
+
+const removeMarkdown = (text) => {
+  if (!text || typeof text !== 'string') return ''
+  return text.replace(/[*_~`#]/g, '')
 }
 </script> 

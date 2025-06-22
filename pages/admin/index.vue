@@ -55,7 +55,9 @@
                   <i :class="getActivityIcon(activity.type)" class="text-gray-400"></i>
                 </div>
                 <div class="ml-3">
-                  <p class="text-sm text-gray-900">{{ activity.description }}</p>
+                  <p class="text-sm text-gray-900" :title="cleanTitle(activity.description)">
+                    {{ truncate(cleanTitle(activity.description), 100) }}
+                  </p>
                   <p class="text-xs text-gray-500">{{ formatDate(activity.created_at) }}</p>
                 </div>
               </div>
@@ -141,6 +143,7 @@
 import { format } from 'date-fns'
 import CategoryPopulator from '~/components/CategoryPopulator.vue'
 import UncategorizedReviewCategorizer from '~/components/UncategorizedReviewCategorizer.vue'
+import { cleanTitle } from '~/utils/string'
 
 const client = useSupabaseClient()
 
@@ -190,6 +193,13 @@ const { data: recentReviews } = await useAsyncData('recent-reviews', async () =>
   
   return data
 })
+
+const truncate = (text, length) => {
+  if (text.length <= length) {
+    return text
+  }
+  return text.substring(0, length) + '...'
+}
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')

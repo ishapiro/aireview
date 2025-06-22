@@ -114,7 +114,7 @@
                 <div v-for="review in generatedReviews" :key="review.id" class="bg-white border border-gray-200 rounded p-3">
                   <div class="flex justify-between items-start">
                     <NuxtLink :to="`/reviews/${review.slug}`" class="flex-1">
-                      <h5 class="text-sm font-medium text-primary-600 hover:underline">{{ review.title }}</h5>
+                      <h5 class="text-sm font-medium text-primary-600 hover:underline">{{ cleanTitle(review.title) }}</h5>
                     </NuxtLink>
                   </div>
                 </div>
@@ -140,7 +140,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSupabaseClient, useSupabaseUser } from '#imports'
+import { format } from 'date-fns'
+import { cleanTitle } from '~/utils/string'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -188,10 +191,6 @@ const resetState = () => {
 const closeDialog = () => {
   showDialog.value = false
   resetState()
-}
-
-const generateSlug = (name) => {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 const generateProductList = async () => {
@@ -265,7 +264,7 @@ const startReviewGeneration = async () => {
         }
         
         const { data: newReview, error: createError } = await client.rpc('create_review_with_categories', {
-          new_title: reviewData.title,
+          new_title: cleanTitle(reviewData.title),
           new_summary: reviewData.summary,
           new_content: reviewData.content,
           new_rating: reviewData.rating,
@@ -277,12 +276,7 @@ const startReviewGeneration = async () => {
 
         if (createError) throw createError
         
-        // We need slug for the link, but RPC only returns ID. Let's fetch it.
-        const { data: finalReview } = await client.from('reviews').select('id, title, slug').eq('id', newReview).single()
-
-        if (finalReview) {
-          finalReviewList.push(finalReview)
-        }
+        finalReviewList.push({ id: newReview[0].id, title: newReview[0].title, slug: newReview[0].slug })
       }
       await new Promise(resolve => setTimeout(resolve, 1000))
     } catch (err) {

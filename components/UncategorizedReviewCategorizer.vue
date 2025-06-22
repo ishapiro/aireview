@@ -4,7 +4,7 @@
     <button
       type="button"
       @click="openDialog"
-      class="btn-primary block text-center w-full text-sm font-medium border-0"
+      class="btn-primary block text-center w-full text-base font-medium border-0"
     >
       Categorize Uncategorized Reviews
     </button>
@@ -91,7 +91,7 @@
                 >
                   <div class="flex justify-between items-start mb-3">
                     <div class="flex-1">
-                      <h4 class="text-sm font-medium text-gray-900">{{ review.title }}</h4>
+                      <h4 class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</h4>
                       <p class="text-xs text-gray-500 mt-1">{{ review.author?.full_name }} • {{ formatDate(review.created_at) }}</p>
                     </div>
                     <div class="flex items-center space-x-1">
@@ -196,6 +196,9 @@
 <script setup>
 import { format } from 'date-fns'
 import { useToast } from 'primevue/usetoast'
+import { ref, onMounted } from 'vue'
+import { useSupabaseClient, useSupabaseUser } from '#imports'
+import { cleanTitle } from '~/utils/string'
 
 const client = useSupabaseClient()
 const toast = useToast()

@@ -508,7 +508,7 @@ create or replace function public.create_review_with_categories(
     new_category_ids uuid[],
     author_id uuid
 )
-returns uuid as $$
+returns table(id uuid, title text, slug text) as $$
 declare
     new_review_id uuid;
     new_slug text;
@@ -517,9 +517,9 @@ begin
     new_slug := slugify(new_title);
 
     -- Insert the review and get its ID
-    insert into public.reviews (title, summary, content, rating, is_published, ai_generated, user_id, slug)
-    values (new_title, new_summary, new_content, new_rating, new_is_published, new_ai_generated, author_id, new_slug)
-    returning id into new_review_id;
+    insert into public.reviews (title, slug, summary, content, rating, user_id, is_published, ai_generated)
+    values (new_title, new_slug, new_summary, new_content, new_rating, author_id, new_is_published, new_ai_generated)
+    returning reviews.id into new_review_id;
 
     -- Insert category associations
     if array_length(new_category_ids, 1) > 0 then
@@ -527,7 +527,9 @@ begin
         select new_review_id, unnest(new_category_ids);
     end if;
 
-    return new_review_id;
+    -- Return the new review's details
+    return query
+    select r.id, r.title, r.slug from public.reviews r where r.id = new_review_id;
 end;
 $$ language plpgsql;
 

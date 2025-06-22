@@ -233,7 +233,7 @@
             <ul class="space-y-2">
               <li v-for="review in list.reviews" :key="review.id">
                 <NuxtLink :to="`/reviews/${review.slug}`" class="text-primary-600 hover:underline">
-                  {{ review.title }}
+                  <div class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</div>
                 </NuxtLink>
               </li>
             </ul>
@@ -259,6 +259,7 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useImageUpload } from '@/composables/useImageUpload'
 import { format } from 'date-fns'
+import { cleanTitle } from '~/utils/string'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()

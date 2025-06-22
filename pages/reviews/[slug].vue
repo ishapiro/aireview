@@ -15,7 +15,7 @@
     <div v-else class="bg-white rounded-lg shadow-lg p-6">
       <!-- Review Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ review.title }}</h1>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ cleanTitle(review.title) }}</h1>
         
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center">
@@ -155,12 +155,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useAsyncData } from '#app'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useToast } from 'primevue/usetoast'
 import { marked } from 'marked'
 import { format } from 'date-fns'
+import { cleanTitle } from '~/utils/string'
 
 const route = useRoute()
 const client = useSupabaseClient()

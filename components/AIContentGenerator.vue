@@ -66,12 +66,18 @@
                 <span class="ml-2 text-sm text-blue-700">({{ suggestedRating }}/5)</span>
               </div>
             </div>
+
+            <!-- AI Generated Summary -->
+            <div v-if="generatedSummary" class="mb-4">
+              <h3 class="text-lg font-medium text-gray-900 mb-2">AI Generated Summary:</h3>
+              <div class="bg-gray-50 p-4 rounded-lg border">
+                <div class="prose prose-sm max-w-none" v-html="renderedGeneratedSummary"></div>
+              </div>
+            </div>
             
             <h3 class="text-lg font-medium text-gray-900 mb-2">AI Generated Content:</h3>
             <div class="bg-gray-50 p-4 rounded-lg border">
-              <div class="prose prose-sm max-w-none">
-                <div v-html="renderedAIResponse"></div>
-              </div>
+              <div class="prose prose-sm max-w-none" v-html="renderedGeneratedContent"></div>
             </div>
           </div>
 
@@ -198,10 +204,20 @@ const isGenerating = ref(false)
 const showRefineInput = ref(false)
 const refinePrompt = ref('')
 const suggestedRating = ref(null)
+const generatedSummary = ref('')
+const generatedContent = ref('')
 
 // Render AI response preview
 const renderedAIResponse = computed(() => {
   return marked(aiResponse.value || '')
+})
+
+const renderedGeneratedSummary = computed(() => {
+  return marked(generatedSummary.value || '')
+})
+
+const renderedGeneratedContent = computed(() => {
+  return marked(generatedContent.value || '')
 })
 
 // Preload prompt with title when dialog opens
@@ -222,20 +238,25 @@ const generateAIContent = async () => {
   aiError.value = ''
 
   try {
-    let prompt = aiPrompt.value
+    let prompt = aiPrompt.value;
     
-    // Add rating instruction to the prompt
-    prompt = `${prompt}`;
+    // Define the format instructions
+    const formatInstructions = `Please provide the review in the following format:
+${props.generateSummary ? '\nSUMMARY:\n[Your summary here]' : ''}
+
+CONTENT:
+[Your detailed review content here]
+
+---
+**Rating: [X]/5 stars**
+
+*Reasoning: [Brief explanation of why this rating was given]*
+
+Ensure the rating and reasoning content is only included one time in the content.`;
+
+    // Append the instructions to the prompt
+    prompt = `${prompt}\n\n${formatInstructions}`;
     
-    // If summary generation is enabled, modify the prompt
-    if (props.generateSummary) {
-      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
-    } else {
-      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
-    }
-
-    prompt = `${prompt}\n\nEnsue the rating and reasoning content is only included one time in the content.`;
-
     const requestBody = {
       prompt: prompt,
       model: 'gpt-4-turbo'
@@ -265,38 +286,31 @@ const generateAIContent = async () => {
     // Extract content from OpenAI API response structure
     const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
     
-    // Parse the response to extract rating, summary, and content
-    const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
-    const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
-    const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)$/i)
-    
-    // Extract rating
+    aiResponse.value = fullResponse.trim()
+
+    // Parse the response to extract rating
+    const ratingMatch = fullResponse.match(/\*\*Rating: (\d)\/5 stars\*\*/)
     if (ratingMatch) {
-      const rating = parseInt(ratingMatch[1])
-      if (rating >= 1 && rating <= 5) {
-        suggestedRating.value = rating
-        emit('update:ratingValue', rating)
+      suggestedRating.value = parseInt(ratingMatch[1])
+    }
+
+    // Parse for summary and content
+    if (props.generateSummary) {
+      const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
+      if (summaryMatch) {
+        generatedSummary.value = summaryMatch[1].trim()
       }
     }
     
+    let content = fullResponse
+    // Clean up the content, removing other parts
+    content = content.replace(/TITLE:[\s\S]*?\n\n/i, '')
     if (props.generateSummary) {
-      // Parse the response to extract summary and content
-      if (summaryMatch && contentMatch) {
-        aiResponse.value = contentMatch[1].trim()
-        emit('update:summaryValue', summaryMatch[1].trim())
-      } else {
-        // Fallback: use the full response as content
-        aiResponse.value = fullResponse
-      }
-    } else {
-      // For non-summary mode, extract content after rating
-      if (contentMatch) {
-        aiResponse.value = contentMatch[1].trim()
-      } else {
-        // Fallback: use the full response as content
-        aiResponse.value = fullResponse
-      }
+      content = content.replace(/SUMMARY:[\s\S]*?CONTENT:/i, 'CONTENT:')
     }
+    content = content.replace(/CONTENT:\s*/i, '')
+    content = content.replace(/\n\n---[\s\S]*/, '').trim()
+    generatedContent.value = content
   } catch (error) {
     console.error('Error generating AI content:', error)
     aiError.value = `Error generating content: ${error.message}`
@@ -380,33 +394,17 @@ const generateProductReview = async (productName, categoryName) => {
   isGenerating.value = true
   aiError.value = ''
 
+  console.log(`Generating review for "${productName}" in category "${categoryName}"`)
+
   try {
-    const prompt = `Write a detailed, honest review for the product "${productName}" in the "${categoryName}" category.
-
-Please provide the review in the following format:
-
-TITLE:
-${productName}
-
-SUMMARY:
-[Brief summary of the product and overall impression]
-
-CONTENT:
-[Detailed review content with pros and cons, features, performance, value for money, etc.]
-
-RATING:
-[Number between 1-5]
-
-REASONING:
-[Brief explanation of why this rating was given]
-
-SUGGESTED CATEGORY:
-[The most appropriate category for this product, e.g., "Project Management Software"]`
+    const prompt = `Review "${productName}"`
 
     const requestBody = {
       prompt: prompt,
-      model: 'gpt-3.5-turbo'
+      model: 'gpt-4-turbo'
     }
+
+    console.log('Sending prompt to AI:', JSON.stringify(prompt, null, 2));
 
     const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
       method: 'POST',
@@ -424,28 +422,29 @@ SUGGESTED CATEGORY:
     const data = await response.json()
     const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
     
+    console.log('Received raw response from AI:', fullResponse);
+
     // Parse the review
     const titleMatch = fullResponse.match(/TITLE:\s*([\s\S]*?)(?=\n\nSUMMARY:|\nSUMMARY:|$)/i)
     const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
     const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)(?=\n\nRATING:|\nRATING:|$)/i)
     const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
-    const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*?)(?=\n\nSUGGESTED CATEGORY:|\nSUGGESTED CATEGORY:|$)/i)
-    const categoryMatch = fullResponse.match(/SUGGESTED CATEGORY:\s*([\s\S]*?)$/i)
 
     const title = titleMatch ? titleMatch[1].trim() : productName
     const summary = summaryMatch ? summaryMatch[1].trim() : ''
     const content = contentMatch ? contentMatch[1].trim() : fullResponse
     const rating = ratingMatch ? parseInt(ratingMatch[1]) : 3
-    const reasoning = reasoningMatch ? reasoningMatch[1].trim() : ''
-    const suggestedCategory = categoryMatch ? categoryMatch[1].trim().replace(/[^\w\s.-]/g, '') : null
 
-    return {
+    const parsedData = {
       title,
       summary,
-      content: content + (reasoning ? `\n\n**Reasoning:** ${reasoning}` : ''),
+      content,
       rating: Math.max(1, Math.min(5, rating)),
-      suggestedCategory
     }
+
+    console.log('Parsed review data:', JSON.stringify(parsedData, null, 2));
+
+    return parsedData
   } catch (error) {
     console.error(`Error generating review for ${productName}:`, error)
     aiError.value = `Error generating review: ${error.message}`
@@ -456,14 +455,22 @@ SUGGESTED CATEGORY:
 }
 
 const useAIContent = () => {
-  emit('update:modelValue', aiResponse.value)
+  if (props.generateSummary) {
+    emit('update:summaryValue', generatedSummary.value)
+  }
+  emit('update:modelValue', generatedContent.value)
+  
+  if (suggestedRating.value) {
+    emit('update:ratingValue', suggestedRating.value)
+  }
+
   emit('ai-generated', true)
   closeAIDialog()
 }
 
 const appendAIContent = () => {
   const separator = props.modelValue ? '\n\n' : ''
-  const newContent = props.modelValue + separator + aiResponse.value
+  const newContent = props.modelValue + separator + generatedContent.value
   emit('update:modelValue', newContent)
   emit('ai-generated', true)
   closeAIDialog()
@@ -492,6 +499,8 @@ const closeAIDialog = () => {
   showAIDialog.value = false
   aiPrompt.value = ''
   aiResponse.value = ''
+  generatedSummary.value = ''
+  generatedContent.value = ''
   aiError.value = ''
   showRefineInput.value = false
   refinePrompt.value = ''

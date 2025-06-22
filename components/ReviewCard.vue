@@ -16,12 +16,12 @@
       </div>
       <div class="relative">
         
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ review.title }}</h3>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2" :title="cleanTitle(review.title)">{{ truncate(cleanTitle(review.title), 50) }}</h3>
         
         <img
           v-if="review.thumbnail_url"
           :src="review.thumbnail_url"
-          :alt="review.title"
+          :alt="cleanTitle(review.title)"
           class="w-full h-48 object-cover rounded-lg mb-4"
         />
       </div>
@@ -82,6 +82,8 @@
 <script setup>
 import { format } from 'date-fns'
 import { stripMarkdown } from '@/utils/string'
+import { computed } from 'vue'
+import { cleanTitle } from '~/utils/string'
 
 const props = defineProps({
   review: {
@@ -96,6 +98,16 @@ const handleCardClick = (event) => {
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
+}
+
+const truncate = (text, length) => {
+  if (!text || typeof text !== 'string') {
+    return ''
+  }
+  if (text.length <= length) {
+    return text
+  }
+  return text.substring(0, length) + '...'
 }
 
 // Computed property to get review summary

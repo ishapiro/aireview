@@ -43,4 +43,10 @@ export function stripMarkdown(text) {
     .replace(/\n\s*\n/g, '\n')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+export function cleanTitle(text) {
+  if (!text || typeof text !== 'string') return ''
+  // Remove leading and trailing quotation marks
+  return text.replace(/^["']|["']$/g, '')
 } 
