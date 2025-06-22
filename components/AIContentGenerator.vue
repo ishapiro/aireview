@@ -209,7 +209,7 @@ const openAIDialog = () => {
   showAIDialog.value = true
   // Preload prompt with title if available
   if (props.title && props.title.trim()) {
-    aiPrompt.value = `Write a review for: ${props.title.trim()}\n\n`
+    aiPrompt.value = `Review: ${props.title.trim()}\n\n`
   } else {
     aiPrompt.value = ''
   }
@@ -225,13 +225,13 @@ const generateAIContent = async () => {
     let prompt = aiPrompt.value
     
     // Add rating instruction to the prompt
-    prompt = `${prompt}\n\nPlease provide an overall rating between 1 and 5 stars for this product. Include your reasoning for the rating and add the rating at the bottom of the review.`
+    prompt = `${prompt}`;
     
     // If summary generation is enabled, modify the prompt
     if (props.generateSummary) {
-      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nRATING:\n[Your rating as a number 1-5]\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
+      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nSUMMARY:\n[Your summary here]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
     } else {
-      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nRATING:\n[Your rating as a number 1-5]\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
+      prompt = `${prompt}\n\nPlease provide the review in the following format:\n\nCONTENT:\n[Your detailed review content here]\n\n---\n**Rating: [X]/5 stars**\n\n*Reasoning: [Brief explanation of why this rating was given]*`
     }
 
     const requestBody = {
