@@ -62,6 +62,12 @@
                     Edit
                   </button>
                   <button
+                    @click="openCategoryPopulator(category)"
+                    class="text-blue-600 hover:text-blue-900 mr-4"
+                  >
+                    Generate Reviews
+                  </button>
+                  <button
                     @click="handleDelete(category.id)"
                     class="text-red-600 hover:text-red-900"
                   >
@@ -296,6 +302,13 @@
 
     <Toast />
     <ConfirmDialog />
+
+    <!-- Category Populator Component -->
+    <CategoryPopulator
+      v-if="selectedCategoryForPopulation"
+      :category="selectedCategoryForPopulation"
+      @close="selectedCategoryForPopulation = null"
+    />
   </div>
 </template>
 
@@ -313,6 +326,7 @@ const { uploadCategoryImage } = useImageUpload()
 const showDialog = ref(false)
 const isSubmitting = ref(false)
 const editingCategory = ref(null)
+const selectedCategoryForPopulation = ref(null)
 
 // Unsplash dialog state
 const showUnsplashDialog = ref(false)
@@ -625,5 +639,9 @@ const useSelectedImage = () => {
       life: 3000
     })
   }
+}
+
+const openCategoryPopulator = (category) => {
+  selectedCategoryForPopulation.value = category
 }
 </script> 

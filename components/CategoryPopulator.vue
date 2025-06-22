@@ -1,7 +1,8 @@
 <template>
   <div>
-    <!-- Populate Category Button -->
+    <!-- Populate Category Button (only show if no category prop) -->
     <button
+      v-if="!category"
       type="button"
       @click="openDialog"
       class="btn-primary block text-center w-full text-sm font-medium border-0"
@@ -18,8 +19,8 @@
       :closable="!isProcessing"
     >
       <div class="space-y-6">
-        <!-- Step 1: Category Input -->
-        <div v-if="currentStep === 1">
+        <!-- Step 1: Category Input (only show if no category prop) -->
+        <div v-if="currentStep === 1 && !category">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Enter Category Name</h3>
           <div class="space-y-4">
             <div>
@@ -68,6 +69,7 @@
                 icon="pi pi-list"
               />
               <Button
+                v-if="!category"
                 @click="currentStep = 1"
                 :disabled="isGeneratingProducts"
                 label="Back"
@@ -215,6 +217,17 @@
 </template>
 
 <script setup>
+// Props
+const props = defineProps({
+  category: {
+    type: Object,
+    default: null
+  }
+})
+
+// Emits
+const emit = defineEmits(['close'])
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 
@@ -241,15 +254,29 @@ const generatedReviews = ref([])
 // AI Generator reference
 const aiGenerator = ref(null)
 
+// Watch for category prop changes
+watch(() => props.category, (newCategory) => {
+  if (newCategory) {
+    selectedCategory.value = newCategory
+    showDialog.value = true
+    currentStep.value = 2 // Skip to product generation step
+    resetState()
+  }
+}, { immediate: true })
+
 const openDialog = () => {
   showDialog.value = true
   resetState()
 }
 
 const resetState = () => {
-  currentStep.value = 1
-  categoryName.value = ''
-  selectedCategory.value = null
+  if (!props.category) {
+    currentStep.value = 1
+    categoryName.value = ''
+  } else {
+    currentStep.value = 2
+    selectedCategory.value = props.category
+  }
   products.value = []
   generatedReviews.value = []
   currentProductIndex.value = 0
@@ -263,6 +290,7 @@ const resetState = () => {
 const closeDialog = () => {
   showDialog.value = false
   resetState()
+  emit('close')
 }
 
 const checkOrCreateCategory = async () => {
