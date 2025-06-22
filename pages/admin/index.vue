@@ -38,6 +38,7 @@
               <NuxtLink to="/admin/users" class="btn-secondary block text-center">
                 Manage Users
               </NuxtLink>
+              <CategoryPopulator />
             </div>
           </div>
         </template>
@@ -137,6 +138,7 @@
 
 <script setup>
 import { format } from 'date-fns'
+import CategoryPopulator from '~/components/CategoryPopulator.vue'
 
 const client = useSupabaseClient()
 

@@ -303,6 +303,150 @@ const generateAIContent = async () => {
   }
 }
 
+// New function to generate product lists
+const generateProductList = async (categoryName) => {
+  if (!categoryName || isGenerating.value) return []
+
+  isGenerating.value = true
+  aiError.value = ''
+
+  try {
+    const prompt = `Generate a list of 10 popular products in the "${categoryName}" category. 
+
+Please return the list in the following exact format:
+
+PRODUCTS:
+1. [Product Name 1]
+2. [Product Name 2]
+3. [Product Name 3]
+...and so on
+
+Only include the product names, no descriptions or additional text.`
+
+    const requestBody = {
+      prompt: prompt,
+      model: 'gpt-3.5-turbo'
+    }
+
+    const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.public.cogitationsCloudflareToken}`
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to generate product list')
+    }
+
+    const data = await response.json()
+    const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
+    
+    // Parse the product list
+    const productsMatch = fullResponse.match(/PRODUCTS:\s*([\s\S]*?)(?=\n\n|$)/i)
+    if (productsMatch) {
+      const productsText = productsMatch[1].trim()
+      const productLines = productsText.split('\n').filter(line => line.trim())
+      
+      return productLines.map(line => {
+        // Remove numbering and clean up
+        return line.replace(/^\d+\.\s*/, '').trim()
+      }).filter(product => product.length > 0)
+    } else {
+      // Fallback: try to extract products from the response
+      const lines = fullResponse.split('\n').filter(line => line.trim())
+      return lines
+        .map(line => line.replace(/^\d+\.\s*/, '').trim())
+        .filter(product => product.length > 0 && !product.toLowerCase().includes('product'))
+        .slice(0, 10)
+    }
+  } catch (error) {
+    console.error('Error generating product list:', error)
+    aiError.value = `Error generating product list: ${error.message}`
+    return []
+  } finally {
+    isGenerating.value = false
+  }
+}
+
+// New function to generate product reviews
+const generateProductReview = async (productName, categoryName) => {
+  if (!productName || !categoryName || isGenerating.value) return null
+
+  isGenerating.value = true
+  aiError.value = ''
+
+  try {
+    const prompt = `Write a detailed, honest review for the product "${productName}" in the "${categoryName}" category.
+
+Please provide the review in the following format:
+
+TITLE:
+${productName}
+
+SUMMARY:
+[Brief summary of the product and overall impression]
+
+CONTENT:
+[Detailed review content with pros and cons, features, performance, value for money, etc.]
+
+RATING:
+[Number between 1-5]
+
+REASONING:
+[Brief explanation of why this rating was given]`
+
+    const requestBody = {
+      prompt: prompt,
+      model: 'gpt-3.5-turbo'
+    }
+
+    const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.public.cogitationsCloudflareToken}`
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to generate review')
+    }
+
+    const data = await response.json()
+    const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
+    
+    // Parse the review
+    const titleMatch = fullResponse.match(/TITLE:\s*([\s\S]*?)(?=\n\nSUMMARY:|\nSUMMARY:|$)/i)
+    const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
+    const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)(?=\n\nRATING:|\nRATING:|$)/i)
+    const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
+    const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*?)$/i)
+
+    const title = titleMatch ? titleMatch[1].trim() : productName
+    const summary = summaryMatch ? summaryMatch[1].trim() : ''
+    const content = contentMatch ? contentMatch[1].trim() : fullResponse
+    const rating = ratingMatch ? parseInt(ratingMatch[1]) : 3
+    const reasoning = reasoningMatch ? reasoningMatch[1].trim() : ''
+
+    return {
+      title,
+      summary,
+      content: content + (reasoning ? `\n\n**Reasoning:** ${reasoning}` : ''),
+      rating: Math.max(1, Math.min(5, rating))
+    }
+  } catch (error) {
+    console.error(`Error generating review for ${productName}:`, error)
+    aiError.value = `Error generating review: ${error.message}`
+    return null
+  } finally {
+    isGenerating.value = false
+  }
+}
+
 const useAIContent = () => {
   emit('update:modelValue', aiResponse.value)
   emit('ai-generated', true)
@@ -345,4 +489,11 @@ const closeAIDialog = () => {
   refinePrompt.value = ''
   suggestedRating.value = null
 }
+
+// Expose functions for use by other components
+defineExpose({
+  generateProductList,
+  generateProductReview,
+  generateAIContent
+})
 </script> 

@@ -16,6 +16,7 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import ConfirmPopup from 'primevue/confirmpopup'
 import ConfirmationService from 'primevue/confirmationservice'
 import ProgressSpinner from 'primevue/progressspinner'
+import ProgressBar from 'primevue/progressbar'
 import InputSwitch from 'primevue/inputswitch'
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -55,6 +56,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('ConfirmDialog', ConfirmDialog)
   nuxtApp.vueApp.component('ConfirmPopup', ConfirmPopup)
   nuxtApp.vueApp.component('ProgressSpinner', ProgressSpinner)
+  nuxtApp.vueApp.component('ProgressBar', ProgressBar)
   nuxtApp.vueApp.component('InputSwitch', InputSwitch)
 
   // Register services
