@@ -323,6 +323,29 @@ module.exports = {
 - Test authentication flows in both development and production
 - Verify all environment variables are properly set
 
+### Supabase Dependency Issues
+
+If you encounter issues with Supabase dependencies or module conflicts, use this solution:
+
+```bash
+# 1. Remove node_modules and lock file to prevent conflicts
+rm -rf node_modules package-lock.json
+
+# 2. Install stable version of Supabase
+npm install @nuxtjs/supabase@1.4.1
+
+# 3. Reinstall all dependencies
+npm install
+
+# 4. Clean Nuxt build
+rm -rf .nuxt
+
+# 5. Run dev server
+npm run dev
+```
+
+This approach ensures a clean installation with a stable version of the Supabase module and resolves dependency conflicts that may occur during development.
+
 ## 📁 Project Structure
 
 ```
