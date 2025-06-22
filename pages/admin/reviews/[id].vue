@@ -166,6 +166,16 @@
                 :label="form.is_published ? 'Unpublish' : 'Publish'"
                 @click="handlePublishToggle"
               />
+              <div v-if="!form.is_published" class="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  label="Delete Review"
+                  severity="danger"
+                  icon="pi pi-trash"
+                  @click="handleDelete"
+                />
+                <span class="text-xs text-gray-500">(Only available for unpublished reviews)</span>
+              </div>
             </div>
           </form>
         </div>
@@ -173,6 +183,7 @@
     </Card>
 
     <Toast />
+    <ConfirmDialog />
 
     <div v-if="form === null" class="p-6 bg-red-50 border border-red-200 rounded text-red-700 mt-8">
       <strong>Error:</strong> Review not found or you do not have access.<br />
@@ -183,12 +194,14 @@
 
 <script setup>
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
 import MultiSelect from 'primevue/multiselect'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
+const confirm = useConfirm()
 const router = useRouter()
 const route = useRoute()
 
@@ -289,6 +302,44 @@ const handleSubmit = async () => {
 const handlePublishToggle = async () => {
   form.value.is_published = !form.value.is_published
   await handleSubmit()
+}
+
+const handleDelete = () => {
+  confirm.require({
+    message: `Are you sure you want to delete the review "${form.value.title}"? This action cannot be undone.`,
+    header: 'Confirm Deletion',
+    icon: 'pi pi-exclamation-triangle',
+    accept: async () => {
+      if (!form.value || isSubmitting.value) return
+      isSubmitting.value = true
+
+      try {
+        const { error } = await client
+          .from('reviews')
+          .delete()
+          .eq('id', route.params.id)
+
+        if (error) throw error
+
+        toast.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Review deleted successfully',
+          life: 3000
+        })
+        router.push('/admin/reviews')
+      } catch (error) {
+        toast.add({
+          severity: 'error',
+          summary: 'Error deleting review',
+          detail: error.message,
+          life: 5000
+        })
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+  })
 }
 
 const formatDate = (dateString) => {

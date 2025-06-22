@@ -281,17 +281,26 @@ const handleSubmit = async () => {
 
 const handleDelete = (id) => {
   confirm.require({
-    message: 'Are you sure you want to delete this category?',
+    message: 'Are you sure you want to delete this category? This will remove the category from all associated reviews but will not delete the reviews themselves.',
     header: 'Confirm Deletion',
     icon: 'pi pi-exclamation-triangle',
     accept: async () => {
       try {
-        const { error } = await client
+        // First, remove all category associations from reviews
+        const { error: associationError } = await client
+          .from('review_categories')
+          .delete()
+          .eq('category_id', id)
+
+        if (associationError) throw associationError
+
+        // Then delete the category itself
+        const { error: categoryError } = await client
           .from('categories')
           .delete()
           .eq('id', id)
 
-        if (error) throw error
+        if (categoryError) throw categoryError
 
         // Remove the category from the list
         categories.value = categories.value.filter(category => category.id !== id)
@@ -299,7 +308,7 @@ const handleDelete = (id) => {
         toast.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Category deleted successfully',
+          detail: 'Category deleted successfully. All associated reviews have been preserved.',
           life: 3000
         })
       } catch (error) {

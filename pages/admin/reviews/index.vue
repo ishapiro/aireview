@@ -70,11 +70,16 @@
                     Edit
                   </NuxtLink>
                   <button
+                    v-if="!review.is_published"
                     @click="handleDelete(review.id)"
                     class="text-red-600 hover:text-red-900"
+                    title="Delete unpublished review"
                   >
                     Delete
                   </button>
+                  <span v-else class="text-gray-400 text-xs italic" title="Published reviews cannot be deleted">
+                    (Published - cannot delete)
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -116,8 +121,9 @@ const formatDate = (date) => {
 }
 
 const handleDelete = (id) => {
+  const review = reviews.value.find(r => r.id === id)
   confirm.require({
-    message: 'Are you sure you want to delete this review?',
+    message: `Are you sure you want to delete the unpublished review "${review?.title}"? This action cannot be undone.`,
     header: 'Confirm Deletion',
     icon: 'pi pi-exclamation-triangle',
     accept: async () => {
