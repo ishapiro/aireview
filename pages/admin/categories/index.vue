@@ -537,7 +537,8 @@ const closeUnsplashDialog = () => {
   unsplashSearchQuery.value = ''
 }
 
-const searchUnsplashImages = async (page = 1) => {
+const searchUnsplashImages = async (page) => {
+  const pageNumber = typeof page === 'number' ? page : 1
   console.log('Search query:', unsplashSearchQuery.value)
   console.log('API key available:', !!UNSPLASH_ACCESS_KEY)
   
@@ -556,7 +557,7 @@ const searchUnsplashImages = async (page = 1) => {
 
   try {
     const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(unsplashSearchQuery.value.trim())}&page=${page}&per_page=10`,
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(unsplashSearchQuery.value.trim())}&page=${pageNumber}&per_page=10`,
       {
         headers: {
           'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
@@ -573,7 +574,7 @@ const searchUnsplashImages = async (page = 1) => {
     unsplashImages.value = data.results || []
     totalImages.value = data.total || 0
     totalPages.value = Math.ceil(totalImages.value / 10)
-    currentPage.value = page
+    currentPage.value = pageNumber
     selectedImage.value = null
 
     if (data.results.length === 0) {

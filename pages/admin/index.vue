@@ -39,6 +39,7 @@
                 Manage Users
               </NuxtLink>
               <CategoryPopulator />
+              <UncategorizedReviewCategorizer />
             </div>
           </div>
         </template>
@@ -139,6 +140,7 @@
 <script setup>
 import { format } from 'date-fns'
 import CategoryPopulator from '~/components/CategoryPopulator.vue'
+import UncategorizedReviewCategorizer from '~/components/UncategorizedReviewCategorizer.vue'
 
 const client = useSupabaseClient()
 

@@ -4,7 +4,7 @@
     <button
       type="button"
       @click="openDialog"
-      class="btn-primary block text-center w-full text-sm font-medium"
+      class="btn-primary block text-center w-full text-sm font-medium border-0"
     >
       Populate a Category
     </button>
