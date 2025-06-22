@@ -76,7 +76,8 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
-      cogitationsCloudflareToken: process.env.NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN
+      cogitationsCloudflareToken: process.env.NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN,
+      unsplashAccessKey: process.env.NUXT_PUBLIC_UNSPLASH_ACCESS_KEY
     }
   }
 }) 
