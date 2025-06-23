@@ -1,417 +1,183 @@
-# Cogitations Reviews
+# Supabase CLI
 
-A modern product reviews and recommendations platform built with Nuxt 3, Supabase, PrimeVue, and TailwindCSS.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-Integrates AI for both review generation and user driven updates.
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## 🌟 Features
+This repository contains all the functionality for Supabase CLI.
 
-- User authentication and authorization (email/password + Google OAuth)
-- Email duplicate detection system
-- Product review creation and management
-- AI-powered content generation for reviews
-- Search functionality
-- User profiles
-- Admin dashboard
-- Responsive design
-- Email verification
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-## 🛠️ Tech Stack
+## Getting started
 
-- **Frontend Framework**: [Nuxt 3](https://nuxt.com/)
-- **UI Components**: [PrimeVue](https://primevue.org/) (unstyled mode)
-- **Styling**: [TailwindCSS](https://tailwindcss.com/)
-- **Backend/Database**: [Supabase](https://supabase.com/)
-- **Authentication**: Supabase Auth with Google OAuth
-- **CloudFlare**: OpenAI Proxy implemented as a worker
+### Install the CLI
 
-## 📋 Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- Git
-- Supabase account
-- Google Cloud Console account (for OAuth)
-
-## 🚀 Getting Started
-
-### 1. Clone and Install
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-git clone https://github.com/[your-username]/cogitations-reviews.git
-cd cogitations-reviews
-npm install
+npm i supabase --save-dev
 ```
 
-### 2. Environment Setup
-
-Create a `.env` file in the root directory:
-
-```env
-NUXT_PUBLIC_SUPABASE_URL=your-project-url
-NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NUXT_PUBLIC_SITE_URL=http://localhost:3000
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN=your-cloudflare-token
-```
-
-### 3. Supabase Configuration
-
-1. **Create a Supabase project** at [https://app.supabase.com](https://app.supabase.com)
-2. **Get your credentials** from Project Settings > API:
-   - Project URL → `NUXT_PUBLIC_SUPABASE_URL`
-   - Anon key → `NUXT_PUBLIC_SUPABASE_ANON_KEY`
-   - Service role key → `SUPABASE_SERVICE_ROLE_KEY`
-
-3. **Initialize database schema**:
-   - Go to SQL Editor in your Supabase dashboard
-   - Copy and execute the contents of `supabase/schema.sql`
-
-4. **Configure Authentication**:
-   - **Email Auth**: Enable "Enable email signup" and "Enable email confirmations"
-   - **URL Configuration**: Set Site URL to `http://localhost:3000`
-   - **Redirect URLs**: Add `http://localhost:3000/**`
-
-5. **Set up Google OAuth**:
-   - Enable Google provider in Authentication > Providers
-   - Configure OAuth credentials in [Google Cloud Console](https://console.cloud.google.com)
-   - Add redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`
-
-### 4. Development Server
+To install the beta release channel:
 
 ```bash
-npm run dev
+npm i supabase@beta --save-dev
 ```
 
-Visit `http://localhost:3000` to see your application.
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-## 🔐 Email Duplicate Detection System
-
-This project implements a robust system to prevent users from creating multiple accounts with the same email address when using different authentication methods.
-
-### How It Works
-
-1. **Server-Side API** (`server/api/auth/check-email.post.js`):
-   - Uses Supabase service role key to access admin API
-   - Checks if an email already exists
-   - Identifies OAuth providers (Google) vs email/password accounts
-
-2. **Client-Side Integration** (`pages/auth/register.vue`):
-   - Calls server API before registration
-   - Shows appropriate warnings for existing accounts
-   - Prevents duplicate account creation
-
-3. **Fallback Mechanism**:
-   - Works even without service role key
-   - Falls back to Supabase's built-in duplicate detection
-
-### Key Implementation Details
-
-**Environment Variables in Nuxt 3:**
-```javascript
-// Client-side
-const config = useRuntimeConfig()
-const supabaseUrl = config.public.supabaseUrl
-
-// Server-side
-const config = useRuntimeConfig()
-const serviceRoleKey = config.supabaseServiceRoleKey
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
 ```
 
-**$fetch Response Handling:**
-```javascript
-// Correct way in Nuxt 3
-const response = await $fetch('/api/auth/check-email', {
-  method: 'POST',
-  body: { email }
-})
-```
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-## 🤖 AI Content Generation
+<details>
+  <summary><b>macOS</b></summary>
 
-This project includes an AI-powered content generation feature that helps users create review content using OpenAI's GPT models.
+  Available via [Homebrew](https://brew.sh). To install:
 
-### Features
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-- **Interactive Dialog**: Opens a modal dialog for entering AI prompts
-- **Real-time Generation**: Generates content using the specified AI endpoint
-- **Content Preview**: Shows rendered markdown preview of generated content
-- **Summary Generation**: Automatically generates both content and summary
-- **Multiple Actions**: 
-  - Use generated content directly
-  - Append to existing content
-  - Refine prompt and regenerate
-- **Error Handling**: Displays clear error messages for failed requests
-- **Loading States**: Shows spinner during content generation
-- **Cross-Page Integration**: Available on all review creation and editing pages
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-### How It Works
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-1. **Prompt Input**: Users enter a custom prompt describing the desired review content
-2. **API Integration**: Sends request to `cogitations-review-ai.cogitations.workers.dev`
-3. **Response Handling**: Processes and displays the AI-generated content
-4. **Content Integration**: Allows users to use or append the generated content to their review
-5. **Summary Generation**: When enabled, generates both content and summary simultaneously
+<details>
+  <summary><b>Windows</b></summary>
 
-### Implementation Details
+  Available via [Scoop](https://scoop.sh). To install:
 
-**Shared Component**: `components/AIContentGenerator.vue`
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-**Available Pages**:
-- `components/ReviewEditor.vue` - Main review editor component
-- `pages/admin/reviews/new.vue` - Create new review page
-- `pages/admin/reviews/[id].vue` - Edit existing review page
+  To upgrade:
 
-**API Configuration**:
-```javascript
-const requestBody = {
-  prompt: userPrompt,
-  model: 'gpt-3.5-turbo'
-}
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${config.public.cogitationsCloudflareToken}`
-  },
-  body: JSON.stringify(requestBody)
-})
-```
+<details>
+  <summary><b>Linux</b></summary>
 
-**Environment Variable**: `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN` - Required for API authentication
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-**Component Usage**:
-```vue
-<AIContentGenerator
-  v-model="form.content"
-  :summary-value="form.summary"
-  :generate-summary="true"
-  @update:summary-value="form.summary = $event"
-  @ai-generated="form.ai_generated = true"
-/>
-```
+  #### via Homebrew
 
-### Usage
+  To install:
 
-1. Click the "Generate with AI" button next to the content field on any review page
-2. Enter your prompt describing the review content you want to generate
-3. Click "Generate Content" to send the request
-4. Review the generated content in the preview
-5. Choose to:
-   - **Use This Content**: Replace existing content with AI-generated content
-   - **Append to Existing**: Add AI content to the end of existing content
-   - **Refine Prompt**: Modify the prompt and generate new content
-6. The "AI Generated" checkbox is automatically checked when using AI content
-7. When summary generation is enabled, both content and summary are populated
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### Summary Generation
+  To upgrade:
 
-The AI system can generate both detailed content and concise summaries:
-- **Summary**: Brief 2-3 sentence overview of the review
-- **Content**: Detailed markdown-formatted review content
-- **Automatic Parsing**: AI response is parsed to extract both sections
-- **Fallback**: If parsing fails, full response is used as content
+  ```sh
+  brew upgrade supabase
+  ```
 
-## 🎨 PrimeVue + TailwindCSS Integration
+  #### via Linux packages
 
-This project uses PrimeVue in unstyled mode with TailwindCSS for complete styling control.
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-### Configuration
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
 
-**Nuxt Config** (`nuxt.config.js`):
-```javascript
-export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-primevue'],
-  primevue: {
-    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
-    options: { unstyled: true, ripple: true },
-    components: {
-      include: ['Button', 'Card', 'InputText', 'Password', 'Checkbox']
-    }
-  },
-  css: [
-    'primevue/resources/primevue.css',
-    'primeicons/primeicons.css',
-    '@/assets/css/main.css'
-  ]
-})
-```
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
 
-**Tailwind Config** (`tailwind.config.js`):
-```javascript
-module.exports = {
-  content: [
-    'node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}',
-    // ... your content paths
-  ],
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('tailwindcss-primeui')
-  ]
-}
-```
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
 
-### Usage
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
 
-```vue
-<template>
-  <Button class="bg-blue-500 hover:bg-blue-600 text-white">
-    Custom Styled Button
-  </Button>
-</template>
-```
+<details>
+  <summary><b>Other Platforms</b></summary>
 
-## 🚀 Deployment
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
 
-### Vercel Deployment
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
 
-1. **Install Vercel CLI**:
-   ```bash
-   npm install -g vercel
-   ```
+  Add a symlink to the binary in `$PATH` for easier access:
 
-2. **Build and Deploy**:
-   ```bash
-   npm run build
-   ```
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
 
-3. **Set Environment Variables** in Vercel dashboard:
-   - `NUXT_PUBLIC_SUPABASE_URL`
-   - `NUXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `NUXT_PUBLIC_SITE_URL` (production URL)
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN`
+  This works on other non-standard Linux distros.
+</details>
 
-### Production Configuration
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
 
-1. **Update Supabase Settings**:
-   - Site URL: Your production domain
-   - Redirect URLs: Add your production domain with wildcards
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
 
-2. **Update Google OAuth**:
-   - Add production domain to authorized origins
-   - Add production callback URLs
+  ```bash
+  pkgx install supabase
+  ```
 
-## 🔧 Troubleshooting
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
 
-### Common Issues
-
-1. **Environment Variables Not Loading**:
-   - Restart dev server after changing `.env`
-   - Use `useRuntimeConfig()` not `process.env`
-
-2. **Email Duplicate Detection Not Working**:
-   - Verify `SUPABASE_SERVICE_ROLE_KEY` is set
-   - Check server console for API errors
-   - Ensure service role key has admin privileges
-
-3. **PrimeVue Styling Issues**:
-   - Check CSS layer order in `nuxt.config.js`
-   - Ensure components are included in PrimeVue config
-   - Use browser dev tools to inspect applied styles
-
-4. **Google OAuth Redirect Errors**:
-   - Verify redirect URLs in both Supabase and Google Cloud Console
-   - Use wildcards in Supabase, exact URLs in Google Cloud
-   - Check environment variables are set correctly
-
-### Debugging Tips
-
-- Check browser console for configuration warnings
-- Use server console logs for API debugging
-- Test authentication flows in both development and production
-- Verify all environment variables are properly set
-
-### Supabase Dependency Issues
-
-If you encounter issues with Supabase dependencies or module conflicts, use this solution:
+### Run the CLI
 
 ```bash
-# 1. Remove node_modules and lock file to prevent conflicts
-rm -rf node_modules package-lock.json
-
-# 2. Install stable version of Supabase
-npm install @nuxtjs/supabase@1.4.1
-
-# 3. Reinstall all dependencies
-npm install
-
-# 4. Clean Nuxt build
-rm -rf .nuxt
-
-# 5. Run dev server
-npm run dev
+supabase bootstrap
 ```
 
-This approach ensures a clean installation with a stable version of the Supabase module and resolves dependency conflicts that may occur during development.
+Or using npx:
 
-## 📁 Project Structure
-
-```
-cogitations-reviews/
-├── app.vue                 # App entry point
-├── assets/                 # Static assets and CSS
-├── components/             # Vue components
-├── layouts/                # Page layouts
-├── pages/                  # Application pages
-├── plugins/                # Nuxt plugins
-├── public/                 # Public static files
-├── server/                 # Server-side API endpoints
-├── supabase/               # Supabase configuration
-└── utils/                  # Utility functions
+```bash
+npx supabase bootstrap
 ```
 
-## 🤝 Contributing
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+## Docs
 
-## 📄 License
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
 
-[MIT License](LICENSE)
+## Breaking changes
 
-## 🔗 References
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
 
-- [Nuxt 3 Documentation](https://nuxt.com/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [PrimeVue Documentation](https://primevue.org/)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
 
-## 🐞 Troubleshooting
+## Developing
 
-### `[unimport] failed to find "useSupabaseSession"` Error
+To run from source:
 
-This error can occur intermittently during development, especially after stopping and restarting the `npm run dev` server. It's caused by an instability in how Nuxt's auto-import feature interacts with the `@nuxtjs/supabase` module's session management.
-
-Standard solutions like clearing the Nuxt cache (`npx nuxi cleanup`) or reinstalling dependencies (`rm -rf node_modules && npm install`) may not permanently fix this issue.
-
-#### ✅ The Permanent Solution
-
-The most reliable solution is to explicitly define the client-side session handling behavior for the Supabase module in your `nuxt.config.js` file.
-
-Add the following `clientOptions` to the `supabase` configuration object:
-
-```javascript
-// nuxt.config.js
-
-export default defineNuxtConfig({
-  // ... other config
-  supabase: {
-    // ... other supabase config
-    clientOptions: {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
-  },
-  // ... other config
-})
+```sh
+# Go >= 1.22
+go run . help
 ```
-
-This configuration enforces a stable session management strategy, which prevents the auto-import errors from occurring during server restarts in the development environment. 

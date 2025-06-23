@@ -316,6 +316,7 @@
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { useImageUpload } from '@/composables/useImageUpload'
+import { slugify, generateUniqueSlug } from '@/utils/string'
 import { nextTick } from 'vue'
 
 const client = useSupabaseClient()
@@ -371,11 +372,17 @@ const { data: categories } = await useAsyncData('admin-categories', async () => 
   })) || []
 })
 
-const generateSlug = (name) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+const generateSlug = async (name) => {
+  const baseSlug = slugify(name)
+  
+  // Get existing slugs to check for uniqueness
+  const { data: existingCategories } = await client
+    .from('categories')
+    .select('slug')
+  
+  const existingSlugs = existingCategories?.map(cat => cat.slug) || []
+  
+  return generateUniqueSlug(baseSlug, existingSlugs)
 }
 
 const handleEdit = (category) => {
@@ -392,9 +399,11 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
+    const slug = await generateSlug(form.value.name)
+    
     const categoryData = {
       name: form.value.name,
-      slug: generateSlug(form.value.name),
+      slug: slug,
       description: form.value.description,
       image_url: form.value.image_url
     }

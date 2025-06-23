@@ -444,7 +444,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { format } from 'date-fns'
-import { cleanTitle } from '~/utils/string'
+import { cleanTitle, slugify, generateUniqueSlug } from '~/utils/string'
 
 // Props
 const props = defineProps({
@@ -658,11 +658,13 @@ const checkOrCreateCategory = async () => {
       selectedCategory.value = existingCategory
     } else {
       // Create new category
+      const slug = await generateSlug(categoryName.value.trim())
+      
       const { data: newCategory, error: createError } = await client
         .from('categories')
         .insert({
           name: categoryName.value.trim(),
-          slug: generateSlug(categoryName.value.trim()),
+          slug: slug,
           description: `AI-generated category for ${categoryName.value.trim()}`
         })
         .select()
@@ -684,11 +686,17 @@ const checkOrCreateCategory = async () => {
   }
 }
 
-const generateSlug = (name) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+const generateSlug = async (name) => {
+  const baseSlug = slugify(name)
+  
+  // Get existing slugs to check for uniqueness
+  const { data: existingCategories } = await client
+    .from('categories')
+    .select('slug')
+  
+  const existingSlugs = existingCategories?.map(cat => cat.slug) || []
+  
+  return generateUniqueSlug(baseSlug, existingSlugs)
 }
 
 const generateProductList = async () => {

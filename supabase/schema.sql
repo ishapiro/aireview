@@ -636,17 +636,33 @@ CREATE OR REPLACE FUNCTION public.slugify(
   v TEXT
 ) RETURNS TEXT AS $$
 BEGIN
+  -- Handle null or empty input
+  IF v IS NULL OR v = '' THEN
+    RETURN '';
+  END IF;
+  
   -- Remove accents
   v := translate(v, 'àáâãäåāăąçćčđďèéêëēĕėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż', 'aaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz');
-  --
-  -- Replace anything that's not a letter, number, hyphen or underscore with a hyphen
-  v := lower(regexp_replace(v, '[^a-z0-9_-]+', '-', 'g'));
-  --
+  
+  -- Convert to lowercase
+  v := lower(v);
+  
+  -- Replace spaces and special characters with hyphens
+  v := regexp_replace(v, '[^a-z0-9]+', '-', 'g');
+  
   -- Replace multiple hyphens with a single hyphen
   v := regexp_replace(v, '[-]+', '-', 'g');
-  --
+  
   -- Remove leading and trailing hyphens
   v := regexp_replace(v, '^-|-$', '', 'g');
+  
+  -- Limit to 25 characters
+  IF length(v) > 25 THEN
+    v := substring(v from 1 for 25);
+    -- Remove trailing hyphens after truncation
+    v := regexp_replace(v, '-+$', '', 'g');
+  END IF;
+  
   RETURN v;
 END;
 $$ LANGUAGE plpgsql;

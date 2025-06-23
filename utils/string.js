@@ -1,5 +1,7 @@
 export function slugify(text) {
-  return text
+  if (!text || typeof text !== 'string') return ''
+  
+  let slug = text
     .toString()
     .toLowerCase()
     .trim()
@@ -9,6 +11,35 @@ export function slugify(text) {
     .replace(/\-\-+/g, '-')      // Replace multiple - with single -
     .replace(/^-+/, '')          // Trim - from start of text
     .replace(/-+$/, '')          // Trim - from end of text
+  
+  // Limit to 25 characters
+  if (slug.length > 25) {
+    slug = slug.substring(0, 25)
+    // Remove trailing hyphens after truncation
+    slug = slug.replace(/-+$/, '')
+  }
+  
+  return slug
+}
+
+export function generateUniqueSlug(baseSlug, existingSlugs = []) {
+  let slug = baseSlug
+  
+  // If slug already exists, add a random 4-character suffix
+  if (existingSlugs.includes(slug)) {
+    const randomSuffix = Math.random().toString(36).substring(2, 6) // 4 random alphanumeric chars
+    slug = `${slug}-${randomSuffix}`
+    
+    // If still too long after adding suffix, truncate the base part
+    if (slug.length > 25) {
+      const maxBaseLength = 21 // 25 - 4 (suffix length)
+      slug = `${baseSlug.substring(0, maxBaseLength)}-${randomSuffix}`
+      // Remove trailing hyphens after truncation
+      slug = slug.replace(/-+$/, '')
+    }
+  }
+  
+  return slug
 }
 
 export function stripMarkdown(text) {
