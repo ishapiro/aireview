@@ -261,6 +261,20 @@ onMounted(async () => {
       console.error('[reviews/[slug]] Exception during vote check:', error)
     }
   }
+
+  // Log the review view
+  if (process.client && data.value?.category) {
+    const { error } = await client.rpc('log_user_activity', {
+      activity_type: 'review_view',
+      activity_metadata: {
+        review_id: data.value.category.id,
+        review_slug: data.value.category.slug
+      }
+    })
+    if (error) {
+      console.error('Error logging review view:', error)
+    }
+  }
 })
 
 // Fetch comments

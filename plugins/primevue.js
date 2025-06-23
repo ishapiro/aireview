@@ -18,6 +18,7 @@ import ConfirmationService from 'primevue/confirmationservice'
 import ProgressSpinner from 'primevue/progressspinner'
 import ProgressBar from 'primevue/progressbar'
 import InputSwitch from 'primevue/inputswitch'
+import Tooltip from 'primevue/tooltip'
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue, {
@@ -62,4 +63,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Register services
   nuxtApp.vueApp.use(ToastService)
   nuxtApp.vueApp.use(ConfirmationService)
+
+  // Register tooltip directive
+  nuxtApp.vueApp.directive('tooltip', Tooltip)
 }) 

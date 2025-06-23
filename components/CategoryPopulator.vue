@@ -704,6 +704,18 @@ const generateProductList = async () => {
   error.value = ''
 
   try {
+    // Log the AI Product Search event
+    const { error: logError } = await client.rpc('log_user_activity', {
+      activity_type: 'ai_product_search',
+      activity_metadata: {
+        category_id: selectedCategory.value.id,
+        category_name: selectedCategory.value.name
+      }
+    })
+    if (logError) {
+      console.error('Error logging AI Product Search:', logError)
+    }
+
     // Use the AI Generator's product list function
     const productList = await aiGenerator.value.generateProductList(selectedCategory.value.name)
     

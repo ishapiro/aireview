@@ -75,6 +75,9 @@ drop function if exists public.handle_activity_log() cascade;
 drop function if exists public.update_review_with_categories(uuid, text, text, text, integer, boolean, boolean, uuid[]) cascade;
 drop function if exists public.create_review_with_categories(text, text, text, integer, boolean, boolean, uuid[], uuid) cascade;
 drop function if exists public.slugify(text) cascade;
+drop function if exists public.log_user_activity(text, jsonb) cascade;
+drop function if exists public.get_users_with_activity_counts() cascade;
+drop function if exists public.delete_user(user_id_to_delete uuid) cascade;
 
 -- Safe migrations: Create or modify tables
 do $$ 
@@ -163,7 +166,10 @@ begin
                 'user_registered',
                 'category_created',
                 'category_updated',
-                'category_deleted'
+                'category_deleted',
+                'review_view',
+                'ai_product_search',
+                'db_search'
             )
         ),
         description text not null,
@@ -532,6 +538,79 @@ begin
     select r.id, r.title, r.slug from public.reviews r where r.id = new_review_id;
 end;
 $$ language plpgsql;
+
+create or replace function public.log_user_activity(
+    activity_type text,
+    activity_metadata jsonb
+)
+returns void as $$
+begin
+    insert into public.activity_log (user_id, type, description, metadata)
+    values (
+        auth.uid(),
+        activity_type,
+        case
+            when activity_type = 'review_view' then 'User viewed a review'
+            when activity_type = 'ai_product_search' then 'User initiated an AI Product Search'
+            when activity_type = 'db_search' then 'User performed a database search'
+            else 'Unknown activity'
+        end,
+        activity_metadata
+    );
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.get_users_with_activity_counts()
+returns table(
+    id uuid,
+    full_name text,
+    email text,
+    avatar_url text,
+    is_admin boolean,
+    is_premium boolean,
+    created_at timestamptz,
+    review_views bigint,
+    ai_searches bigint,
+    db_searches bigint
+) as $$
+begin
+    return query
+    select
+        p.id,
+        p.full_name,
+        p.email,
+        p.avatar_url,
+        p.is_admin,
+        p.is_premium,
+        p.created_at,
+        coalesce(counts.review_views, 0) as review_views,
+        coalesce(counts.ai_searches, 0) as ai_searches,
+        coalesce(counts.db_searches, 0) as db_searches
+    from
+        public.profiles p
+    left join (
+        select
+            user_id,
+            count(*) filter (where type = 'review_view') as review_views,
+            count(*) filter (where type = 'ai_product_search') as ai_searches,
+            count(*) filter (where type = 'db_search') as db_searches
+        from
+            public.activity_log
+        group by
+            user_id
+    ) as counts on p.id = counts.user_id
+    order by
+        p.created_at desc;
+end;
+$$ language plpgsql;
+
+create or replace function public.delete_user(user_id_to_delete uuid)
+returns void as $$
+begin
+  -- This requires the service_role key to be used in the client
+  delete from auth.users where id = user_id_to_delete;
+end;
+$$ language plpgsql security definer;
 
 -- Create triggers (safe to run after dropping existing ones)
 create trigger on_auth_user_created

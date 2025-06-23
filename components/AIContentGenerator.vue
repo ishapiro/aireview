@@ -319,6 +319,21 @@ Ensure the rating and reasoning content is only included one time in the content
     content = content.replace(/CONTENT:\s*/i, '')
     content = content.replace(/\n\n---[\s\S]*/, '').trim()
     generatedContent.value = content
+
+    // Log the AI generation event
+    /*
+    const { error: logError } = await client.rpc('log_user_activity', {
+      activity_type: 'review_ai_generation',
+      activity_metadata: {
+        prompt: aiPrompt.value,
+        title: props.title
+      }
+    })
+    if (logError) {
+      console.error('Error logging AI generation:', logError)
+    }
+    */
+
   } catch (error) {
     console.error('Error generating AI content:', error)
     aiError.value = `Error generating content: ${error.message}`

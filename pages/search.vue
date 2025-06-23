@@ -229,6 +229,17 @@ const fetchResults = async () => {
 
     searchResults.value = data.map(r => ({ ...r, categories: r.categories.map(c => c.categories) })) || []
     totalResults.value = count || 0
+
+    // Log the search event
+    if (searchForm.value.query.trim()) {
+      const { error: logError } = await client.rpc('log_user_activity', {
+        activity_type: 'db_search',
+        activity_metadata: { search_query: searchForm.value.query.trim() }
+      })
+      if (logError) {
+        console.error('Error logging search event:', logError)
+      }
+    }
   } catch (error) {
     console.error('Error fetching search results:', error)
     toast.add({

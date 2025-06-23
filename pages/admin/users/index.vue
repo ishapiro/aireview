@@ -1,88 +1,82 @@
 <template>
-  <div class="max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Users</h1>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">User Management</h1>
 
     <Card>
       <template #content>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
-            <thead>
+            <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status / Role
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Joined
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Views
+                </th>
+                <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  AI
+                </th>
+                <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  DB
+                </th>
+                <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="user in users" :key="user.id">
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <img
-                        v-if="user.avatar_url"
-                        :src="user.avatar_url"
-                        class="h-10 w-10 rounded-full object-cover"
+                      <img 
+                        v-if="user.avatar_url && !user.avatar_error" 
+                        :src="user.avatar_url" 
+                        class="h-10 w-10 rounded-full object-cover" 
+                        :alt="user.full_name" 
+                        @error="user.avatar_error = true"
                       />
-                      <div
-                        v-else
-                        class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center"
-                      >
+                      <div v-else class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <i class="pi pi-user text-gray-400"></i>
                       </div>
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        {{ user.full_name }}
-                      </div>
+                      <div class="text-sm font-medium text-gray-900">{{ user.full_name }}</div>
+                      <div class="text-sm text-gray-500">{{ user.email }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ user.email }}</div>
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex flex-col space-y-1">
+                    <Tag :value="user.is_premium ? 'Premium' : 'Free'" :severity="user.is_premium ? 'success' : 'secondary'" />
+                    <Tag :value="user.is_admin ? 'Admin' : 'User'" :severity="user.is_admin ? 'danger' : 'info'" />
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <Tag
-                    :value="user.is_admin ? 'Admin' : 'User'"
-                    :severity="user.is_admin ? 'danger' : 'info'"
-                  />
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatDate(user.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <Tag
-                    :value="user.is_premium ? 'Premium' : 'Free'"
-                    :severity="user.is_premium ? 'success' : 'warning'"
-                  />
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ formatDate(user.created_at) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <button
-                    @click="handleToggleAdmin(user)"
-                    class="text-primary-600 hover:text-primary-900 mr-4"
-                  >
-                    {{ user.is_admin ? 'Remove Admin' : 'Make Admin' }}
-                  </button>
-                  <button
-                    @click="handleDelete(user.id)"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ user.review_views }}</td>
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ user.ai_searches }}</td>
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ user.db_searches }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <div class="flex items-center justify-center space-x-3">
+                    <button v-if="!user.is_admin" @click="handleToggleAdmin(user)" v-tooltip.top="'Make Admin'" class="text-green-600 hover:text-green-900">
+                      <i class="pi pi-user-plus"></i>
+                    </button>
+                    <button v-else @click="handleToggleAdmin(user)" v-tooltip.top="'Remove Admin'" class="text-yellow-600 hover:text-yellow-900">
+                      <i class="pi pi-user-minus"></i>
+                    </button>
+                    <button @click="handleDelete(user.id)" v-tooltip.top="'Delete User'" class="text-red-600 hover:text-red-900">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -99,30 +93,40 @@
 <script setup>
 import { format } from 'date-fns'
 import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 
 const client = useSupabaseClient()
 const toast = useToast()
 const confirm = useConfirm()
 
 // Fetch users
-const { data: users } = await useAsyncData('admin-users', async () => {
-  const { data } = await client
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
+const { data: users } = await useAsyncData('admin-users-with-counts', async () => {
+  const { data, error } = await client.rpc('get_users_with_activity_counts')
   
+  if (error) {
+    console.error('Error fetching users with activity counts:', error)
+    toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Could not load user activity data.',
+        life: 3000,
+    })
+    return []
+  }
   return data
 })
 
 const formatDate = (date) => {
+  if (!date) return 'N/A'
   return format(new Date(date), 'MMM d, yyyy')
 }
 
 const handleToggleAdmin = async (user) => {
   try {
+    const newAdminStatus = !user.is_admin
     const { error } = await client
       .from('profiles')
-      .update({ is_admin: !user.is_admin })
+      .update({ is_admin: newAdminStatus })
       .eq('id', user.id)
 
     if (error) throw error
@@ -130,13 +134,13 @@ const handleToggleAdmin = async (user) => {
     // Update user in the list
     const userIndex = users.value.findIndex(u => u.id === user.id)
     if (userIndex !== -1) {
-      users.value[userIndex].is_admin = !user.is_admin
+      users.value[userIndex].is_admin = newAdminStatus
     }
 
     toast.add({
       severity: 'success',
       summary: 'Success',
-      detail: `User ${user.is_admin ? 'removed from' : 'made'} admin successfully`,
+      detail: `User ${newAdminStatus ? 'made' : 'removed from'} admin successfully`,
       life: 3000
     })
   } catch (error) {
@@ -157,10 +161,8 @@ const handleDelete = (id) => {
     rejectClass: 'p-button-info',
     accept: async () => {
       try {
-        const { error } = await client
-          .from('profiles')
-          .delete()
-          .eq('id', id)
+        // This should cascade and delete the user from auth.users as well
+        const { error } = await client.rpc('delete_user', { user_id_to_delete: id })
 
         if (error) throw error
 
