@@ -7,7 +7,7 @@
       class="btn-primary flex items-center gap-2"
     >
       <i class="pi pi-robot"></i>
-      Generate with AI
+      {{ buttonLabel }}
     </button>
 
     <!-- AI Dialog -->
@@ -188,10 +188,18 @@ const props = defineProps({
   ratingValue: {
     type: Number,
     default: null
+  },
+  mode: {
+    type: String,
+    default: 'create' // 'create' or 'edit'
   }
 })
 
 const emit = defineEmits(['update:modelValue', 'update:summaryValue', 'update:ratingValue', 'ai-generated'])
+
+const buttonLabel = computed(() => {
+  return props.mode === 'edit' ? 'Regenerate with AI' : 'Generate with AI'
+})
 
 const config = useRuntimeConfig()
 
@@ -455,16 +463,14 @@ const generateProductReview = async (productName, categoryName) => {
 }
 
 const useAIContent = () => {
-  if (props.generateSummary) {
+  emit('update:modelValue', generatedContent.value)
+  if (props.generateSummary && generatedSummary.value) {
     emit('update:summaryValue', generatedSummary.value)
   }
-  emit('update:modelValue', generatedContent.value)
-  
   if (suggestedRating.value) {
     emit('update:ratingValue', suggestedRating.value)
   }
-
-  emit('ai-generated', true)
+  emit('ai-generated')
   closeAIDialog()
 }
 
@@ -472,7 +478,7 @@ const appendAIContent = () => {
   const separator = props.modelValue ? '\n\n' : ''
   const newContent = props.modelValue + separator + generatedContent.value
   emit('update:modelValue', newContent)
-  emit('ai-generated', true)
+  emit('ai-generated')
   closeAIDialog()
 }
 

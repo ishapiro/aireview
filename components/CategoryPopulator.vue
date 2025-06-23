@@ -7,7 +7,7 @@
       @click="openDialog"
       class="btn-primary block text-center w-full text-base font-medium border-0"
     >
-      Populate a Category
+      Let AI Help Add or Refresh Reviews in This Category
     </button>
 
     <!-- Category Populator Dialog -->
