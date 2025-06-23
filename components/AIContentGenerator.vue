@@ -167,6 +167,7 @@
 
 <script setup>
 import { marked } from 'marked'
+import { useAI } from '@/composables/useAI'
 
 const props = defineProps({
   modelValue: {
@@ -239,6 +240,8 @@ const openAIDialog = () => {
   }
 }
 
+const { sendAIPrompt } = useAI()
+
 const generateAIContent = async () => {
   if (!aiPrompt.value.trim() || isGenerating.value) return
 
@@ -247,7 +250,6 @@ const generateAIContent = async () => {
 
   try {
     let prompt = aiPrompt.value;
-    
     // Define the format instructions
     const formatInstructions = `Please provide the review in the following format:
 ${props.generateSummary ? '\nSUMMARY:\n[Your summary here]' : ''}
@@ -261,39 +263,11 @@ CONTENT:
 *Reasoning: [Brief explanation of why this rating was given]*
 
 Ensure the rating and reasoning content is only included one time in the content.`;
-
     // Append the instructions to the prompt
     prompt = `${prompt}\n\n${formatInstructions}`;
-    
-    const requestBody = {
-      prompt: prompt,
-      model: 'gpt-4-turbo'
-    }
 
-    console.log('Request body:', JSON.stringify(requestBody, null, 2))
-
-    const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.public.cogitationsCloudflareToken}`
-      },
-      body: JSON.stringify(requestBody)
-    })
-
-    console.log('Response status:', response.status)
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()))
-
-    if (!response.ok) {
-      throw new Error('AI content generation request failed')
-    }
-
-    const data = await response.json()
-    console.log('Response data:', JSON.stringify(data, null, 2))
-    
-    // Extract content from OpenAI API response structure
-    const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
-    
+    // Use shared composable
+    const fullResponse = await sendAIPrompt(prompt)
     aiResponse.value = fullResponse.trim()
 
     // Parse the response to extract rating
@@ -309,7 +283,6 @@ Ensure the rating and reasoning content is only included one time in the content
         generatedSummary.value = summaryMatch[1].trim()
       }
     }
-    
     let content = fullResponse
     // Clean up the content, removing other parts
     content = content.replace(/TITLE:[\s\S]*?\n\n/i, '')
@@ -319,21 +292,6 @@ Ensure the rating and reasoning content is only included one time in the content
     content = content.replace(/CONTENT:\s*/i, '')
     content = content.replace(/\n\n---[\s\S]*/, '').trim()
     generatedContent.value = content
-
-    // Log the AI generation event
-    /*
-    const { error: logError } = await client.rpc('log_user_activity', {
-      activity_type: 'review_ai_generation',
-      activity_metadata: {
-        prompt: aiPrompt.value,
-        title: props.title
-      }
-    })
-    if (logError) {
-      console.error('Error logging AI generation:', logError)
-    }
-    */
-
   } catch (error) {
     console.error('Error generating AI content:', error)
     aiError.value = `Error generating content: ${error.message}`

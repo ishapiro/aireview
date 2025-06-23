@@ -191,7 +191,8 @@ begin
                 'category_deleted',
                 'review_view',
                 'ai_product_search',
-                'db_search'
+                'db_search',
+                'product_comparison'
             )
         ),
         description text not null,
@@ -626,6 +627,7 @@ begin
             when activity_type = 'review_view' then 'User viewed a review'
             when activity_type = 'ai_product_search' then 'User initiated an AI Product Search'
             when activity_type = 'db_search' then 'User performed a database search'
+            when activity_type = 'product_comparison' then 'User compared products from saved list'
             else 'Unknown activity'
         end,
         activity_metadata

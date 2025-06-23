@@ -166,6 +166,18 @@
           <p class="text-sm text-gray-500">
             {{ selectedList.item_count }} items • Created {{ formatDate(selectedList.created_at) }}
           </p>
+          <!-- Compare Button -->
+          <div v-if="selectedItems.length > 0" class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600">{{ selectedItems.length }} selected</span>
+            <Button
+              @click="compareSelectedItems"
+              label="Compare"
+              icon="pi pi-chart-bar"
+              size="small"
+              :loading="isComparing"
+              :disabled="selectedItems.length < 2 || selectedItems.length > 3"
+            />
+          </div>
         </div>
         
         <div v-if="selectedList.items && selectedList.items.length > 0" class="space-y-3">
@@ -174,18 +186,27 @@
             :key="item.id"
             class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
           >
-            <div class="flex-1 min-w-0">
-              <h4 class="font-medium text-gray-900">{{ item.title }}</h4>
-              <p class="text-sm text-gray-500 mt-1">{{ item.summary }}</p>
-              <div class="flex items-center space-x-4 mt-2">
-                <span class="text-xs text-gray-500">by {{ item.author_name }}</span>
-                <div class="flex items-center space-x-1">
-                  <span v-for="star in 5" :key="star">
-                    <i
-                      class="text-xs"
-                      :class="star <= item.rating ? 'pi pi-star-fill text-yellow-400' : 'pi pi-star text-gray-300'"
-                    ></i>
-                  </span>
+            <!-- Checkbox for selection -->
+            <div class="flex items-center space-x-3 flex-1">
+              <Checkbox
+                v-model="selectedItems"
+                :value="item.id"
+                :disabled="selectedItems.length >= 3 && !selectedItems.includes(item.id)"
+                class="flex-shrink-0"
+              />
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-gray-900">{{ item.title }}</h4>
+                <p class="text-sm text-gray-500 mt-1">{{ item.summary }}</p>
+                <div class="flex items-center space-x-4 mt-2">
+                  <span class="text-xs text-gray-500">by {{ item.author_name }}</span>
+                  <div class="flex items-center space-x-1">
+                    <span v-for="star in 5" :key="star">
+                      <i
+                        class="text-xs"
+                        :class="star <= item.rating ? 'pi pi-star-fill text-yellow-400' : 'pi pi-star text-gray-300'"
+                      ></i>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -222,6 +243,34 @@
       </template>
     </Dialog>
 
+    <!-- Comparison Result Dialog -->
+    <Dialog
+      v-model:visible="showComparisonDialog"
+      modal
+      header="Product Comparison"
+      :style="{ width: '90vw', maxWidth: '1000px' }"
+    >
+      <div v-if="comparisonResult" class="space-y-4">
+        <div class="prose prose-sm max-w-none" v-html="renderedComparisonResult"></div>
+      </div>
+      
+      <div v-else-if="isComparing" class="flex justify-center items-center py-12">
+        <div class="text-center">
+          <i class="pi pi-spin pi-spinner text-4xl text-gray-400 mb-4"></i>
+          <p class="text-gray-600">Generating comparison...</p>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            @click="showComparisonDialog = false"
+            label="Close"
+          />
+        </div>
+      </template>
+    </Dialog>
+
     <Toast />
     <ConfirmDialog />
   </div>
@@ -231,11 +280,14 @@
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
+import { marked } from 'marked'
+import { useAI } from '@/composables/useAI'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
 const confirm = useConfirm()
+const { sendAIPrompt } = useAI()
 
 // State
 const savedLists = ref([])
@@ -243,8 +295,18 @@ const isLoading = ref(true)
 const isCreating = ref(false)
 const showCreateDialog = ref(false)
 const showViewDialog = ref(false)
+const showComparisonDialog = ref(false)
 const newListName = ref('')
 const selectedList = ref(null)
+const selectedItems = ref([])
+const isComparing = ref(false)
+const comparisonResult = ref(null)
+
+// Computed property to render comparison result as HTML
+const renderedComparisonResult = computed(() => {
+  if (!comparisonResult.value) return ''
+  return marked(comparisonResult.value)
+})
 
 // Fetch saved lists
 const fetchSavedLists = async () => {
@@ -344,6 +406,7 @@ const deleteList = (listId) => {
 // View list details
 const viewList = (list) => {
   selectedList.value = list
+  selectedItems.value = []
   showViewDialog.value = true
 }
 
@@ -389,6 +452,33 @@ const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
 }
 
+// Compare selected items
+const compareSelectedItems = async () => {
+  if (selectedItems.value.length < 2 || selectedItems.value.length > 3) return
+
+  isComparing.value = true
+  try {
+    // Get the selected product titles
+    const products = selectedList.value.items.filter(item => selectedItems.value.includes(item.id)).map(item => item.title)
+    const productTitles = products.join(', ')
+    const prompt = `Compare: ${productTitles}`
+
+    // Use shared composable
+    comparisonResult.value = await sendAIPrompt(prompt)
+    showComparisonDialog.value = true
+  } catch (error) {
+    console.error('Error comparing items:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to compare items',
+      life: 3000
+    })
+  } finally {
+    isComparing.value = false
+  }
+}
+
 // Fetch lists on mount
 onMounted(() => {
   fetchSavedLists()
@@ -400,6 +490,14 @@ watch(user, (newUser) => {
     fetchSavedLists()
   } else {
     savedLists.value = []
+  }
+})
+
+// Watch for dialog close to reset selected items
+watch(showViewDialog, (newValue) => {
+  if (!newValue) {
+    selectedItems.value = []
+    comparisonResult.value = null
   }
 })
 </script> 
