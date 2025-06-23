@@ -1,5 +1,5 @@
 <template>
-  <div class="card review-card no-underline">
+  <div class="card review-card no-underline relative">
     <NuxtLink 
       class="no-underline" 
       :to="review.is_published ? `/reviews/${review.slug}` : `/admin/reviews/${review.id}`" 
@@ -76,6 +76,11 @@
         </span>
       </div>
     </NuxtLink>
+    
+    <!-- Save to List Button (outside the NuxtLink to prevent navigation) -->
+    <div class="absolute top-2 right-2" @click.stop>
+      <SaveToList :review-id="review.id" />
+    </div>
   </div>
 </template>
 

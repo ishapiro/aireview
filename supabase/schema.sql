@@ -64,6 +64,23 @@ begin
         drop policy if exists "Users can manage categories for their own reviews" on public.review_categories;
         drop policy if exists "Admins can manage all review categories" on public.review_categories;
     end if;
+
+    if exists (select 1 from information_schema.tables where table_name = 'saved_lists' and table_schema = 'public') then
+        drop trigger if exists on_saved_list_activity on public.saved_lists;
+        drop policy if exists "Users can manage their own saved lists" on public.saved_lists;
+        drop policy if exists "Admins can manage all saved lists" on public.saved_lists;
+        drop policy if exists "Users can view their own saved lists" on public.saved_lists;
+        drop policy if exists "Users can create their own saved lists" on public.saved_lists;
+        drop policy if exists "Users can update their own saved lists" on public.saved_lists;
+        drop policy if exists "Users can delete their own saved lists" on public.saved_lists;
+    end if;
+
+    if exists (select 1 from information_schema.tables where table_name = 'saved_list_items' and table_schema = 'public') then
+        drop trigger if exists on_saved_list_item_activity on public.saved_list_items;
+        drop policy if exists "Users can manage their own saved list items" on public.saved_list_items;
+        drop policy if exists "Admins can manage all saved list items" on public.saved_list_items;
+        drop policy if exists "Users can view their own saved list items" on public.saved_list_items;
+    end if;
 end $$;
 
 -- Drop existing functions (safe to do even if tables don't exist)
@@ -78,6 +95,11 @@ drop function if exists public.slugify(text) cascade;
 drop function if exists public.log_user_activity(text, jsonb) cascade;
 drop function if exists public.get_users_with_activity_counts() cascade;
 drop function if exists public.delete_user(user_id_to_delete uuid) cascade;
+drop function if exists public.create_saved_list(list_name text) cascade;
+drop function if exists public.add_to_saved_list(p_list_id uuid, p_review_id uuid) cascade;
+drop function if exists public.remove_from_saved_list(p_list_id uuid, p_review_id uuid) cascade;
+drop function if exists public.get_user_saved_lists() cascade;
+drop function if exists public.delete_saved_list(p_list_id uuid) cascade;
 
 -- Safe migrations: Create or modify tables
 do $$ 
@@ -178,6 +200,22 @@ begin
         updated_at timestamp with time zone default timezone('utc'::text, now()) not null
     );
 
+    create table if not exists public.saved_lists (
+        id uuid default gen_random_uuid() primary key,
+        user_id uuid references public.profiles(id) on delete cascade not null,
+        name text not null,
+        created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+        updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+    );
+
+    create table if not exists public.saved_list_items (
+        id uuid default gen_random_uuid() primary key,
+        list_id uuid references public.saved_lists(id) on delete cascade not null,
+        review_id uuid references public.reviews(id) on delete cascade not null,
+        added_at timestamp with time zone default timezone('utc'::text, now()) not null,
+        unique(list_id, review_id)
+    );
+
     -- Add columns if they don't exist
     -- Profiles table
     if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'phone') then
@@ -218,6 +256,8 @@ alter table public.comments enable row level security;
 alter table public.helpful_votes enable row level security;
 alter table public.activity_log enable row level security;
 alter table public.review_categories enable row level security;
+alter table public.saved_lists enable row level security;
+alter table public.saved_list_items enable row level security;
 
 -- Create policies (safe to run after dropping existing ones)
 create policy "Public profiles are viewable by everyone"
@@ -337,6 +377,39 @@ create policy "Activity logs are viewable by admins"
 create policy "System can insert activity logs"
     on public.activity_log for insert
     with check (true);
+
+-- Saved Lists Policies
+create policy "Users can view their own saved lists"
+    on public.saved_lists for select
+    using (auth.uid() = user_id);
+
+create policy "Users can create their own saved lists"
+    on public.saved_lists for insert
+    with check (auth.uid() = user_id);
+
+create policy "Users can update their own saved lists"
+    on public.saved_lists for update
+    using (auth.uid() = user_id);
+
+create policy "Users can delete their own saved lists"
+    on public.saved_lists for delete
+    using (auth.uid() = user_id);
+
+create policy "Users can view their own saved list items"
+    on public.saved_list_items for select
+    using (exists (
+        select 1 from public.saved_lists
+        where id = saved_list_items.list_id
+        and user_id = auth.uid()
+    ));
+
+create policy "Users can manage their own saved list items"
+    on public.saved_list_items for all
+    using (exists (
+        select 1 from public.saved_lists
+        where id = saved_list_items.list_id
+        and user_id = auth.uid()
+    ));
 
 -- Create functions (safe to run after dropping existing ones)
 create function public.handle_new_user()
@@ -609,6 +682,90 @@ returns void as $$
 begin
   -- This requires the service_role key to be used in the client
   delete from auth.users where id = user_id_to_delete;
+end;
+$$ language plpgsql security definer;
+
+-- Saved Lists Functions
+create or replace function public.create_saved_list(list_name text)
+returns uuid as $$
+declare
+    new_list_id uuid;
+begin
+    insert into public.saved_lists (user_id, name)
+    values (auth.uid(), list_name)
+    returning id into new_list_id;
+    
+    return new_list_id;
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.add_to_saved_list(p_list_id uuid, p_review_id uuid)
+returns void as $$
+begin
+    insert into public.saved_list_items (list_id, review_id)
+    values (p_list_id, p_review_id)
+    on conflict (list_id, review_id) do nothing;
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.remove_from_saved_list(p_list_id uuid, p_review_id uuid)
+returns void as $$
+begin
+    delete from public.saved_list_items
+    where list_id = p_list_id
+    and review_id = p_review_id;
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.get_user_saved_lists()
+returns table(
+    list_id uuid,
+    list_name text,
+    created_at timestamptz,
+    item_count bigint,
+    items jsonb
+) as $$
+begin
+    return query
+    select
+        sl.id as list_id,
+        sl.name as list_name,
+        sl.created_at,
+        count(sli.review_id) as item_count,
+        coalesce(
+            jsonb_agg(
+                jsonb_build_object(
+                    'id', r.id,
+                    'title', r.title,
+                    'slug', r.slug,
+                    'summary', r.summary,
+                    'rating', r.rating,
+                    'author_name', p.full_name,
+                    'added_at', sli.added_at
+                ) order by sli.added_at desc
+            ) filter (where r.id is not null),
+            '[]'::jsonb
+        ) as items
+    from
+        public.saved_lists sl
+    left join public.saved_list_items sli on sl.id = sli.list_id
+    left join public.reviews r on sli.review_id = r.id
+    left join public.profiles p on r.user_id = p.id
+    where
+        sl.user_id = auth.uid()
+    group by
+        sl.id, sl.name, sl.created_at
+    order by
+        sl.created_at desc;
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.delete_saved_list(p_list_id uuid)
+returns void as $$
+begin
+    delete from public.saved_lists
+    where id = p_list_id
+    and user_id = auth.uid();
 end;
 $$ language plpgsql security definer;
 

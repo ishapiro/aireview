@@ -654,4 +654,8 @@ const useSelectedImage = () => {
 const openCategoryPopulator = (category) => {
   selectedCategoryForPopulation.value = category
 }
+
+definePageMeta({
+  middleware: ['auth-admin']
+})
 </script> 

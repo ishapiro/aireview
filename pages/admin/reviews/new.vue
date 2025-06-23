@@ -119,6 +119,10 @@
 import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
 
+definePageMeta({
+  middleware: ['auth-admin']
+})
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()

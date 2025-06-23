@@ -130,6 +130,10 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { cleanTitle } from '~/utils/string'
 
+definePageMeta({
+  middleware: ['auth-admin']
+})
+
 const client = useSupabaseClient()
 const toast = useToast()
 const confirm = useConfirm()

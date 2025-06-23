@@ -145,6 +145,10 @@ import CategoryPopulator from '~/components/CategoryPopulator.vue'
 import UncategorizedReviewCategorizer from '~/components/UncategorizedReviewCategorizer.vue'
 import { cleanTitle } from '~/utils/string'
 
+definePageMeta({
+  middleware: ['auth-admin']
+})
+
 const client = useSupabaseClient()
 
 // Fetch dashboard statistics

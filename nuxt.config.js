@@ -75,7 +75,8 @@ export default defineNuxtConfig({
   router: {
     options: {
       strict: false
-    }
+    },
+    middleware: ['auth-admin']
   },
   runtimeConfig: {
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,

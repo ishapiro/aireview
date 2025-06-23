@@ -95,6 +95,10 @@ import { format } from 'date-fns'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 
+definePageMeta({
+  middleware: ['auth-admin']
+})
+
 const client = useSupabaseClient()
 const toast = useToast()
 const confirm = useConfirm()

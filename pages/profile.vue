@@ -196,6 +196,16 @@
               <h2 class="text-xl font-semibold text-gray-900">Account Actions</h2>
               <div class="space-y-4">
                 <NuxtLink
+                  to="/saved-lists"
+                  class="block w-full"
+                >
+                  <Button
+                    class="w-full"
+                    label="My Saved Lists"
+                    icon="pi pi-bookmark"
+                  />
+                </NuxtLink>
+                <NuxtLink
                   v-if="profile?.is_admin"
                   to="/admin"
                   class="block w-full"

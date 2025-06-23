@@ -198,6 +198,12 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
 import MultiSelect from 'primevue/multiselect'
+import { onBeforeRouteLeave } from 'vue-router'
+import { computed, nextTick } from 'vue'
+
+definePageMeta({
+  middleware: ['auth-admin']
+})
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -218,6 +224,12 @@ const form = ref({
 })
 
 const isSubmitting = ref(false)
+let initialFormState = ''
+
+const hasChanged = computed(() => {
+  if (!form.value) return false
+  return JSON.stringify(form.value) !== initialFormState
+})
 
 // Fetch categories
 const { data: categories } = await useAsyncData('categories', async () => {
@@ -261,6 +273,42 @@ onMounted(async () => {
     is_published: data.is_published,
     ai_generated: data.ai_generated
   }
+  
+  // Store initial state
+  nextTick(() => {
+    initialFormState = JSON.stringify(form.value)
+  })
+  
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+const handleBeforeUnload = (event) => {
+  if (hasChanged.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
+
+onBeforeRouteLeave((to, from, next) => {
+  if (hasChanged.value) {
+    confirm.require({
+      message: 'You have unsaved changes. Are you sure you want to leave?',
+      header: 'Unsaved Changes',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        next()
+      },
+      reject: () => {
+        next(false)
+      },
+    })
+  } else {
+    next()
+  }
 })
 
 const handleSubmit = async () => {
@@ -287,7 +335,9 @@ const handleSubmit = async () => {
       detail: 'Review updated successfully',
       life: 3000
     })
-    router.push('/admin/reviews')
+    
+    // Reset initial state
+    initialFormState = JSON.stringify(form.value)
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -305,22 +355,18 @@ const handlePublishToggle = async () => {
   await handleSubmit()
 }
 
-const handleDelete = () => {
+const handleDelete = async () => {
   confirm.require({
-    message: `Are you sure you want to delete the review "${form.value.title}"? This action cannot be undone.`,
-    header: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this review? This action cannot be undone.',
+    header: 'Confirmation',
     icon: 'pi pi-exclamation-triangle',
-    rejectClass: 'p-button-info',
     accept: async () => {
-      if (!form.value || isSubmitting.value) return
-      isSubmitting.value = true
-
       try {
         const { error } = await client
           .from('reviews')
           .delete()
           .eq('id', route.params.id)
-
+        
         if (error) throw error
 
         toast.add({
@@ -329,16 +375,16 @@ const handleDelete = () => {
           detail: 'Review deleted successfully',
           life: 3000
         })
+        
+        initialFormState = JSON.stringify(form.value) // Reset to prevent confirm dialog
         router.push('/admin/reviews')
       } catch (error) {
         toast.add({
           severity: 'error',
-          summary: 'Error deleting review',
-          detail: error.message,
-          life: 5000
+          summary: 'Error',
+          detail: 'Failed to delete review.',
+          life: 3000
         })
-      } finally {
-        isSubmitting.value = false
       }
     }
   })

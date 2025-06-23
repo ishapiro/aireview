@@ -49,7 +49,8 @@ export default {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    require('@tailwindcss/forms')
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/line-clamp'),
   ],
   // Ensure Tailwind classes take precedence over PrimeVue styles
   important: true,

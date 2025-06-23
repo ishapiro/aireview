@@ -109,7 +109,7 @@
             <!-- Generated Reviews Summary -->
             <div v-if="generatedReviews.length > 0" class="space-y-2">
               <h4 class="text-sm font-medium text-gray-900">Your Generated Reviews:</h4>
-              <p class="text-sm text-gray-600">This list has been saved to your browser. You can access it later from your profile page.</p>
+              <p class="text-sm text-gray-600">A new list has been created for you with these reviews.</p>
               <div class="max-h-60 overflow-y-auto space-y-2">
                 <div v-for="review in generatedReviews" :key="review.id" class="bg-white border border-gray-200 rounded p-3">
                   <div class="flex justify-between items-start">
@@ -164,6 +164,7 @@ const isGeneratingProducts = ref(false)
 // Review generation state
 const currentProductIndex = ref(0)
 const generatedReviews = ref([])
+let newListId = null
 
 // AI Generator reference
 const aiGenerator = ref(null)
@@ -222,6 +223,24 @@ const startReviewGeneration = async () => {
   error.value = ''
   generatedReviews.value = []
 
+  // Create a new saved list for this batch
+  try {
+    const listName = businessType.value.length > 60
+      ? businessType.value.substring(0, 60) + '...'
+      : businessType.value
+    
+    const { data: createdListId, error: listError } = await client.rpc('create_saved_list', {
+      list_name: listName
+    })
+
+    if (listError) throw listError
+    newListId = createdListId
+  } catch (err) {
+    error.value = `Error creating a new saved list: ${err.message}`
+    isProcessing.value = false
+    return
+  }
+
   let finalReviewList = []
 
   for (let i = 0; i < products.value.length; i++) {
@@ -241,6 +260,9 @@ const startReviewGeneration = async () => {
 
       if (existingReview) {
         finalReviewList.push({ id: existingReview.id, title: existingReview.title, slug: existingReview.slug })
+        if (newListId) {
+          await client.rpc('add_to_saved_list', { p_list_id: newListId, p_review_id: existingReview.id })
+        }
         continue
       }
 
@@ -248,25 +270,18 @@ const startReviewGeneration = async () => {
       
       if (reviewData) {
         // Find category ID
-        let categoryIds = []
-        if (reviewData.suggestedCategory) {
-          const { data: foundCategory, error: categoryError } = await client
-            .from('categories')
-            .select('id')
-            .ilike('name', `%${reviewData.suggestedCategory.trim()}%`)
-            .maybeSingle()
-          
-          if (categoryError) {
-            console.error('Error finding category:', categoryError)
-          } else if (foundCategory) {
-            categoryIds.push(foundCategory.id)
-          }
-        }
+        const { data: categoryData } = await client
+          .from('categories')
+          .select('id')
+          .ilike('name', `%${reviewData.category.trim()}%`)
+          .maybeSingle()
+        
+        const categoryIds = categoryData ? [categoryData.id] : []
         
         const { data: newReview, error: createError } = await client.rpc('create_review_with_categories', {
-          new_title: cleanTitle(reviewData.title),
+          new_title: cleanTitle(reviewData.productName),
           new_summary: reviewData.summary,
-          new_content: reviewData.content,
+          new_content: reviewData.fullReview,
           new_rating: reviewData.rating,
           new_is_published: true, // Save as published
           new_ai_generated: true,
@@ -276,34 +291,23 @@ const startReviewGeneration = async () => {
 
         if (createError) throw createError
         
-        finalReviewList.push({ id: newReview[0].id, title: newReview[0].title, slug: newReview[0].slug })
+        const createdReview = newReview[0]
+        finalReviewList.push({ id: createdReview.id, title: createdReview.title, slug: createdReview.slug })
+
+        // Add the new review to our saved list
+        if (newListId) {
+          await client.rpc('add_to_saved_list', { p_list_id: newListId, p_review_id: createdReview.id })
+        }
       }
       await new Promise(resolve => setTimeout(resolve, 1000))
     } catch (err) {
       console.error(`Error processing product ${currentProduct}:`, err)
     }
   }
-  
+   
   generatedReviews.value = finalReviewList
-  saveToLocalStorage(finalReviewList)
 
-  currentStep.value = 3
   isProcessing.value = false
-}
-
-const saveToLocalStorage = (reviews) => {
-  if (!user.value) return
-  const storageKey = `user-generated-reviews-${user.value.id}`
-  let existingLists = JSON.parse(localStorage.getItem(storageKey) || '[]')
-  
-  const newList = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    businessType: businessType.value,
-    reviews: reviews
-  }
-
-  existingLists.unshift(newList) // Add new list to the top
-  localStorage.setItem(storageKey, JSON.stringify(existingLists.slice(0, 10))) // Limit to 10 lists
+  currentStep.value = 3
 }
 </script> 

@@ -51,15 +51,14 @@
               <i class="pi pi-star-fill mr-1"></i>
               {{ review.rating }}
             </div>
-            <button
+            <SaveToList :review-id="review.id" class="mr-2" />
+            <Button
               v-if="user"
               @click="handleStarReview"
-              class="btn-primary"
-              :class="{ 'bg-yellow-100': hasUserStarred }"
-            >
-              <i class="pi pi-star mr-1"></i>
-              {{ hasUserStarred ? 'Starred' : 'Star' }}
-            </button>
+              :label="hasUserStarred ? 'Starred' : 'Star'"
+              :icon="hasUserStarred ? 'pi pi-star-fill' : 'pi pi-star'"
+              size="small"
+            />
           </div>
         </div>
 
