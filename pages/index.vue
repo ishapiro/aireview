@@ -15,8 +15,20 @@
               <Button label="Search Review Library" size="large" />
             </NuxtLink>
           </div>
-          <div class="mt-8 flex justify-center" v-if="user">
-            <UserReviewGenerator />
+          <div class="mt-8 flex justify-center">
+            <template v-if="user">
+              <UserReviewGenerator />
+            </template>
+            <template v-else>
+              <Button 
+                label="Dynamic AI Reviews for your Home or Business" 
+                size="large" 
+                disabled 
+                class="opacity-50 cursor-not-allowed" 
+                v-tooltip.top="'Create a Free Account and Log In to use AI search.'"
+                icon="pi pi-robot"
+              />
+            </template>
           </div>
         </div>
       </div>

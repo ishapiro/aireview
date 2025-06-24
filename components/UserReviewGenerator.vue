@@ -18,8 +18,36 @@
       <div class="space-y-6">
         <!-- Step 1: Business Type Input -->
         <div v-if="currentStep === 1">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Describe product need or enter a specific product name</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Choose Review Mode</h3>
           <div class="space-y-4">
+            <!-- Mode Selection -->
+            <div class="bg-gray-100 p-4 rounded-lg mb-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                What would you like to do?
+              </label>
+              <div class="flex gap-4">
+                <label class="flex items-center">
+                  <input
+                    type="radio"
+                    v-model="mode"
+                    value="find"
+                    class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    :disabled="isProcessing"
+                  />
+                  <span class="text-sm text-gray-700">Find multiple products to review</span>
+                </label>
+                <label class="flex items-center">
+                  <input
+                    type="radio"
+                    v-model="mode"
+                    value="single"
+                    class="mr-2 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                    :disabled="isProcessing"
+                  />
+                  <span class="text-sm text-gray-700">Review a Single Product</span>
+                </label>
+              </div>
+            </div>
             <!-- Review Type Selection -->
             <div class="bg-gray-100 p-4 rounded-lg mb-2">
               <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -48,7 +76,8 @@
                 </label>
               </div>
             </div>
-            <div>
+            <!-- Conditional Inputs -->
+            <div v-if="mode === 'find'">
               <label for="business-type" class="block text-sm font-medium text-gray-700 mb-2">
                 Product Type or Need:
               </label>
@@ -59,15 +88,36 @@
                 placeholder="e.g., 'Vacuum Cleaner for a 2000 square foot home', 'Project management for a small team'"
                 :disabled="isProcessing"
               />
+              <div class="flex justify-end mt-4">
+                <Button
+                  @click="generateProductList"
+                  :loading="isGeneratingProducts"
+                  :disabled="!businessType.trim() || !reviewType"
+                  label="Find Products"
+                  icon="pi pi-arrow-right"
+                />
+              </div>
             </div>
-            <div class="flex justify-end">
-              <Button
-                @click="generateProductList"
-                :loading="isGeneratingProducts"
-                :disabled="!businessType.trim() || !reviewType"
-                label="Find Products"
-                icon="pi pi-arrow-right"
+            <div v-else>
+              <label for="single-product" class="block text-sm font-medium text-gray-700 mb-2">
+                Product Name:
+              </label>
+              <InputText
+                id="single-product"
+                v-model="singleProductName"
+                class="w-full"
+                placeholder="e.g., 'iRobot Roomba 694'"
+                :disabled="isProcessing"
               />
+              <div class="flex justify-end">
+                <Button
+                  @click="reviewSingleProduct"
+                  :loading="isProcessing"
+                  :disabled="!singleProductName.trim() || !reviewType"
+                  label="Review Product"
+                  icon="pi pi-check"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -134,19 +184,23 @@
               </div>
             </div>
 
-            <!-- Generated Reviews Summary -->
-            <div v-if="generatedReviews.length > 0" class="space-y-2">
-              <h4 class="text-sm font-medium text-gray-900">Your Generated Reviews:</h4>
+            <!-- Link to User's Private List -->
+            <div class="flex flex-col items-center space-y-2">
               <p class="text-sm text-gray-600">A new list has been created for you with these reviews.</p>
-              <div class="max-h-60 overflow-y-auto space-y-2">
-                <div v-for="review in generatedReviews" :key="review.id" class="bg-white border border-gray-200 rounded p-3">
-                  <div class="flex justify-between items-start">
-                    <NuxtLink :to="`/reviews/${review.slug}`" class="flex-1">
-                      <h5 class="text-sm font-medium text-primary-600 hover:underline">{{ cleanTitle(review.title) }}</h5>
-                    </NuxtLink>
-                  </div>
-                </div>
-              </div>
+              <NuxtLink
+                v-if="newListId"
+                :to="{ path: '/saved-lists', query: { highlight: newListId } }"
+                class="btn-primary px-6 py-2 rounded text-white text-lg mt-2"
+              >
+                View My List
+              </NuxtLink>
+              <NuxtLink
+                v-else
+                to="/saved-lists"
+                class="btn-primary px-6 py-2 rounded text-white text-lg mt-2"
+              >
+                View My Lists
+              </NuxtLink>
             </div>
 
             <div class="flex justify-end">
@@ -162,6 +216,26 @@
       </div>
     </Dialog>
 
+    <!-- Similar Products Dialog -->
+    <Dialog v-model:visible="showSimilarDialog" modal header="Similar Products" :style="{ width: '500px' }">
+      <div>
+        <div v-if="similarReviews.length > 0">
+          <ul class="divide-y divide-gray-200">
+            <li v-for="review in similarReviews" :key="review.id" class="py-3 cursor-pointer hover:bg-gray-50 rounded px-2" @click="() => { showSimilarDialog = false; showDialog = false; router.push(`/reviews/${review.slug}`) }">
+              <div class="font-medium text-primary-700">{{ review.title }}</div>
+              <div class="text-sm text-gray-500 line-clamp-2">{{ review.summary }}</div>
+            </li>
+          </ul>
+        </div>
+        <div v-else class="text-gray-500">No similar products found.</div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end mt-4">
+          <Button @click="() => { showSimilarDialog = false; proceedWithAIReview() }" label="Didn't find your product? Generate a new Review" icon="pi pi-search" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Hidden AI Content Generator for reusing AI functions -->
     <AIContentGenerator ref="aiGenerator" style="display: none;" />
   </div>
@@ -173,19 +247,25 @@ import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
 import stringSimilarity from 'string-similarity'
+import { useRouter } from 'vue-router'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
+const router = useRouter()
 
 // Dialog state
 const showDialog = ref(false)
 const currentStep = ref(1)
 const isProcessing = ref(false)
 const error = ref('')
+const showSimilarDialog = ref(false)
+const similarReviews = ref([])
 
 // User Input
 const businessType = ref('')
-const reviewType = ref('business')
+const reviewType = ref('consumer')
+const mode = ref('find') // 'find' or 'single'
+const singleProductName = ref('')
 
 // Product generation state
 const products = ref([])
@@ -377,8 +457,24 @@ const startReviewGeneration = async () => {
         };
         console.log('Payload for creating review:', payload);
         
-        // Generate slug from title
-        const slug = await generateSlug(payload.title);
+        // Use the slugBase from the AI response if available, otherwise generate from title
+        let baseSlug = reviewData.slugBase ? reviewData.slugBase : cleanTitle(reviewData.title).toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 30)
+        // Ensure uniqueness
+        const { data: existingReviews } = await client
+          .from('reviews')
+          .select('slug')
+          .ilike('slug', `${baseSlug}%`)
+        const existingSlugs = existingReviews?.map(review => review.slug) || []
+        let slug = baseSlug
+        if (existingSlugs.includes(baseSlug)) {
+          let counter = 1
+          let newSlug = `${baseSlug}-${counter}`
+          while (existingSlugs.includes(newSlug)) {
+            counter++
+            newSlug = `${baseSlug}-${counter}`
+          }
+          slug = newSlug
+        }
         
         // Create the review first
         const { data: newReview, error: createError } = await client
@@ -429,5 +525,150 @@ const startReviewGeneration = async () => {
 
   isProcessing.value = false
   currentStep.value = 3
+}
+
+const reviewSingleProduct = async () => {
+  if (!singleProductName.value.trim() || !reviewType.value) return
+  isProcessing.value = true
+  error.value = ''
+  try {
+    // First, search for similar reviews (use ilike for partial match, or textSearch for full-text)
+    console.log('[Single Review] Searching for similar reviews:', singleProductName.value)
+    const { data: foundReviews, error: searchError } = await client
+      .from('reviews')
+      .select('id, slug, title, summary')
+      .textSearch('title', singleProductName.value, { type: 'plain' })
+    if (searchError) {
+      console.error('[Single Review] Error searching for similar reviews:', searchError)
+    }
+    if (foundReviews && foundReviews.length > 0) {
+      // Check for exact match (case-insensitive, trimmed)
+      const inputNormalized = singleProductName.value.trim().toLowerCase()
+      const exactMatch = foundReviews.find(r => r.title && r.title.trim().toLowerCase() === inputNormalized)
+      if (exactMatch) {
+        showDialog.value = false
+        await router.push(`/reviews/${exactMatch.slug}`)
+        isProcessing.value = false
+        return
+      }
+      similarReviews.value = foundReviews
+      showSimilarDialog.value = true
+      isProcessing.value = false
+      return
+    }
+    // If no similar reviews, proceed with AI logic below
+    await proceedWithAIReview()
+  } catch (err) {
+    error.value = `Error creating review: ${err.message}`
+    isProcessing.value = false
+  }
+}
+
+const proceedWithAIReview = async () => {
+  isProcessing.value = true
+  try {
+    // Fetch all categories for fuzzy matching
+    let allCategories = []
+    try {
+      const { data: categoriesData, error: categoriesError } = await client
+        .from('categories')
+        .select('id, name')
+      if (categoriesError) throw categoriesError
+      allCategories = categoriesData || []
+    } catch (err) {
+      console.error('Error fetching categories for fuzzy matching:', err)
+    }
+
+    // Log product name and review type
+    console.log('[Single Review] Product name:', singleProductName.value)
+    console.log('[Single Review] Review type:', reviewType.value)
+
+    // Generate the review using AI
+    const reviewData = await aiGenerator.value.generateProductReview(singleProductName.value, '', reviewType.value)
+    console.log('[Single Review] AI reviewData:', reviewData)
+    if (!reviewData) throw new Error('No product with that name/model located')
+
+    // Fuzzy match category if present
+    let categoryIds = []
+    if (reviewData.category && reviewData.category.trim() && allCategories.length > 0) {
+      const categoryNames = allCategories.map(cat => cat.name)
+      const { bestMatch } = stringSimilarity.findBestMatch(reviewData.category.trim(), categoryNames)
+      if (bestMatch.rating > 0.8) {
+        const matchedCategory = allCategories.find(cat => cat.name === bestMatch.target)
+        if (matchedCategory) {
+          categoryIds = [matchedCategory.id]
+        }
+      } else {
+        // Fallback to previous logic: partial ilike match
+        const { data: categoryData } = await client
+          .from('categories')
+          .select('id')
+          .ilike('name', `%${reviewData.category.trim()}%`)
+          .maybeSingle();
+        if (categoryData) {
+          categoryIds = [categoryData.id];
+        }
+      }
+    }
+
+    // Use the slugBase from the AI response if available, otherwise generate from title
+    let baseSlug = reviewData.slugBase ? reviewData.slugBase : cleanTitle(reviewData.title).toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 30)
+    // Ensure uniqueness
+    const { data: existingReviews } = await client
+      .from('reviews')
+      .select('slug')
+      .ilike('slug', `${baseSlug}%`)
+    const existingSlugs = existingReviews?.map(review => review.slug) || []
+    let slug = baseSlug
+    if (existingSlugs.includes(baseSlug)) {
+      let counter = 1
+      let newSlug = `${baseSlug}-${counter}`
+      while (existingSlugs.includes(newSlug)) {
+        counter++
+        newSlug = `${baseSlug}-${counter}`
+      }
+      slug = newSlug
+    }
+
+    // Create the review in the database
+    const payload = {
+      title: cleanTitle(reviewData.title),
+      summary: reviewData.summary,
+      content: reviewData.content,
+      rating: reviewData.rating,
+      is_published: true,
+      ai_generated: true,
+      user_id: user.value.id,
+      slug: slug
+    }
+    const { data: newReview, error: createError } = await client
+      .from('reviews')
+      .insert(payload)
+      .select('id, slug')
+      .single()
+    if (createError) throw createError
+
+    // Add category associations if we have category IDs
+    if (categoryIds.length > 0) {
+      const categoryAssociations = categoryIds.map(categoryId => ({
+        review_id: newReview.id,
+        category_id: categoryId
+      }))
+      const { error: categoryError } = await client
+        .from('review_categories')
+        .insert(categoryAssociations)
+      if (categoryError) {
+        console.error('Error adding category associations:', categoryError)
+      }
+    }
+
+    // Redirect to the new review page
+    showDialog.value = false
+    await router.push(`/reviews/${newReview.slug}`)
+  } catch (err) {
+    error.value = `Error creating review: ${err.message}`
+  } finally {
+    isProcessing.value = false
+  }
 }
 </script> 

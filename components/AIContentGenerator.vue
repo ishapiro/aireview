@@ -395,12 +395,12 @@ const generateProductList = async (categoryName, reviewType = 'business') => {
 
 // New function to generate product reviews
 const generateProductReview = async (productName, categoryName, reviewType = 'business') => {
-  if (!productName || !categoryName || isGenerating.value) return null
+  if (!productName || isGenerating.value) return null
 
   isGenerating.value = true
   aiError.value = ''
 
-  console.log(`Generating review for "${productName}" in category "${categoryName}"`)
+  console.log(`[AIContentGenerator] Generating review for product:`, productName, 'category:', categoryName, 'reviewType:', reviewType)
 
   try {
     const reviewTypeText = reviewType === 'consumer' ? 'Consumer Review' : 'Business Review'
@@ -411,7 +411,7 @@ const generateProductReview = async (productName, categoryName, reviewType = 'bu
       model: 'gpt-4-turbo'
     }
 
-    console.log('Sending prompt to AI:', JSON.stringify(prompt, null, 2));
+    console.log('[AIContentGenerator] Sending prompt to AI:', prompt)
 
     const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
       method: 'POST',
@@ -429,34 +429,48 @@ const generateProductReview = async (productName, categoryName, reviewType = 'bu
     const data = await response.json()
     const fullResponse = data.choices?.[0]?.message?.content || data.content || data.text || data.response || JSON.stringify(data)
     
-    console.log('Received raw response from AI:', fullResponse);
+    console.log('[AIContentGenerator] Raw AI response:', fullResponse)
 
-    // Parse the review
-    const titleMatch = fullResponse.match(/TITLE:\s*([\s\S]*?)(?=\n\nSUMMARY:|\nSUMMARY:|$)/i)
+    // Robust title extraction
+    let title = null
+    // Try to match various title formats
+    let titleMatch = fullResponse.match(/(?:\*\*\s*)?TITLE\s*:?\*\*?\s*([\s\S]*?)(?=\n\n|\n|$)/i)
+    if (titleMatch && titleMatch[1]) {
+      title = titleMatch[1].trim()
+    }
+    if (!title) {
+      // Fallback: use first non-empty line
+      const lines = fullResponse.split('\n').map(l => l.trim()).filter(Boolean)
+      title = lines[0] || productName
+    }
+
     const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
     const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)(?=\n\nRATING:|\nRATING:|$)/i)
     const ratingMatch = fullResponse.match(/RATING:\s*(\d+(?:\.\d+)?)/i)
     const categoryMatch = fullResponse.match(/CATEGORY:\s*([\s\S]*?)(?=\n|$)/i)
 
-    const title = titleMatch ? titleMatch[1].trim() : productName
     const summary = summaryMatch ? summaryMatch[1].trim() : ''
     const content = contentMatch ? contentMatch[1].trim() : fullResponse
     const rating = ratingMatch ? parseFloat(ratingMatch[1]) : 3
     const category = categoryMatch ? categoryMatch[1].trim() : undefined
+
+    // Truncate title for slug
+    const slugBase = title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 30)
 
     const parsedData = {
       title,
       summary,
       content,
       rating: Math.max(1, Math.min(5, Math.round(rating))),
-      ...(category ? { category } : {})
+      ...(category ? { category } : {}),
+      slugBase
     }
 
-    console.log('Parsed review data:', JSON.stringify(parsedData, null, 2));
+    console.log('[AIContentGenerator] Parsed review data:', parsedData)
 
     return parsedData
   } catch (error) {
-    console.error(`Error generating review for ${productName}:`, error)
+    console.error(`[AIContentGenerator] Error generating review for ${productName}:`, error)
     aiError.value = `Error generating review: ${error.message}`
     return null
   } finally {

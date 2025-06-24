@@ -15,9 +15,6 @@
             <NuxtLink to="/">
               <Button icon="pi pi-home" rounded aria-label="Home" />
             </NuxtLink>
-            <NuxtLink to="/search">
-              <Button icon="pi pi-search" rounded aria-label="Search" />
-            </NuxtLink>
             
             <template v-if="user">
               <NuxtLink to="/profile">
