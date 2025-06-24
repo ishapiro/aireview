@@ -330,16 +330,43 @@
               </div>
             </div>
 
-            <!-- Progress -->
-            <div v-if="isProcessing" class="space-y-2">
-              <div class="flex justify-between text-sm text-gray-600">
-                <span>Processing: {{ currentProductIndex + 1 }} of {{ products.length }}</span>
-                <span>{{ Math.round(((currentProductIndex + 1) / products.length) * 100) }}%</span>
+            <!-- Enhanced Progress -->
+            <div v-if="isProcessing" class="space-y-4">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>Processing: {{ currentProductIndex + 1 }} of {{ products.length }}</span>
+                  <span>{{ Math.round(((currentProductIndex + 1) / products.length) * 100) }}%</span>
+                </div>
+                <ProgressBar :value="((currentProductIndex + 1) / products.length) * 100" class="mb-3" />
+                
+                <div class="space-y-2">
+                  <p class="text-sm text-gray-600">
+                    <i class="pi pi-spin pi-spinner mr-2"></i>
+                    Currently processing: <strong>{{ currentProduct }}</strong>
+                  </p>
+                  
+                  <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span>Generated: {{ generatedReviews.length }}</span>
+                    <span>Skipped: {{ currentProductIndex - generatedReviews.length }}</span>
+                    <span>Remaining: {{ products.length - currentProductIndex - 1 }}</span>
+                  </div>
+                </div>
               </div>
-              <ProgressBar :value="((currentProductIndex + 1) / products.length) * 100" />
-              <p class="text-sm text-gray-600">
-                Currently processing: <strong>{{ currentProduct }}</strong>
-              </p>
+              
+              <!-- Recent Activity -->
+              <div v-if="generatedReviews.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-3">
+                <h5 class="text-sm font-medium text-green-900 mb-2">Recently Generated:</h5>
+                <div class="max-h-32 overflow-y-auto space-y-1">
+                  <div 
+                    v-for="review in generatedReviews.slice(-3)" 
+                    :key="review.id"
+                    class="text-xs text-green-700 flex items-center"
+                  >
+                    <i class="pi pi-check-circle text-green-500 mr-1"></i>
+                    {{ cleanTitle(review.title) }}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Action Buttons -->
@@ -963,4 +990,4 @@ const selectCategoryForRegeneration = async () => {
     error.value = `Error selecting category: ${error.message}`
   }
 }
-</script> 
+</script>
