@@ -140,13 +140,60 @@
               </p>
             </div>
             
+            <!-- Progress for Product List Generation -->
+            <div v-if="isGeneratingProducts" class="space-y-2">
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Generating product list for {{ selectedCategory.name }}...</span>
+                <span>Please wait</span>
+              </div>
+              <ProgressBar mode="indeterminate" />
+              <p class="text-sm text-gray-600">
+                <i class="pi pi-spin pi-spinner mr-2"></i>
+                AI is analyzing the category and generating a list of popular products
+              </p>
+            </div>
+            
+            <!-- Generated Product List Preview -->
+            <div v-if="products.length > 0 && !isGeneratingProducts" class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <i class="pi pi-check-circle text-green-500 text-xl mr-2"></i>
+                <h4 class="text-sm font-medium text-green-900">Product List Generated Successfully!</h4>
+              </div>
+              <p class="text-sm text-green-700 mb-3">
+                Found {{ products.length }} products to review
+              </p>
+              <div class="max-h-40 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div 
+                    v-for="(product, index) in products.slice(0, 10)" 
+                    :key="index"
+                    class="text-sm text-gray-700 flex items-center"
+                  >
+                    <i class="pi pi-check-circle text-green-500 mr-2"></i>
+                    {{ product }}
+                  </div>
+                </div>
+                <div v-if="products.length > 10" class="text-sm text-gray-500 mt-2">
+                  ... and {{ products.length - 10 }} more products
+                </div>
+              </div>
+            </div>
+            
             <div class="flex justify-between items-center">
               <Button
+                v-if="products.length === 0"
                 @click="generateProductList"
                 :loading="isGeneratingProducts"
                 :disabled="isGeneratingProducts"
                 label="Generate Product List"
                 icon="pi pi-list"
+              />
+              <Button
+                v-else
+                @click="currentStep = 3"
+                :disabled="isGeneratingProducts"
+                label="Continue to Review Generation"
+                icon="pi pi-arrow-right"
               />
               <Button
                 v-if="!category"

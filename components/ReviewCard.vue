@@ -30,21 +30,13 @@
       
       <div class="flex items-center justify-between">
         <div class="flex items-center">
-          <img
-            v-if="review.author && review.author.avatar_url"
-            :src="review.author.avatar_url"
-            :alt="review.author.full_name || 'Author'"
-            class="w-8 h-8 rounded-full mr-2"
-          />
-          <span v-if="review.author && review.author.full_name" class="text-sm text-gray-600">
-            {{ review.author.full_name }}
-          </span>
+          <!-- Author information removed -->
         </div>
         
         <div class="flex items-center">
           <div class="star-rating mr-2" v-if="review.rating > 1">
             <i class="pi pi-star-fill mr-1"></i>
-            {{ review.rating }}
+            {{ review.rating.toFixed(1) }}
           </div>
           <span class="text-sm text-gray-500">
             {{ formatDate(review.created_at) }}

@@ -19,14 +19,7 @@
         
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center">
-            <img
-              :src="review.author.avatar_url || '/default-avatar.svg'"
-              :alt="review.author.full_name"
-              class="w-10 h-10 rounded-full mr-3 bg-gray-100"
-              @error="$event.target.src = '/default-avatar.svg'"
-            />
             <div>
-              <div class="font-medium text-gray-900">{{ review.author.full_name }}</div>
               <div class="text-sm text-gray-500">
                 {{ formatDate(review.created_at) }}
                 <span v-if="review.updated_at !== review.created_at">
@@ -49,7 +42,7 @@
           <div class="flex items-center">
             <div class="star-rating text-xl mr-4" v-if="review.rating > 1">
               <i class="pi pi-star-fill mr-1"></i>
-              {{ review.rating }}
+              {{ review.rating.toFixed(1) }}
             </div>
             <SaveToList :review-id="review.id" class="mr-2" />
             <Button

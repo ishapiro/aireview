@@ -104,7 +104,7 @@
                       >
                         <i class="pi pi-star-fill"></i>
                       </i>
-                      <span class="ml-1 text-xs text-gray-500">({{ review.rating }}/5)</span>
+                      <span class="ml-1 text-xs text-gray-500">({{ review.rating.toFixed(1) }}/5)</span>
                     </div>
                   </div>
 

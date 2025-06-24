@@ -285,18 +285,8 @@ const generateAIContent = async () => {
     let prompt = `${reviewTypeText}: ${aiPrompt.value.trim()}\n\n`
     
     // Define the format instructions
-    const formatInstructions = `Please provide the review in the following format:
-${props.generateSummary ? '\nSUMMARY:\n[Your summary here]' : ''}
-
-CONTENT:
-[Your detailed review content here]
-
----
-**Rating: [X]/5 stars**
-
-*Reasoning: [Brief explanation of why this rating was given]*
-
-Ensure the rating and reasoning content is only included one time in the content.`;
+    // All instructions are in the cloudflare worker, so we don't need to include them here
+    const formatInstructions = ``;
     // Append the instructions to the prompt
     prompt = `${prompt}\n\n${formatInstructions}`;
 
@@ -304,10 +294,10 @@ Ensure the rating and reasoning content is only included one time in the content
     const fullResponse = await sendAIPrompt(prompt)
     aiResponse.value = fullResponse.trim()
 
-    // Parse the response to extract rating
-    const ratingMatch = fullResponse.match(/\*\*Rating: (\d)\/5 stars\*\*/)
+    // Parse the response to extract rating (now supports decimal ratings)
+    const ratingMatch = fullResponse.match(/\*\*Rating: (\d+(?:\.\d+)?)\/5 stars\*\*/)
     if (ratingMatch) {
-      suggestedRating.value = parseInt(ratingMatch[1])
+      suggestedRating.value = parseFloat(ratingMatch[1])
     }
 
     // Parse for summary and content
@@ -460,7 +450,7 @@ const generateProductReview = async (productName, categoryName, reviewType = 'bu
       title,
       summary,
       content,
-      rating: Math.max(1, Math.min(5, Math.round(rating))),
+      rating: Math.max(1.0, Math.min(5.0, rating)),
       ...(category ? { category } : {}),
       slugBase
     }

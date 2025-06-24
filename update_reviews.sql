@@ -43,4 +43,25 @@ WHERE reviews.id = su.id AND reviews.slug != su.new_slug;
 SELECT id, title, slug, length(slug) as slug_length 
 FROM reviews 
 ORDER BY title
-LIMIT 10; 
+LIMIT 10;
+
+-- Migration script to update rating field from integer to numeric(2,1)
+-- This allows for decimal ratings in X.X format
+
+-- Step 1: Add a new rating_new column
+ALTER TABLE public.reviews ADD COLUMN rating_new numeric(2,1);
+
+-- Step 2: Copy existing integer ratings to the new column (they will be converted to decimal)
+UPDATE public.reviews SET rating_new = rating::numeric(2,1);
+
+-- Step 3: Drop the old rating column
+ALTER TABLE public.reviews DROP COLUMN rating;
+
+-- Step 4: Rename the new column to rating
+ALTER TABLE public.reviews RENAME COLUMN rating_new TO rating;
+
+-- Step 5: Add the constraint for the new numeric column
+ALTER TABLE public.reviews ADD CONSTRAINT reviews_rating_check CHECK (rating >= 1.0 AND rating <= 5.0);
+
+-- Step 6: Make the rating column NOT NULL
+ALTER TABLE public.reviews ALTER COLUMN rating SET NOT NULL; 

@@ -117,14 +117,21 @@
             <!-- Rating -->
             <div class="field mb-4">
               <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
-              <Dropdown
+              <InputNumber
                 id="rating"
                 v-model="form.rating"
-                :options="[1,2,3,4,5]"
-                placeholder="Select a rating"
+                :min="1.0"
+                :max="5.0"
+                :step="0.1"
+                :minFractionDigits="1"
+                :maxFractionDigits="1"
+                placeholder="Enter rating (1.0 - 5.0)"
                 class="w-full"
                 required
               />
+              <p class="mt-1 text-sm text-gray-500">
+                Enter a rating between 1.0 and 5.0 (e.g., 4.5)
+              </p>
             </div>
 
             <!-- Published Toggle -->

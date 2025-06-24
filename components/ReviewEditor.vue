@@ -30,18 +30,20 @@
       <!-- Rating -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-        <div class="flex items-center space-x-2">
-          <button
-            v-for="rating in 5"
-            :key="rating"
-            type="button"
-            @click="form.rating = rating"
-            class="text-2xl focus:outline-none"
-            :class="rating <= form.rating ? 'text-yellow-400' : 'text-gray-300'"
-          >
-            <i class="pi pi-star-fill"></i>
-          </button>
-        </div>
+        <InputNumber
+          v-model="form.rating"
+          :min="1.0"
+          :max="5.0"
+          :step="0.1"
+          :minFractionDigits="1"
+          :maxFractionDigits="1"
+          placeholder="Enter rating (1.0 - 5.0)"
+          class="w-full"
+          required
+        />
+        <p class="mt-1 text-sm text-gray-500">
+          Enter a rating between 1.0 and 5.0 (e.g., 4.5)
+        </p>
       </div>
 
       <!-- Categories -->

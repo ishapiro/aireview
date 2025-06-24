@@ -132,7 +132,7 @@ begin
         slug text unique not null,
         summary text,
         content text not null,
-        rating integer not null check (rating >= 1 and rating <= 5),
+        rating numeric(2,1) not null check (rating >= 1.0 and rating <= 5.0),
         user_id uuid references public.profiles(id) on delete cascade not null,
         helpful_count integer default 0,
         views_count integer default 0,
