@@ -438,10 +438,9 @@ const generateProductReview = async (productName, categoryName, reviewType = 'bu
     if (titleMatch && titleMatch[1]) {
       title = titleMatch[1].trim()
     }
-    if (!title) {
-      // Fallback: use first non-empty line
-      const lines = fullResponse.split('\n').map(l => l.trim()).filter(Boolean)
-      title = lines[0] || productName
+    // If title is empty or just 'TITLE', 'TITLE:', '**TITLE:**', use productName
+    if (!title || /^\**\s*title:?\**$/i.test(title)) {
+      title = productName
     }
 
     const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)

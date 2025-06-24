@@ -40,6 +40,7 @@
               </NuxtLink>
               <CategoryPopulator />
               <UncategorizedReviewCategorizer />
+              <AppendCategoryToReviews />
             </div>
           </div>
         </template>
@@ -143,6 +144,7 @@
 import { format } from 'date-fns'
 import CategoryPopulator from '~/components/CategoryPopulator.vue'
 import UncategorizedReviewCategorizer from '~/components/UncategorizedReviewCategorizer.vue'
+import AppendCategoryToReviews from '~/components/AppendCategoryToReviews.vue'
 import { cleanTitle } from '~/utils/string'
 
 definePageMeta({

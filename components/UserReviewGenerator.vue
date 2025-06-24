@@ -248,10 +248,12 @@ import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
 import stringSimilarity from 'string-similarity'
 import { useRouter } from 'vue-router'
+import { useNuxtApp } from '#app'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const router = useRouter()
+const nuxtApp = useNuxtApp()
 
 // Dialog state
 const showDialog = ref(false)
@@ -524,7 +526,20 @@ const startReviewGeneration = async () => {
   generatedReviews.value = finalReviewList
 
   isProcessing.value = false
-  currentStep.value = 3
+  currentStep.value = 4
+
+  // Log AI product search activity and refresh admin stats
+  try {
+    await client.rpc('log_user_activity', {
+      activity_type: 'ai_product_search',
+      activity_metadata: {}
+    })
+    if (nuxtApp && typeof nuxtApp.refreshNuxtData === 'function') {
+      await nuxtApp.refreshNuxtData('admin-stats')
+    }
+  } catch (err) {
+    console.error('Failed to log ai_product_search activity or refresh stats:', err)
+  }
 }
 
 const reviewSingleProduct = async () => {
@@ -660,6 +675,20 @@ const proceedWithAIReview = async () => {
       if (categoryError) {
         console.error('Error adding category associations:', categoryError)
       }
+    }
+
+    // Log AI product search activity
+    try {
+      await client.rpc('log_user_activity', {
+        activity_type: 'ai_product_search',
+        activity_metadata: {}
+      })
+      // Refresh admin stats if on admin page
+      if (nuxtApp && typeof nuxtApp.refreshNuxtData === 'function') {
+        await nuxtApp.refreshNuxtData('admin-stats')
+      }
+    } catch (err) {
+      console.error('Failed to log ai_product_search activity or refresh stats:', err)
     }
 
     // Redirect to the new review page
