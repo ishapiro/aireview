@@ -5,14 +5,14 @@
       <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
         <div class="text-center">
           <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            Find the Best AI Focused Software for your Business
+            Find the Best Products
           </h1>
           <p class="mt-5 max-w-xl mx-auto text-xl text-gray-500">
-            AI based, and human augmented, reviews. Make informed decisions.
+            AI based reviews and comparisons. Make informed decisions.
           </p>
           <div class="mt-8 flex justify-center">
             <NuxtLink to="/search">
-              <Button label="Search Saved Reviews" size="large" />
+              <Button label="Search Review Library" size="large" />
             </NuxtLink>
           </div>
           <div class="mt-8 flex justify-center" v-if="user">
@@ -106,10 +106,9 @@ const config = useRuntimeConfig()
 // Fetch categories
 const { data: categories } = await useAsyncData('categories', async () => {
   const { data } = await client
-    .from('categories')
+    .from('categories_with_review_count')
     .select('*')
-    .order('name')
-  
+    .order('review_count', { ascending: false })
   return data
 })
 

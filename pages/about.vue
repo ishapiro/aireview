@@ -9,21 +9,20 @@ definePageMeta({
     <h1 class="text-3xl font-bold mb-6">About Cogitations AI Reviews</h1>
     <div class="prose max-w-none">
       <p class="mb-4">
-        Welcome to Cogitations AI Reviews — a human-augmented, AI-powered platform for thoughtful and practical evaluations of AI products. 
-        Our mission is to help you make informed decisions by offering honest, detailed, and carefully curated reviews.
+        Welcome to Cogitations AI Reviews — an AI-powered platform delivering clear, insightful evaluations of both consumer and business products. 
+        From CRM tools to coffee makers, our mission is to help you make better choices faster.
       </p>
       <p class="mb-4">
-        We use state-of-the-art AI to generate initial product reviews, then draw on decades of software industry experience to critically assess, edit, and refine them. 
-        Every review you read reflects not just algorithmic synthesis, but professional judgment shaped by real-world business and technical expertise.
+        Our reviews start with advanced AI that analyzes product specs, user sentiment, online discussions, and competitor offerings — often surfacing strengths and weaknesses that traditional reviews miss.
+        But the real power comes from our users: each time someone contributes a comment, update, or insight, it sharpens the quality and relevance of future reviews.
       </p>
       <p class="mb-4">
-        While AI can generate thousands of reviews, quantity doesn’t equal clarity. 
-        Without domain expertise, it’s easy to drown in a sea of mediocre content and buzzwords. 
-        Our team helps you cut through the noise — surfacing only those tools we believe can genuinely improve productivity in your business.
+        AI gives us reach and speed; our community adds depth and perspective. Together, we’re building a growing library of reviews that evolves with real-world use, not static impressions.
       </p>
       <p class="mb-4">
-        Whether you're a founder, manager, or developer, our goal is to guide you toward just enough technology — not more — to make a meaningful impact.
+        Whether you're a professional researching business tools or a consumer shopping for home tech, Cogitations AI Reviews helps you cut through the noise, stay up to date, and focus on what matters most.
       </p>
     </div>
   </div>
 </template>
+

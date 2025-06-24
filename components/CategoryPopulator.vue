@@ -64,9 +64,31 @@
 
         <!-- Step 1: Category Input (only show if no category prop) -->
         <div v-if="currentStep === 1 && !category">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Enter Category Name</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Step 1: {{ selectedAction === 'regenerate_reviews' ? 'Select Category' : 'Enter Category Name' }}
+          </h3>
           <div class="space-y-4">
-            <div>
+            <!-- Category Selection for Regenerate Reviews -->
+            <div v-if="selectedAction === 'regenerate_reviews'">
+              <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">
+                Select Category:
+              </label>
+              <Dropdown
+                id="category-select"
+                v-model="selectedCategory"
+                :options="availableCategories"
+                option-label="name"
+                placeholder="Choose a category"
+                class="w-full"
+                :disabled="isProcessing || isLoadingCategories"
+              />
+              <p class="text-sm text-gray-500 mt-1">
+                Select a category to see existing reviews that can be regenerated.
+              </p>
+            </div>
+            
+            <!-- Category Name Input for Update Products -->
+            <div v-else>
               <label for="category-name" class="block text-sm font-medium text-gray-700 mb-2">
                 Category Name:
               </label>
@@ -78,6 +100,7 @@
                 :disabled="isProcessing"
               />
             </div>
+            
             <div class="flex justify-between items-center">
               <Button
                 @click="currentStep = 0"
@@ -85,6 +108,15 @@
                 icon="pi pi-arrow-left"
               />
               <Button
+                v-if="selectedAction === 'regenerate_reviews'"
+                @click="selectCategoryForRegeneration"
+                :loading="isLoadingCategories"
+                :disabled="!selectedCategory"
+                label="Continue"
+                icon="pi pi-arrow-right"
+              />
+              <Button
+                v-else
                 @click="checkOrCreateCategory"
                 :loading="isCheckingCategory"
                 :disabled="!categoryName.trim()"
@@ -471,6 +503,8 @@ const selectedAction = ref('')
 const categoryName = ref('')
 const selectedCategory = ref(null)
 const isCheckingCategory = ref(false)
+const availableCategories = ref([])
+const isLoadingCategories = ref(false)
 
 // Product generation state
 const products = ref([])
@@ -491,10 +525,44 @@ const regeneratedReviews = ref([])
 // AI Generator reference
 const aiGenerator = ref(null)
 
+// Slug generation function
+const generateSlug = async (title) => {
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-')
+  
+  // Get existing slugs to check for uniqueness
+  const { data: existingReviews } = await client
+    .from('reviews')
+    .select('slug')
+    .ilike('slug', `${baseSlug}%`)
+  
+  const existingSlugs = existingReviews?.map(review => review.slug) || []
+  
+  if (!existingSlugs.includes(baseSlug)) {
+    return baseSlug
+  }
+  
+  // If slug exists, append a number
+  let counter = 1
+  let newSlug = `${baseSlug}-${counter}`
+  while (existingSlugs.includes(newSlug)) {
+    counter++
+    newSlug = `${baseSlug}-${counter}`
+  }
+  
+  return newSlug
+}
+
 const resetState = () => {
   if (!props.category) {
     currentStep.value = 0
     categoryName.value = ''
+    selectedCategory.value = null
+    availableCategories.value = []
   } else {
     currentStep.value = 0
     selectedCategory.value = props.category
@@ -513,6 +581,7 @@ const resetState = () => {
   isProcessing.value = false
   isCheckingCategory.value = false
   isGeneratingProducts.value = false
+  isLoadingCategories.value = false
 }
 
 // Watch for category prop changes - moved after resetState definition
@@ -552,6 +621,7 @@ const continueToNextStep = () => {
       loadExistingReviews()
       currentStep.value = 2
     } else {
+      loadAvailableCategories()
       currentStep.value = 1
     }
   }
@@ -686,19 +756,6 @@ const checkOrCreateCategory = async () => {
   }
 }
 
-const generateSlug = async (name) => {
-  const baseSlug = slugify(name)
-  
-  // Get existing slugs to check for uniqueness
-  const { data: existingCategories } = await client
-    .from('categories')
-    .select('slug')
-  
-  const existingSlugs = existingCategories?.map(cat => cat.slug) || []
-  
-  return generateUniqueSlug(baseSlug, existingSlugs)
-}
-
 const generateProductList = async () => {
   isGeneratingProducts.value = true
   error.value = ''
@@ -764,22 +821,49 @@ const startReviewGeneration = async () => {
       )
       
       if (reviewData) {
+        // Generate slug from title
+        const slug = await generateSlug(cleanTitle(removeMarkdown(reviewData.title)));
+        
         // Create the review in the database
-        const { data: newReview, error: createError } = await client.rpc('create_review_with_categories', {
-          new_title: cleanTitle(removeMarkdown(reviewData.title)),
-          new_summary: reviewData.summary,
-          new_content: reviewData.content,
-          new_rating: reviewData.rating,
-          new_is_published: true,
-          new_ai_generated: true,
-          new_category_ids: [selectedCategory.value.id],
-          author_id: user.value.id
-        })
+        const { data: newReview, error: createError } = await client
+          .from('reviews')
+          .insert({
+            title: cleanTitle(removeMarkdown(reviewData.title)),
+            summary: reviewData.summary,
+            content: reviewData.content,
+            rating: reviewData.rating,
+            is_published: true,
+            ai_generated: true,
+            user_id: user.value.id,
+            slug: slug
+          })
+          .select('id, title, slug')
+          .single();
 
-        if (createError) throw createError
+        if (createError) {
+          console.error('Error creating review:', createError);
+          throw createError;
+        }
+
+        // Add category associations if we have category IDs
+        if (selectedCategory.value.id) {
+          const categoryAssociations = [{
+            review_id: newReview.id,
+            category_id: selectedCategory.value.id
+          }];
+
+          const { error: categoryError } = await client
+            .from('review_categories')
+            .insert(categoryAssociations);
+
+          if (categoryError) {
+            console.error('Error adding category associations:', categoryError);
+            // Don't throw here, as the review was created successfully
+          }
+        }
 
         generatedReviews.value.push({
-          id: newReview,
+          id: newReview.id,
           title: reviewData.title,
           rating: reviewData.rating
         })
@@ -800,5 +884,36 @@ const startReviewGeneration = async () => {
 const removeMarkdown = (text) => {
   if (!text || typeof text !== 'string') return ''
   return text.replace(/[*_~`#]/g, '')
+}
+
+// Load available categories for selection
+const loadAvailableCategories = async () => {
+  isLoadingCategories.value = true
+  try {
+    const { data: categories } = await client
+      .from('categories')
+      .select('id, name, description')
+      .order('name')
+    
+    availableCategories.value = categories || []
+  } catch (error) {
+    console.error('Error loading categories:', error)
+    error.value = `Error loading categories: ${error.message}`
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Handle category selection for regeneration
+const selectCategoryForRegeneration = async () => {
+  if (!selectedCategory.value) return
+  
+  try {
+    loadExistingReviews()
+    currentStep.value = 2
+  } catch (error) {
+    console.error('Error selecting category:', error)
+    error.value = `Error selecting category: ${error.message}`
+  }
 }
 </script> 

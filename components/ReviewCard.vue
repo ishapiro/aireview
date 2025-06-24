@@ -9,10 +9,10 @@
           <i class="pi pi-file-edit mr-1"></i>
           DRAFT
         </div>
-        <div v-if="review.ai_generated" class="bg-blue-600 text-white px-2 py-1 rounded text-sm">
+        <!-- <div v-if="review.ai_generated" class="bg-blue-600 text-white px-2 py-1 rounded text-sm">
           <i class="pi pi-robot mr-1"></i>
           AI Augmented
-        </div>
+        </div> -->
       </div>
       <div class="relative">
         

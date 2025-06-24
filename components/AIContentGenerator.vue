@@ -19,10 +19,39 @@
       :closable="!isGenerating"
     >
       <div class="space-y-4">
+        <!-- Review Type Selection -->
+        <div class="bg-gray-100 p-4 rounded-lg mb-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Review Type:
+          </label>
+          <div class="flex gap-4">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                v-model="reviewType"
+                value="consumer"
+                class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                :disabled="isGenerating"
+              />
+              <span class="text-sm text-gray-700">Consumer Review</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                v-model="reviewType"
+                value="business"
+                class="mr-2 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                :disabled="isGenerating"
+              />
+              <span class="text-sm text-gray-700">Business Review</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Prompt Input -->
         <div>
           <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-2">
-            Enter your prompt for AI content generation:
+            Enter information about the product(s) you want to review:
           </label>
           <textarea
             id="ai-prompt"
@@ -40,7 +69,7 @@
             type="button"
             @click="generateAIContent"
             class="btn-primary flex items-center gap-2"
-            :disabled="!aiPrompt.trim() || isGenerating"
+            :disabled="!aiPrompt.trim() || !reviewType || isGenerating"
           >
             <i v-if="isGenerating" class="pi pi-spin pi-spinner"></i>
             <i v-else class="pi pi-send"></i>
@@ -215,6 +244,7 @@ const refinePrompt = ref('')
 const suggestedRating = ref(null)
 const generatedSummary = ref('')
 const generatedContent = ref('')
+const reviewType = ref('business')
 
 // Render AI response preview
 const renderedAIResponse = computed(() => {
@@ -234,7 +264,8 @@ const openAIDialog = () => {
   showAIDialog.value = true
   // Preload prompt with title if available
   if (props.title && props.title.trim()) {
-    aiPrompt.value = `Review: ${props.title.trim()}\n\n`
+    const reviewTypeText = reviewType.value === 'business' ? 'Business Review' : 'Consumer Review'
+    aiPrompt.value = `${reviewTypeText}: ${props.title.trim()}\n\n`
   } else {
     aiPrompt.value = ''
   }
@@ -243,13 +274,16 @@ const openAIDialog = () => {
 const { sendAIPrompt } = useAI()
 
 const generateAIContent = async () => {
-  if (!aiPrompt.value.trim() || isGenerating.value) return
+  if (!aiPrompt.value.trim() || !reviewType.value || isGenerating.value) return
 
   isGenerating.value = true
   aiError.value = ''
 
   try {
-    let prompt = aiPrompt.value;
+    // Format the prompt with the selected review type
+    const reviewTypeText = reviewType.value === 'business' ? 'Business Review' : 'Consumer Review'
+    let prompt = `${reviewTypeText}: ${aiPrompt.value.trim()}\n\n`
+    
     // Define the format instructions
     const formatInstructions = `Please provide the review in the following format:
 ${props.generateSummary ? '\nSUMMARY:\n[Your summary here]' : ''}
@@ -301,28 +335,19 @@ Ensure the rating and reasoning content is only included one time in the content
 }
 
 // New function to generate product lists
-const generateProductList = async (categoryName) => {
+const generateProductList = async (categoryName, reviewType = 'business') => {
   if (!categoryName || isGenerating.value) return []
 
   isGenerating.value = true
   aiError.value = ''
 
   try {
-    const prompt = `Generate a list of 10 popular products in the "${categoryName}" category. 
-
-Please return the list in the following exact format:
-
-PRODUCTS:
-1. [Product Name 1]
-2. [Product Name 2]
-3. [Product Name 3]
-...and so on
-
-Only include the product names, no descriptions or additional text.`
+    const reviewTypeText = reviewType === 'consumer' ? 'Consumer Review' : 'Business Review'
+    const prompt = `${reviewTypeText}: Generate a list of 10 popular ${reviewTypeText} products in the "${categoryName}" category. \n\nPlease return the list in the following exact format:\n\nPRODUCTS:\n1. [Product Name 1]\n2. [Product Name 2]\n3. [Product Name 3]\n...and so on\n\nOnly include the product names, no descriptions or additional text.`
 
     const requestBody = {
       prompt: prompt,
-      model: 'gpt-3.5-turbo'
+      model: 'gpt-4-turbo'
     }
 
     const response = await fetch('https://cogitations-review-ai.cogitations.workers.dev', {
@@ -369,7 +394,7 @@ Only include the product names, no descriptions or additional text.`
 }
 
 // New function to generate product reviews
-const generateProductReview = async (productName, categoryName) => {
+const generateProductReview = async (productName, categoryName, reviewType = 'business') => {
   if (!productName || !categoryName || isGenerating.value) return null
 
   isGenerating.value = true
@@ -378,7 +403,8 @@ const generateProductReview = async (productName, categoryName) => {
   console.log(`Generating review for "${productName}" in category "${categoryName}"`)
 
   try {
-    const prompt = `Review "${productName}"`
+    const reviewTypeText = reviewType === 'consumer' ? 'Consumer Review' : 'Business Review'
+    const prompt = `${reviewTypeText}: Review "${productName}"`
 
     const requestBody = {
       prompt: prompt,
@@ -409,18 +435,21 @@ const generateProductReview = async (productName, categoryName) => {
     const titleMatch = fullResponse.match(/TITLE:\s*([\s\S]*?)(?=\n\nSUMMARY:|\nSUMMARY:|$)/i)
     const summaryMatch = fullResponse.match(/SUMMARY:\s*([\s\S]*?)(?=\n\nCONTENT:|\nCONTENT:|$)/i)
     const contentMatch = fullResponse.match(/CONTENT:\s*([\s\S]*?)(?=\n\nRATING:|\nRATING:|$)/i)
-    const ratingMatch = fullResponse.match(/RATING:\s*(\d+)/i)
+    const ratingMatch = fullResponse.match(/RATING:\s*(\d+(?:\.\d+)?)/i)
+    const categoryMatch = fullResponse.match(/CATEGORY:\s*([\s\S]*?)(?=\n|$)/i)
 
     const title = titleMatch ? titleMatch[1].trim() : productName
     const summary = summaryMatch ? summaryMatch[1].trim() : ''
     const content = contentMatch ? contentMatch[1].trim() : fullResponse
-    const rating = ratingMatch ? parseInt(ratingMatch[1]) : 3
+    const rating = ratingMatch ? parseFloat(ratingMatch[1]) : 3
+    const category = categoryMatch ? categoryMatch[1].trim() : undefined
 
     const parsedData = {
       title,
       summary,
       content,
-      rating: Math.max(1, Math.min(5, rating)),
+      rating: Math.max(1, Math.min(5, Math.round(rating))),
+      ...(category ? { category } : {})
     }
 
     console.log('Parsed review data:', JSON.stringify(parsedData, null, 2));
@@ -463,8 +492,9 @@ const showRefinePromptInput = () => {
 const submitRefinedPrompt = async () => {
   if (!refinePrompt.value.trim() || isGenerating.value) return
 
-  // Combine original prompt with refinement
-  const combinedPrompt = `${aiPrompt.value}\n\nAdditional instructions: ${refinePrompt.value}`
+  // Combine original prompt with refinement, maintaining the review type
+  const reviewTypeText = reviewType.value === 'business' ? 'Business Review' : 'Consumer Review'
+  const combinedPrompt = `${reviewTypeText}: ${aiPrompt.value.trim()}\n\nAdditional instructions: ${refinePrompt.value}`
   
   // Update the prompt and generate new content
   aiPrompt.value = combinedPrompt
@@ -484,7 +514,18 @@ const closeAIDialog = () => {
   showRefineInput.value = false
   refinePrompt.value = ''
   suggestedRating.value = null
+  reviewType.value = 'business'
 }
+
+// Watch for review type changes to update prompt prefix
+watch(reviewType, (newType) => {
+  if (props.title && props.title.trim() && aiPrompt.value) {
+    const reviewTypeText = newType === 'business' ? 'Business Review' : 'Consumer Review'
+    // Update the prompt prefix while preserving the user's content
+    const userContent = aiPrompt.value.replace(/^(Business Review|Consumer Review):\s*/, '').trim()
+    aiPrompt.value = `${reviewTypeText}: ${userContent}`
+  }
+})
 
 // Expose functions for use by other components
 defineExpose({

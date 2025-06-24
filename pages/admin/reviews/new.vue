@@ -150,38 +150,83 @@ const { data: categories } = await useAsyncData('categories', async () => {
   return data
 })
 
-const generateSlug = (title) => {
-  return title
+const generateSlug = async (title) => {
+  const baseSlug = title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-')
+  
+  // Get existing slugs to check for uniqueness
+  const { data: existingReviews } = await client
+    .from('reviews')
+    .select('slug')
+    .ilike('slug', `${baseSlug}%`)
+  
+  const existingSlugs = existingReviews?.map(review => review.slug) || []
+  
+  if (!existingSlugs.includes(baseSlug)) {
+    return baseSlug
+  }
+  
+  // If slug exists, append a number
+  let counter = 1
+  let newSlug = `${baseSlug}-${counter}`
+  while (existingSlugs.includes(newSlug)) {
+    counter++
+    newSlug = `${baseSlug}-${counter}`
+  }
+  
+  return newSlug
 }
 
 const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    const { error } = await client.rpc('create_review_with_categories', {
-      new_title: form.value.title,
-      new_summary: form.value.summary,
-      new_content: form.value.content,
-      new_rating: form.value.rating,
-      new_is_published: form.value.is_published,
-      new_ai_generated: form.value.ai_generated,
-      new_category_ids: form.value.category_ids,
-      author_id: user.value.id
-    })
+    // Generate slug from title
+    const slug = await generateSlug(form.value.title);
+    
+    // Create the review first
+    const { data: newReview, error: createError } = await client
+      .from('reviews')
+      .insert({
+        title: form.value.title,
+        summary: form.value.summary,
+        content: form.value.content,
+        rating: form.value.rating,
+        is_published: form.value.is_published,
+        ai_generated: form.value.ai_generated,
+        user_id: user.value.id,
+        slug: slug
+      })
+      .select('id, title, slug')
+      .single();
 
-    if (error) throw error
+    if (createError) {
+      throw createError;
+    }
 
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Review created successfully',
-      life: 3000
-    })
+    // Add category associations if categories are selected
+    if (form.value.category_ids.length > 0) {
+      const categoryAssociations = form.value.category_ids.map(categoryId => ({
+        review_id: newReview.id,
+        category_id: categoryId
+      }));
 
-    router.push('/admin/reviews')
+      const { error: categoryError } = await client
+        .from('review_categories')
+        .insert(categoryAssociations);
+
+      if (categoryError) {
+        console.error('Error adding category associations:', categoryError);
+        // Don't throw here, as the review was created successfully
+      }
+    }
+
+    // Navigate to the new review
+    await navigateTo(`/reviews/${newReview.slug}`)
   } catch (error) {
     toast.add({
       severity: 'error',

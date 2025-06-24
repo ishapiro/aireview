@@ -1,5 +1,3 @@
--- Last updated: 2024-06-13 20:13 UTC (update this comment with each change)
-
 -- Begin transaction
 begin;
 
@@ -90,7 +88,6 @@ drop function if exists public.update_updated_at_column() cascade;
 drop function if exists public.handle_helpful_vote() cascade;
 drop function if exists public.handle_activity_log() cascade;
 drop function if exists public.update_review_with_categories(uuid, text, text, text, integer, boolean, boolean, uuid[]) cascade;
-drop function if exists public.create_review_with_categories(text, text, text, integer, boolean, boolean, uuid[], uuid) cascade;
 drop function if exists public.slugify(text) cascade;
 drop function if exists public.log_user_activity(text, jsonb) cascade;
 drop function if exists public.get_users_with_activity_counts() cascade;
@@ -578,41 +575,6 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function public.create_review_with_categories(
-    new_title text,
-    new_summary text,
-    new_content text,
-    new_rating integer,
-    new_is_published boolean,
-    new_ai_generated boolean,
-    new_category_ids uuid[],
-    author_id uuid
-)
-returns table(id uuid, title text, slug text) as $$
-declare
-    new_review_id uuid;
-    new_slug text;
-begin
-    -- Generate slug from title
-    new_slug := slugify(new_title);
-
-    -- Insert the review and get its ID
-    insert into public.reviews (title, slug, summary, content, rating, user_id, is_published, ai_generated)
-    values (new_title, new_slug, new_summary, new_content, new_rating, author_id, new_is_published, new_ai_generated)
-    returning reviews.id into new_review_id;
-
-    -- Insert category associations
-    if array_length(new_category_ids, 1) > 0 then
-        insert into public.review_categories (review_id, category_id)
-        select new_review_id, unnest(new_category_ids);
-    end if;
-
-    -- Return the new review's details
-    return query
-    select r.id, r.title, r.slug from public.reviews r where r.id = new_review_id;
-end;
-$$ language plpgsql;
-
 create or replace function public.log_user_activity(
     activity_type text,
     activity_metadata jsonb
@@ -904,3 +866,17 @@ BEGIN
   RETURN v;
 END;
 $$ LANGUAGE plpgsql;
+
+-- View: categories_with_review_count
+create or replace view public.categories_with_review_count as
+select
+  c.*,
+  count(rc.review_id) as review_count
+from public.categories c
+left join public.review_categories rc on c.id = rc.category_id
+left join public.reviews r on rc.review_id = r.id and r.is_published = true
+where rc.review_id is not null
+-- Only count reviews that are published (optional, remove if you want all reviews)
+group by c.id
+having count(rc.review_id) > 0
+order by review_count desc;
