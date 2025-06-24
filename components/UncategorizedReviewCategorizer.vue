@@ -93,6 +93,7 @@
                     <div class="flex-1">
                       <h4 class="text-sm font-medium text-gray-900">{{ cleanTitle(review.title) }}</h4>
                       <p class="text-xs text-gray-500 mt-1">{{ review.author?.full_name }} • {{ formatDate(review.created_at) }}</p>
+                      <p v-if="review.content" class="text-xs text-gray-600 mt-1 italic">{{ getExcerpt(review.content) }}</p>
                     </div>
                     <div class="flex items-center space-x-1">
                       <i 
@@ -109,31 +110,20 @@
 
                   <div class="space-y-3">
                     <div>
-                      <label class="block text-xs font-medium text-gray-700 mb-1">Suggested Categories:</label>
-                      <div class="flex flex-wrap gap-2">
-                        <span 
-                          v-for="category in review.suggestedCategories" 
-                          :key="category.id"
-                          class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center group"
-                        >
-                          {{ category.name }}
-                          <button
-                            @click="removeCategoryFromReview(review, category)"
-                            class="ml-1 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove category"
-                          >
-                            <i class="pi pi-times text-xs"></i>
-                          </button>
-                        </span>
-                        <span v-if="review.suggestedCategories.length === 0" class="text-xs text-gray-500">
-                          No suitable categories found
-                        </span>
-                      </div>
+                      <MultiSelect
+                        v-model="review.selectedCategories"
+                        :options="sortedCategories"
+                        option-label="name"
+                        option-value="id"
+                        placeholder="Select categories"
+                        class="w-full"
+                        display="chip"
+                      />
                     </div>
 
                     <div class="flex gap-2">
                       <Button
-                        v-if="review.suggestedCategories.length > 0"
+                        :disabled="!review.selectedCategories.length"
                         @click="categorizeReview(review)"
                         size="small"
                         label="Apply Categories"
@@ -196,9 +186,10 @@
 <script setup>
 import { format } from 'date-fns'
 import { useToast } from 'primevue/usetoast'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { cleanTitle } from '~/utils/string'
+import MultiSelect from 'primevue/multiselect'
 
 const client = useSupabaseClient()
 const toast = useToast()
@@ -216,6 +207,11 @@ const currentReviewIndex = ref(0)
 const currentReview = ref(null)
 const categorizedCount = ref(0)
 const skippedCount = ref(0)
+const allCategories = ref([])
+
+const sortedCategories = computed(() => {
+  return [...allCategories.value].sort((a, b) => a.name.localeCompare(b.name))
+})
 
 const openDialog = () => {
   showDialog.value = true
@@ -241,6 +237,13 @@ const closeDialog = () => {
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
+}
+
+const getExcerpt = (content) => {
+  if (!content) return ''
+  // Match up to the end of the second sentence or 200 chars
+  const match = content.match(/^(.{1,200}?([.!?]\s|$)){1,2}/)
+  return match ? match[0].trim() : content.slice(0, 200)
 }
 
 const findUncategorizedReviews = async () => {
@@ -271,13 +274,15 @@ const findUncategorizedReviews = async () => {
       .select('*')
 
     if (categoriesError) throw categoriesError
+    allCategories.value = categories
 
     // For each uncategorized review, suggest categories based on title and content
     const reviewsWithSuggestions = uncategorized.map(review => {
       const suggestedCategories = suggestCategoriesForReview(review, categories)
       return {
         ...review,
-        suggestedCategories
+        suggestedCategories,
+        selectedCategories: suggestedCategories.map(cat => cat.id) // initialize with suggested
       }
     })
 
@@ -343,11 +348,10 @@ const suggestCategoriesForReview = (review, categories) => {
 }
 
 const categorizeReview = async (review) => {
-  if (!review.suggestedCategories.length) return
+  if (!review.selectedCategories.length) return
 
   try {
-    const categoryIds = review.suggestedCategories.map(cat => cat.id)
-    
+    const categoryIds = review.selectedCategories
     // Add categories to the review
     const { error: insertError } = await client
       .from('review_categories')
@@ -367,14 +371,12 @@ const categorizeReview = async (review) => {
     }
 
     categorizedCount.value++
-    
     toast.add({
       severity: 'success',
       summary: 'Review Categorized',
-      detail: `Added ${review.suggestedCategories.length} categories to "${review.title}"`,
+      detail: `Added ${categoryIds.length} categories to "${review.title}"`,
       life: 2000
     })
-
   } catch (err) {
     console.error('Error categorizing review:', err)
     toast.add({
@@ -407,7 +409,7 @@ const categorizeAll = async () => {
       
       const review = uncategorizedReviews.value[i]
       
-      if (review.suggestedCategories.length > 0) {
+      if (review.selectedCategories.length > 0) {
         await categorizeReview(review)
       } else {
         skipReview(review)
@@ -432,8 +434,8 @@ const removeCategoryFromReview = (review, categoryToRemove) => {
   const reviewIndex = uncategorizedReviews.value.findIndex(r => r.id === review.id)
   if (reviewIndex > -1) {
     const updatedReview = { ...uncategorizedReviews.value[reviewIndex] }
-    updatedReview.suggestedCategories = updatedReview.suggestedCategories.filter(
-      cat => cat.id !== categoryToRemove.id
+    updatedReview.selectedCategories = updatedReview.selectedCategories.filter(
+      cat => cat !== categoryToRemove.id
     )
     uncategorizedReviews.value[reviewIndex] = updatedReview
   }
