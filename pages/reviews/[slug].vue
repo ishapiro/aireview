@@ -63,6 +63,15 @@
               :icon="hasUserStarred ? 'pi pi-star-fill' : 'pi pi-star'"
               size="small"
             />
+            <Button
+              class="ml-2"
+              label="Update with AI"
+              icon="pi pi-robot"
+              :loading="isAIUpdating"
+              @click="handleUpdateWithAI"
+              size="small"
+              severity="secondary"
+            />
           </div>
         </div>
 
@@ -221,6 +230,19 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- AI Update Dialog -->
+    <Dialog
+      v-model:visible="showAIDialog"
+      modal
+      header="AI Update"
+      :style="{ width: '600px', maxWidth: '90vw' }"
+    >
+      <div class="prose prose-lg max-w-none text-sm prose-headings:text-base" v-html="renderedAIResponse"></div>
+      <template #footer>
+        <Button @click="showAIDialog = false" label="Close" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -233,6 +255,7 @@ import { marked } from 'marked'
 import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
 import { useAmazon } from '~/composables/useAmazon'
+import { useAI } from '@/composables/useAI'
 
 // PrimeVue components
 import Dialog from 'primevue/dialog'
@@ -243,6 +266,7 @@ const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
 const { searchProducts } = useAmazon()
+const { sendAIPrompt } = useAI()
 
 const review = ref(null)
 const comments = ref([])
@@ -254,6 +278,9 @@ const isLoading = ref(true)
 const showAmazonDialog = ref(false)
 const amazonProducts = ref([])
 const isAmazonLoading = ref(false)
+const isAIUpdating = ref(false)
+const showAIDialog = ref(false)
+const aiResponse = ref('')
 
 console.log('[reviews/[slug]] Initial load - slug:', route.params.slug)
 
@@ -381,6 +408,8 @@ const renderedContent = computed(() => {
   return marked(review.value?.content || '')
 })
 
+const renderedAIResponse = computed(() => marked(aiResponse.value || ''))
+
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy')
 }
@@ -497,6 +526,26 @@ const handleAmazonLookup = async () => {
     })
   } finally {
     isAmazonLoading.value = false
+  }
+}
+
+const handleUpdateWithAI = async () => {
+  if (!review.value?.title) return
+  isAIUpdating.value = true
+  try {
+    const prompt = `Update: ${review.value.title}`
+    const response = await sendAIPrompt(prompt)
+    aiResponse.value = response
+    showAIDialog.value = true
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'AI Error',
+      detail: 'Failed to update with AI',
+      life: 4000
+    })
+  } finally {
+    isAIUpdating.value = false
   }
 }
 </script> 

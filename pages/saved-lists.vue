@@ -80,7 +80,7 @@
         <div class="flex justify-between space-x-2 bg-gray-50 rounded-b-lg shadow-md px-4 py-2 mt-0.5">
           <Button
             @click="viewList(list)"
-            label="Details"
+            label="Compare"
             icon="pi pi-list"
             size="small"
             class="flex-1 text-xs"
