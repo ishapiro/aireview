@@ -544,7 +544,7 @@ create or replace function public.update_review_with_categories(
     new_title text,
     new_summary text,
     new_content text,
-    new_rating integer,
+    new_rating numeric,
     new_is_published boolean,
     new_ai_generated boolean,
     new_category_ids uuid[]

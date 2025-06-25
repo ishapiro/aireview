@@ -38,6 +38,9 @@
               <NuxtLink to="/admin/users" class="btn-primary block text-center">
                 Manage Users
               </NuxtLink>
+              <NuxtLink to="/admin/reviews/dedup" class="btn-primary block text-center">
+                Deduplicate Reviews
+              </NuxtLink>
               <CategoryPopulator />
               <UncategorizedReviewCategorizer />
               <AppendCategoryToReviews />

@@ -77,13 +77,22 @@ const appendCategory = async () => {
   successMessage.value = ''
   errorMessage.value = ''
   try {
-    // Prepare insert data, skip if already present
-    const inserts = selectedReviewIds.value.map(reviewId => ({ review_id: reviewId, category_id: selectedCategoryId.value }))
-    // Use upsert to avoid duplicates
-    const { error } = await client.from('review_categories').upsert(inserts, { onConflict: ['review_id', 'category_id'] })
-    if (error) throw error
-    successMessage.value = 'Category appended to selected reviews.'
-    // Optionally clear selection
+    // Fetch existing associations for selected reviews and the chosen category
+    const { data: existing } = await client
+      .from('review_categories')
+      .select('review_id')
+      .in('review_id', selectedReviewIds.value)
+      .eq('category_id', selectedCategoryId.value)
+    const alreadyLinked = new Set((existing || []).map(r => r.review_id))
+    // Prepare only new inserts
+    const inserts = selectedReviewIds.value
+      .filter(reviewId => !alreadyLinked.has(reviewId))
+      .map(reviewId => ({ review_id: reviewId, category_id: selectedCategoryId.value }))
+    if (inserts.length > 0) {
+      const { error } = await client.from('review_categories').insert(inserts)
+      if (error) throw error
+    }
+    successMessage.value = inserts.length > 0 ? 'Category appended to selected reviews.' : 'All selected reviews already have this category.'
     selectedReviewIds.value = []
   } catch (err) {
     errorMessage.value = err.message || 'Failed to append category.'
