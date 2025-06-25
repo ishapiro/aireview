@@ -1,5 +1,5 @@
 <template>
-  <div class="card review-card no-underline relative">
+  <div v-if="review" class="card review-card no-underline relative">
     <NuxtLink 
       class="no-underline" 
       :to="review.is_published ? `/reviews/${review.slug}` : `/admin/reviews/${review.id}`" 
@@ -82,7 +82,7 @@ import { stripMarkdown } from '@/utils/string'
 import { computed } from 'vue'
 import { cleanTitle } from '~/utils/string'
 
-const props = defineProps({
+const { review } = defineProps({
   review: {
     type: Object,
     required: true
@@ -90,7 +90,7 @@ const props = defineProps({
 })
 
 const handleCardClick = (event) => {
-  console.log('[ReviewCard] Card clicked, navigating to review:', props.review.slug)
+  console.log('[ReviewCard] Card clicked, navigating to review:', review.slug)
 }
 
 const formatDate = (date) => {
@@ -110,15 +110,15 @@ const truncate = (text, length) => {
 // Computed property to get review summary
 const reviewSummary = computed(() => {
   // Use summary field if it has content
-  if (props.review.summary && props.review.summary.trim()) {
-    return props.review.summary.length > 200 
-      ? props.review.summary.substring(0, 200) + '...' 
-      : props.review.summary
+  if (review.summary && review.summary.trim()) {
+    return review.summary.length > 200 
+      ? review.summary.substring(0, 200) + '...' 
+      : review.summary
   }
   
   // Fall back to stripped content from full content field
-  if (props.review.content) {
-    const strippedContent = stripMarkdown(props.review.content)
+  if (review.content) {
+    const strippedContent = stripMarkdown(review.content)
     return strippedContent.length > 200 
       ? strippedContent.substring(0, 200) + '...' 
       : strippedContent
@@ -126,4 +126,18 @@ const reviewSummary = computed(() => {
   
   return ''
 })
-</script> 
+</script>
+
+<style scoped>
+.save-xs-btn :deep(button),
+.save-xs-btn :deep(.p-button) {
+  padding: 2px 8px !important;
+  font-size: 0.75rem !important;
+  min-width: unset !important;
+  height: 1.5rem !important;
+  line-height: 1rem !important;
+}
+.save-xs-btn :deep(.pi) {
+  font-size: 0.9em !important;
+}
+</style> 

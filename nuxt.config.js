@@ -80,6 +80,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    // Amazon PA-API credentials (server-side only)
+    amazonAccessKey: process.env.AMAZON_ACCESS_KEY,
+    amazonSecretKey: process.env.AMAZON_SECRET_KEY,
+    amazonPartnerTag: process.env.AMAZON_PARTNER_TAG,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,

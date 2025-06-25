@@ -1,13 +1,16 @@
 <template>
   <div>
-    <!-- Save Button -->
+    <!-- Save Icon Button with Tooltip -->
     <Button
       @click="showDialog = true"
-      :icon="isSaved ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"
-      :label="isSaved ? 'Saved' : 'Save'"
-      :severity="isSaved ? 'info' : 'primary'"
-      size="small"
-    />
+      :class="['p-button-rounded', 'p-button-text', isSaved ? 'p-button-info' : 'p-button-primary']"
+      :aria-label="isSaved ? 'Saved to your reading list' : 'Save to your reading list'"
+      v-tooltip.top="isSaved ? 'This review is in your reading list' : 'Save this review to your reading list for later'"
+    >
+      <template #icon>
+        <i class="pi pi-bookmark text-white"></i>
+      </template>
+    </Button>
 
     <!-- Save Dialog -->
     <Dialog
@@ -281,4 +284,10 @@ onMounted(() => {
     fetchUserLists()
   }
 })
-</script> 
+</script>
+
+<style scoped>
+.p-button .pi-bookmark {
+  color: #fff !important;
+}
+</style> 

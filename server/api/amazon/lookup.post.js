@@ -19,10 +19,24 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Amazon PA-API credentials
-    const accessKey = "AKIAION5E3UKLCLTSXIQ"
-    const secretKey = "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"
-    const partnerTag = "drvax-20"
+    // Get Amazon PA-API credentials from runtime config
+    const config = useRuntimeConfig()
+    const accessKey = config.amazonAccessKey
+    const secretKey = config.amazonSecretKey
+    const partnerTag = config.amazonPartnerTag
+    
+    // Validate required environment variables
+    if (!accessKey || !secretKey || !partnerTag) {
+      console.error("Missing required Amazon environment variables:", {
+        accessKeyPresent: !!accessKey,
+        secretKeyPresent: !!secretKey,
+        partnerTagPresent: !!partnerTag
+      })
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Amazon API configuration is incomplete'
+      })
+    }
     
     // Amazon PA-API endpoint (US region)
     const host = "webservices.amazon.com"

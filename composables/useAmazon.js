@@ -1,11 +1,6 @@
 import { useRuntimeConfig } from '#imports'
 
 export function useAmazon() {
-  // Amazon PA-API credentials from environment variables
-  const accessKey = "AKIAION5E3UKLCLTSXIQ"
-  const secretKey = "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"
-  const partnerTag = "drvax-20"
-  
   // Search for products on Amazon using server-side API
   const searchProducts = async (searchTerm, searchIndex = 'All') => {
     try {
@@ -40,9 +35,11 @@ export function useAmazon() {
     }
   }
   
-  // Generate Amazon affiliate link
+  // Generate Amazon affiliate link (this will be handled server-side now)
   const generateAffiliateLink = (asin) => {
-    return `https://www.amazon.com/dp/${asin}?tag=${partnerTag}`
+    // This function is kept for backward compatibility but affiliate links
+    // are now generated server-side with the proper partner tag
+    return `https://www.amazon.com/dp/${asin}`
   }
   
   return {
