@@ -23,90 +23,80 @@
     </div>
 
     <!-- Lists Grid -->
-    <div v-else-if="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-      <Card
-        v-for="list in savedLists"
-        :key="list.list_id"
-        class="shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg overflow-hidden"
-        :pt="{ header: { class: 'p-0' }, content: { class: 'p-6' }, footer: { class: 'p-6 bg-gray-50' } }"
-      >
-        <template #header>
-          <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50 min-h-[80px]">
-            <h3 class="text-base font-semibold text-gray-800 mr-4 flex-1 min-w-0 line-clamp-3">{{ list.list_name }}</h3>
-            <div class="flex items-center space-x-3 flex-shrink-0">
-              <span class="text-sm text-gray-600 font-medium">{{ list.item_count }} items</span>
-              <i
-                @click="deleteList(list.list_id)"
-                class="pi pi-trash text-red-500 font-bold cursor-pointer text-lg hover:text-red-700 transition-colors"
-                v-tooltip.top="'Delete List'"
-              ></i>
-            </div>
-          </div>
-        </template>
-        
-        <template #content>
-          <div class="space-y-4">
-            <p class="text-sm text-gray-500">
-              Created {{ formatDate(list.created_at) }}
-            </p>
-            
-            <!-- Preview of items -->
-            <div v-if="list.items && list.items.length > 0" class="space-y-2">
-              <div
-                v-for="item in list.items.slice(0, 3)"
-                :key="item.id"
-                class="flex items-center space-x-3 p-3 bg-white border rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <div class="flex-1 min-w-0">
-                  <NuxtLink :to="`/reviews/${item.slug}`" class="text-sm font-medium text-gray-900 truncate hover:text-primary-600">{{ item.title }}</NuxtLink>
-                  <p class="text-xs text-gray-500">by {{ item.author_name }}</p>
-                </div>
-                <div class="flex items-center space-x-1">
-                  <span v-for="star in 5" :key="star">
-                    <i
-                      class="text-xs"
-                      :class="star <= item.rating ? 'pi pi-star-fill text-yellow-400' : 'pi pi-star text-gray-300'"
-                    ></i>
-                  </span>
-                </div>
-              </div>
-              
-              <div v-if="list.items.length > 3" class="text-center pt-2">
-                <p class="text-xs text-gray-500">
-                  +{{ list.items.length - 3 }} more items
-                </p>
+    <div v-else-if="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="list in savedLists" :key="list.list_id" class="h-96 flex flex-col min-h-0">
+        <Card
+          class="shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0"
+          :pt="{ header: { class: 'p-0' }, content: { class: 'p-4 flex-1 flex flex-col min-h-0' } }"
+        >
+          <template #header>
+            <div class="flex items-center justify-between px-4 py-3 border-b bg-gray-50 min-h-[60px]">
+              <h3 class="text-sm font-semibold text-gray-800 mr-3 flex-1 min-w-0 line-clamp-2">{{ list.list_name }}</h3>
+              <div class="flex items-center space-x-2 flex-shrink-0">
+                <span class="text-xs text-gray-600 font-medium">{{ list.item_count }} items</span>
+                <i
+                  @click="deleteList(list.list_id)"
+                  class="pi pi-trash text-red-500 font-bold cursor-pointer text-sm hover:text-red-700 transition-colors"
+                  v-tooltip.top="'Delete List'"
+                ></i>
               </div>
             </div>
-            
-            <div v-else class="text-center py-8 bg-gray-50 rounded-md">
-              <i class="pi pi-inbox text-3xl text-gray-400 mb-2"></i>
-              <p class="text-sm text-gray-600">No items in this list yet</p>
+          </template>
+          
+          <template #content>
+            <div class="flex flex-col flex-1 min-h-0">
+              <p class="text-xs text-gray-500 mb-2">
+                Created {{ formatDate(list.created_at) }}
+              </p>
+              <div v-if="list.items && list.items.length > 0" class="overflow-y-auto space-y-2" style="max-height: 140px;">
+                <div
+                  v-for="item in list.items"
+                  :key="item.id"
+                  class="flex items-center space-x-2 p-2 bg-white border rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <div class="flex-1 min-w-0">
+                    <NuxtLink :to="`/reviews/${item.slug}`" class="text-xs font-medium text-gray-900 truncate hover:text-primary-600 block">{{ item.title }}</NuxtLink>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    <span v-for="star in 5" :key="star">
+                      <i
+                        class="text-xs"
+                        :class="star <= item.rating ? 'pi pi-star-fill text-yellow-400' : 'pi pi-star text-gray-300'"
+                      ></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center py-6 bg-gray-50 rounded-md flex-1 flex items-center justify-center">
+                <div>
+                  <i class="pi pi-inbox text-2xl text-gray-400 mb-2"></i>
+                  <p class="text-xs text-gray-600">No items in this list yet</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </template>
-        
-        <template #footer>
-          <div class="flex justify-between space-x-2">
+          </template>
+        </Card>
+        <!-- Action buttons below the card -->
+        <div class="flex justify-between space-x-2 bg-gray-50 rounded-b-lg shadow-md px-4 py-2 mt-0.5">
+          <Button
+            @click="viewList(list)"
+            label="Details"
+            icon="pi pi-list"
+            size="small"
+            class="flex-1 text-xs"
+          />
+          <NuxtLink :to="{ path: '/search', query: { list: list.list_id, listName: list.list_name } }" class="w-full flex-1">
             <Button
-              @click="viewList(list)"
-              label="View List"
-              icon="pi pi-list"
+              as="span"
+              label="Add"
+              icon="pi pi-plus"
               size="small"
-              class="flex-1"
+              severity="secondary"
+              class="w-full text-xs"
             />
-            <NuxtLink :to="{ path: '/search', query: { list: list.list_id, listName: list.list_name } }" class="w-full flex-1">
-              <Button
-                as="span"
-                label="Add Items"
-                icon="pi pi-plus"
-                size="small"
-                severity="secondary"
-                class="w-full"
-              />
-            </NuxtLink>
-          </div>
-        </template>
-      </Card>
+          </NuxtLink>
+        </div>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -166,20 +156,7 @@
           <p class="text-sm text-gray-500">
             {{ selectedList.item_count }} items • Created {{ formatDate(selectedList.created_at) }}
           </p>
-          <!-- Compare Button -->
-          <div v-if="selectedItems.length > 0" class="flex items-center space-x-2">
-            <span class="text-sm text-gray-600">{{ selectedItems.length }} selected</span>
-            <Button
-              @click="compareSelectedItems"
-              label="Compare"
-              icon="pi pi-chart-bar"
-              size="small"
-              :loading="isComparing"
-              :disabled="selectedItems.length < 2 || selectedItems.length > 3"
-            />
-          </div>
         </div>
-        
         <div v-if="selectedList.items && selectedList.items.length > 0" class="space-y-3">
           <div 
             v-for="item in selectedList.items" 
@@ -198,7 +175,6 @@
                 <h4 class="font-medium text-gray-900">{{ item.title }}</h4>
                 <p class="text-sm text-gray-500 mt-1">{{ item.summary }}</p>
                 <div class="flex items-center space-x-4 mt-2">
-                  <span class="text-xs text-gray-500">by {{ item.author_name }}</span>
                   <div class="flex items-center space-x-1">
                     <span v-for="star in 5" :key="star">
                       <i
@@ -210,7 +186,6 @@
                 </div>
               </div>
             </div>
-            
             <div class="flex items-center space-x-2 ml-4">
               <NuxtLink 
                 :to="`/reviews/${item.slug}`"
@@ -226,7 +201,6 @@
             </div>
           </div>
         </div>
-        
         <div v-else class="text-center py-8">
           <i class="pi pi-bookmark text-4xl text-gray-300 mb-4"></i>
           <p class="text-gray-500">This list is empty</p>
@@ -234,7 +208,16 @@
       </div>
       
       <template #footer>
-        <div class="flex justify-end">
+        <div class="flex justify-end space-x-2 w-full">
+          <Button
+            v-if="selectedItems.length >= 2 && selectedItems.length <= 3"
+            @click="compareSelectedItems"
+            label="Compare"
+            icon="pi pi-chart-bar"
+            size="small"
+            :loading="isComparing"
+            :disabled="selectedItems.length < 2 || selectedItems.length > 3"
+          />
           <Button
             @click="showViewDialog = false"
             label="Close"
