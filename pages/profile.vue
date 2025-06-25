@@ -16,8 +16,8 @@
                 <div class="flex items-center space-x-4">
                   <div class="relative">
                     <img 
-                      :src="form.avatar_url || '/default-avatar.svg'" 
-                      :alt="form.fullName"
+                      :src="profileForm.avatar_url || '/default-avatar.svg'" 
+                      :alt="profileForm.fullName"
                       class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                       @error="$event.target.src = '/default-avatar.svg'"
                     />
@@ -35,7 +35,7 @@
                       class="p-button-outlined"
                     />
                     <Button
-                      v-if="form.avatar_url"
+                      v-if="profileForm.avatar_url"
                       type="button"
                       label="Remove"
                       icon="pi pi-trash"
@@ -52,7 +52,7 @@
                   <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
                   <InputText
                     id="fullName"
-                    v-model="form.fullName"
+                    v-model="profileForm.fullName"
                     class="w-full"
                   />
                 </div>
@@ -61,7 +61,7 @@
                   <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                   <InputText
                     id="email"
-                    v-model="form.email"
+                    v-model="profileForm.email"
                     type="email"
                     class="w-full"
                     disabled
@@ -72,7 +72,7 @@
                   <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
                   <Textarea
                     id="bio"
-                    v-model="form.bio"
+                    v-model="profileForm.bio"
                     rows="4"
                     class="w-full"
                   />
@@ -101,7 +101,7 @@
                 <!-- Hidden username field for password managers -->
                 <input
                   type="email"
-                  :value="form.email"
+                  :value="profileForm.email"
                   autocomplete="username"
                   style="display: none"
                 />
@@ -285,7 +285,7 @@ const isChangingPassword = ref(false)
 const isUploading = ref(false)
 const generatedLists = ref([])
 
-const form = ref({
+const profileForm = ref({
   fullName: '',
   email: '',
   bio: '',
@@ -314,14 +314,14 @@ const fetchProfile = async () => {
 
     if (error) throw error
     profile.value = data
-    form.value = {
+    profileForm.value = {
       fullName: data.full_name,
       email: data.email,
       bio: data.bio || '',
       avatar_url: data.avatar_url
     }
     console.log('Fetched profile:', JSON.parse(JSON.stringify(data)))
-    console.log('Assigned to form.value:', JSON.parse(JSON.stringify(form.value)))
+    console.log('Assigned to profileForm.value:', JSON.parse(JSON.stringify(profileForm.value)))
 
     // Load generated lists from local storage
     loadFromLocalStorage()
@@ -349,7 +349,7 @@ watch(user, (newUser) => {
     fetchProfile()
   } else {
     profile.value = {}
-    form.value = {
+    profileForm.value = {
       fullName: '',
       email: '',
       bio: '',
@@ -366,9 +366,9 @@ const handleSubmit = async () => {
     const { error: updateError } = await client
       .from('profiles')
       .update({
-        full_name: form.value.fullName,
-        bio: form.value.bio,
-        avatar_url: form.value.avatar_url
+        full_name: profileForm.value.fullName,
+        bio: profileForm.value.bio,
+        avatar_url: profileForm.value.avatar_url
       })
       .eq('id', user.value.id)
 
@@ -421,7 +421,7 @@ const handleAvatarUpload = async () => {
   try {
     const publicUrl = await uploadAvatar(user.value.id)
     if (publicUrl) {
-      form.value.avatar_url = publicUrl
+      profileForm.value.avatar_url = publicUrl
     }
   } catch (error) {
     // Error handling is already done in the composable
@@ -432,7 +432,7 @@ const handleAvatarUpload = async () => {
 }
 
 const handleRemoveAvatar = () => {
-  form.value.avatar_url = null
+  profileForm.value.avatar_url = null
   toast.add({ severity: 'success', summary: 'Success', detail: 'Avatar removed successfully!', life: 3000 })
 }
 

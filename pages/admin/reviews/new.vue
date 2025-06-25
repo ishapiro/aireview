@@ -56,7 +56,7 @@
                   :title="form.title"
                   :rating-value="form.rating"
                   @update:summary-value="form.summary = $event"
-                  @update:rating-value="form.rating = $event"
+                  @update:rating-value="handleAIRatingUpdate($event)"
                   @ai-generated="form.ai_generated = true"
                 />
               </div>
@@ -125,6 +125,8 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
+import InputNumber from 'primevue/inputnumber'
+import { watchEffect, watch } from 'vue'
 
 definePageMeta({
   middleware: ['auth-admin']
@@ -145,10 +147,17 @@ const form = ref({
   ai_generated: false
 })
 
+console.log('[new.vue] Initial form.value:', form.value)
+
+// Watch for rating changes
+watch(() => form.value.rating, (newRating, oldRating) => {
+  console.log('[new.vue] form.value.rating changed from', oldRating, 'to', newRating)
+})
+
 const isSubmitting = ref(false)
 
 // Fetch categories
-const { data: categories } = await useAsyncData('categories', async () => {
+const { data: categories } = await useAsyncData('categories-create-review', async () => {
   const { data } = await client
     .from('categories')
     .select('*')
@@ -249,5 +258,26 @@ const handleSubmit = async () => {
 const handleSaveAsDraft = () => {
   form.value.is_published = false
   handleSubmit()
+}
+
+// Listen for AIContentGenerator rating updates
+function handleAIRatingUpdate(rating) {
+  console.log('[new.vue] handleAIRatingUpdate called with rating:', rating)
+  console.log('[new.vue] rating type:', typeof rating)
+  console.log('[new.vue] form.value before update:', form.value)
+  console.log('[new.vue] form.value.rating before update:', form.value?.rating)
+  
+  if (!form.value || typeof form.value !== 'object') {
+    console.log('[new.vue] form.value is not valid, returning early')
+    return;
+  }
+  if (typeof rating === 'number' && !isNaN(rating)) {
+    const newRating = Math.max(1.0, Math.min(5.0, rating))
+    console.log('[new.vue] Setting form.value.rating to:', newRating)
+    form.value.rating = newRating
+    console.log('[new.vue] form.value.rating after update:', form.value.rating)
+  } else {
+    console.log('[new.vue] Rating is not a valid number:', rating)
+  }
 }
 </script> 

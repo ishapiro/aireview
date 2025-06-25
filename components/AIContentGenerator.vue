@@ -298,6 +298,13 @@ const generateAIContent = async () => {
     const ratingMatch = fullResponse.match(/\*\*Rating: (\d+(?:\.\d+)?)\/5 stars\*\*/)
     if (ratingMatch) {
       suggestedRating.value = parseFloat(ratingMatch[1])
+    } else {
+      // Try alternative format: RATING: X.X
+      const altRatingMatch = fullResponse.match(/RATING:\s*(\d+(?:\.\d+)?)/i)
+      if (altRatingMatch) {
+        suggestedRating.value = parseFloat(altRatingMatch[1])
+        console.log('[AIContentGenerator] Found rating with alt format:', suggestedRating.value)
+      }
     }
 
     // Parse for summary and content
@@ -468,11 +475,18 @@ const generateProductReview = async (productName, categoryName, reviewType = 'bu
 }
 
 const useAIContent = () => {
+  console.log('[AIContentGenerator] useAIContent called')
+  console.log('[AIContentGenerator] generatedContent:', generatedContent.value)
+  console.log('[AIContentGenerator] generatedSummary:', generatedSummary.value)
+  console.log('[AIContentGenerator] suggestedRating:', suggestedRating.value)
+  
   emit('update:modelValue', generatedContent.value)
   if (props.generateSummary && generatedSummary.value) {
+    console.log('[AIContentGenerator] Emitting update:summaryValue:', generatedSummary.value)
     emit('update:summaryValue', generatedSummary.value)
   }
   if (suggestedRating.value) {
+    console.log('[AIContentGenerator] Emitting update:ratingValue:', suggestedRating.value)
     emit('update:ratingValue', suggestedRating.value)
   }
   emit('ai-generated')

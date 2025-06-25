@@ -19,6 +19,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import ProgressBar from 'primevue/progressbar'
 import InputSwitch from 'primevue/inputswitch'
 import Tooltip from 'primevue/tooltip'
+import InputNumber from 'primevue/inputnumber'
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue, {
@@ -59,6 +60,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('ProgressSpinner', ProgressSpinner)
   nuxtApp.vueApp.component('ProgressBar', ProgressBar)
   nuxtApp.vueApp.component('InputSwitch', InputSwitch)
+  nuxtApp.vueApp.component('InputNumber', InputNumber)
 
   // Register services
   nuxtApp.vueApp.use(ToastService)
