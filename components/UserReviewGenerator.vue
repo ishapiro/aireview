@@ -183,26 +183,15 @@
                 </div>
               </div>
             </div>
-
-            <!-- Link to User's Private List -->
             <div class="flex flex-col items-center space-y-2">
               <p class="text-sm text-gray-600">A new list has been created for you with these reviews.</p>
               <NuxtLink
-                v-if="newListId"
-                :to="{ path: '/saved-lists', query: { highlight: newListId } }"
+                :to="newListId.value ? { path: '/saved-lists', query: { highlight: newListId.value } } : '/saved-lists'"
                 class="btn-primary px-6 py-2 rounded text-white text-lg mt-2"
               >
                 View My List
               </NuxtLink>
-              <NuxtLink
-                v-else
-                to="/saved-lists"
-                class="btn-primary px-6 py-2 rounded text-white text-lg mt-2"
-              >
-                View My Lists
-              </NuxtLink>
             </div>
-
             <div class="flex justify-end">
               <Button @click="closeDialog" label="Close" icon="pi pi-check" />
             </div>
@@ -276,7 +265,7 @@ const isGeneratingProducts = ref(false)
 // Review generation state
 const currentProductIndex = ref(0)
 const generatedReviews = ref([])
-let newListId = null
+const newListId = ref(null)
 
 // AI Generator reference
 const aiGenerator = ref(null)
@@ -390,7 +379,7 @@ const startReviewGeneration = async () => {
     })
 
     if (listError) throw listError
-    newListId = createdListId
+    newListId.value = createdListId
   } catch (err) {
     error.value = `Error creating a new saved list: ${err.message}`
     isProcessing.value = false
@@ -416,8 +405,8 @@ const startReviewGeneration = async () => {
 
       if (existingReview) {
         finalReviewList.push({ id: existingReview.id, title: existingReview.title, slug: existingReview.slug })
-        if (newListId) {
-          await client.rpc('add_to_saved_list', { p_list_id: newListId, p_review_id: existingReview.id })
+        if (newListId.value) {
+          await client.rpc('add_to_saved_list', { p_list_id: newListId.value, p_review_id: existingReview.id })
         }
         continue
       }
@@ -513,8 +502,8 @@ const startReviewGeneration = async () => {
         finalReviewList.push({ id: newReview.id, title: newReview.title, slug: newReview.slug })
 
         // Add the new review to our saved list
-        if (newListId) {
-          await client.rpc('add_to_saved_list', { p_list_id: newListId, p_review_id: newReview.id })
+        if (newListId.value) {
+          await client.rpc('add_to_saved_list', { p_list_id: newListId.value, p_review_id: newReview.id })
         }
       }
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -526,7 +515,7 @@ const startReviewGeneration = async () => {
   generatedReviews.value = finalReviewList
 
   isProcessing.value = false
-  currentStep.value = 4
+  currentStep.value = 3
 
   // Log AI product search activity and refresh admin stats
   try {
@@ -547,22 +536,28 @@ const reviewSingleProduct = async () => {
   isProcessing.value = true
   error.value = ''
   try {
-    // First, search for similar reviews (use ilike for partial match, or textSearch for full-text)
-    console.log('[Single Review] Searching for similar reviews:', singleProductName.value)
-    const { data: foundReviews, error: searchError } = await client
+    // Search for similar reviews using both ilike and textSearch
+    const { data: ilikeMatches } = await client
+      .from('reviews')
+      .select('id, slug, title, summary')
+      .ilike('title', `%${singleProductName.value.trim()}%`)
+    const { data: textMatches } = await client
       .from('reviews')
       .select('id, slug, title, summary')
       .textSearch('title', singleProductName.value, { type: 'plain' })
-    if (searchError) {
-      console.error('[Single Review] Error searching for similar reviews:', searchError)
-    }
-    if (foundReviews && foundReviews.length > 0) {
-      // Check for exact match (case-insensitive, trimmed)
-      const inputNormalized = singleProductName.value.trim().toLowerCase()
-      const exactMatch = foundReviews.find(r => r.title && r.title.trim().toLowerCase() === inputNormalized)
-      if (exactMatch) {
+    // Merge and deduplicate
+    const foundReviews = [...(ilikeMatches || []), ...(textMatches || [])]
+      .filter((review, index, self) =>
+        index === self.findIndex(r => r.id === review.id)
+      )
+    if (foundReviews.length > 0) {
+      // Use stringSimilarity to find the best match
+      const titles = foundReviews.map(r => r.title)
+      const { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(singleProductName.value.trim(), titles)
+      if (bestMatch.rating > 0.7) {
+        const similar = foundReviews[bestMatchIndex]
         showDialog.value = false
-        await router.push(`/reviews/${exactMatch.slug}`)
+        await router.push(`/reviews/${similar.slug}`)
         isProcessing.value = false
         return
       }
@@ -625,7 +620,18 @@ const proceedWithAIReview = async () => {
         }
       }
     }
-
+    
+    const payload = {
+      title: cleanTitle(reviewData.title),
+      summary: reviewData.summary,
+      content: reviewData.content,
+      rating: reviewData.rating,
+      is_published: true, // Save as published
+      ai_generated: true,
+      user_id: user.value.id
+    };
+    console.log('Payload for creating review:', payload);
+    
     // Use the slugBase from the AI response if available, otherwise generate from title
     let baseSlug = reviewData.slugBase ? reviewData.slugBase : cleanTitle(reviewData.title).toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 30)
     // Ensure uniqueness
@@ -644,60 +650,65 @@ const proceedWithAIReview = async () => {
       }
       slug = newSlug
     }
-
-    // Create the review in the database
-    const payload = {
-      title: cleanTitle(reviewData.title),
-      summary: reviewData.summary,
-      content: reviewData.content,
-      rating: reviewData.rating,
-      is_published: true,
-      ai_generated: true,
-      user_id: user.value.id,
-      slug: slug
-    }
+    
+    // Create the review first
     const { data: newReview, error: createError } = await client
       .from('reviews')
-      .insert(payload)
-      .select('id, slug')
-      .single()
-    if (createError) throw createError
-
+      .insert({
+        ...payload,
+        slug: slug
+      })
+      .select('id, title, slug')
+      .single();
+      
+    if (createError) {
+      console.error('Error creating review:', createError);
+      throw createError;
+    }
+    
     // Add category associations if we have category IDs
     if (categoryIds.length > 0) {
       const categoryAssociations = categoryIds.map(categoryId => ({
         review_id: newReview.id,
         category_id: categoryId
-      }))
+      }));
+      
       const { error: categoryError } = await client
         .from('review_categories')
-        .insert(categoryAssociations)
+        .insert(categoryAssociations);
+        
       if (categoryError) {
-        console.error('Error adding category associations:', categoryError)
+        console.error('Error adding category associations:', categoryError);
+        // Don't throw here, as the review was created successfully
       }
     }
+    
+    finalReviewList.push({ id: newReview.id, title: newReview.title, slug: newReview.slug })
 
-    // Log AI product search activity
-    try {
-      await client.rpc('log_user_activity', {
-        activity_type: 'ai_product_search',
-        activity_metadata: {}
-      })
-      // Refresh admin stats if on admin page
-      if (nuxtApp && typeof nuxtApp.refreshNuxtData === 'function') {
-        await nuxtApp.refreshNuxtData('admin-stats')
-      }
-    } catch (err) {
-      console.error('Failed to log ai_product_search activity or refresh stats:', err)
+    // Add the new review to our saved list
+    if (newListId.value) {
+      await client.rpc('add_to_saved_list', { p_list_id: newListId.value, p_review_id: newReview.id })
     }
-
-    // Redirect to the new review page
-    showDialog.value = false
-    await router.push(`/reviews/${newReview.slug}`)
   } catch (err) {
-    error.value = `Error creating review: ${err.message}`
-  } finally {
-    isProcessing.value = false
+    console.error(`Error processing product ${singleProductName.value}:`, err)
+  }
+
+  generatedReviews.value = finalReviewList
+
+  isProcessing.value = false
+  currentStep.value = 3
+
+  // Log AI product search activity and refresh admin stats
+  try {
+    await client.rpc('log_user_activity', {
+      activity_type: 'ai_product_search',
+      activity_metadata: {}
+    })
+    if (nuxtApp && typeof nuxtApp.refreshNuxtData === 'function') {
+      await nuxtApp.refreshNuxtData('admin-stats')
+    }
+  } catch (err) {
+    console.error('Failed to log ai_product_search activity or refresh stats:', err)
   }
 }
-</script> 
+</script>

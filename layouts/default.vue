@@ -17,6 +17,12 @@
             </NuxtLink>
             
             <template v-if="user">
+              <NuxtLink to="/saved-lists">
+                <Button icon="pi pi-bookmark" rounded aria-label="Saved Lists" />
+              </NuxtLink>
+              <NuxtLink v-if="profile?.is_admin" to="/admin">
+                <Button icon="pi pi-cog" rounded aria-label="Admin Dashboard" />
+              </NuxtLink>
               <NuxtLink to="/profile">
                 <Button 
                   icon="pi pi-user"  
@@ -74,8 +80,26 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch } from 'vue'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
+const profile = ref(null)
+
+const fetchProfile = async () => {
+  if (!user.value) {
+    profile.value = null
+    return
+  }
+  const { data, error } = await client
+    .from('profiles')
+    .select('*')
+    .eq('id', user.value.id)
+    .single()
+  if (!error) profile.value = data
+}
+
+onMounted(fetchProfile)
+watch(user, fetchProfile)
 
 const handleSignOut = async () => {
   await client.auth.signOut()
