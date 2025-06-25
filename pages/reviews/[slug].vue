@@ -13,6 +13,17 @@
     </div>
 
     <div v-else class="bg-white rounded-lg shadow-lg p-6">
+      <!-- Amazon Lookup Button -->
+      <div class="mb-6 flex justify-center">
+        <Button
+          @click="handleAmazonLookup"
+          :loading="isAmazonLoading"
+          class="btn-primary"
+          icon="pi pi-shopping-cart"
+          label="Lookup on Amazon"
+        />
+      </div>
+
       <!-- Review Header -->
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ cleanTitle(review.title) }}</h1>
@@ -143,6 +154,73 @@
         </div>
       </div>
     </div>
+
+    <!-- Amazon Products Dialog -->
+    <Dialog
+      v-model:visible="showAmazonDialog"
+      modal
+      header="Amazon Products"
+      :style="{ width: '80vw', maxWidth: '800px' }"
+      :closable="true"
+    >
+      <div v-if="amazonProducts.length === 0 && !isAmazonLoading" class="text-center py-8">
+        <p class="text-gray-600">No products found on Amazon for "{{ review?.title }}"</p>
+      </div>
+      
+      <div v-else-if="isAmazonLoading" class="text-center py-8">
+        <ProgressSpinner />
+        <p class="text-gray-600 mt-4">Searching Amazon...</p>
+      </div>
+      
+      <div v-else class="space-y-4">
+        <div
+          v-for="product in amazonProducts"
+          :key="product.ASIN"
+          class="border rounded-lg p-4 hover:shadow-md transition-shadow"
+        >
+          <div class="flex gap-4">
+            <div class="flex-shrink-0">
+              <img
+                v-if="product.Images?.Primary?.Medium?.URL"
+                :src="product.Images.Primary.Medium.URL"
+                :alt="product.ItemInfo?.Title?.DisplayValue"
+                class="w-20 h-20 object-cover rounded"
+              />
+              <div v-else class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
+                <i class="pi pi-image text-gray-400"></i>
+              </div>
+            </div>
+            
+            <div class="flex-1">
+              <h3 class="font-semibold text-gray-900 mb-2">
+                {{ product.ItemInfo?.Title?.DisplayValue || 'Product Title Not Available' }}
+              </h3>
+              
+              <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                <span v-if="product.CustomerReviews?.StarRating?.Value">
+                  <i class="pi pi-star-fill text-yellow-400 mr-1"></i>
+                  {{ product.CustomerReviews.StarRating.Value }} ({{ product.CustomerReviews.Count || 0 }} reviews)
+                </span>
+                <span v-if="product.Offers?.Listings?.[0]?.Price?.DisplayAmount">
+                  <i class="pi pi-dollar mr-1"></i>
+                  {{ product.Offers.Listings[0].Price.DisplayAmount }}
+                </span>
+              </div>
+              
+              <a
+                :href="product.affiliateLink"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center text-blue-600 hover:text-blue-800"
+              >
+                <i class="pi pi-external-link mr-1"></i>
+                View on Amazon
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -154,17 +232,28 @@ import { useToast } from 'primevue/usetoast'
 import { marked } from 'marked'
 import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
+import { useAmazon } from '~/composables/useAmazon'
+
+// PrimeVue components
+import Dialog from 'primevue/dialog'
+import ProgressSpinner from 'primevue/progressspinner'
 
 const route = useRoute()
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
+const { searchProducts } = useAmazon()
 
 const review = ref(null)
 const comments = ref([])
 const newComment = ref('')
 const hasUserStarred = ref(false)
 const isLoading = ref(true)
+
+// Amazon lookup state
+const showAmazonDialog = ref(false)
+const amazonProducts = ref([])
+const isAmazonLoading = ref(false)
 
 console.log('[reviews/[slug]] Initial load - slug:', route.params.slug)
 
@@ -367,6 +456,47 @@ const handleSubmitComment = async () => {
     newComment.value = ''
   } catch (error) {
     console.error('Error posting comment:', error)
+  }
+}
+
+// Amazon lookup functionality
+const handleAmazonLookup = async () => {
+  if (!review.value?.title) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No product title available for search',
+      life: 3000
+    })
+    return
+  }
+
+  isAmazonLoading.value = true
+  showAmazonDialog.value = true
+  amazonProducts.value = []
+
+  try {
+    const searchTerm = cleanTitle(review.value.title)
+    console.log('[reviews/[slug]] Searching Amazon for:', searchTerm)
+    
+    const result = await searchProducts(searchTerm)
+    
+    if (result.SearchResult?.Items) {
+      amazonProducts.value = result.SearchResult.Items
+      console.log('[reviews/[slug]] Found Amazon products:', amazonProducts.value.length)
+    } else {
+      console.log('[reviews/[slug]] No Amazon products found')
+    }
+  } catch (error) {
+    console.error('[reviews/[slug]] Amazon lookup error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to search Amazon products. Please try again.',
+      life: 3000
+    })
+  } finally {
+    isAmazonLoading.value = false
   }
 }
 </script> 

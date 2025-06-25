@@ -69,8 +69,8 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    compatibilityDate: '2025-06-22',
-    preset: 'vercel'
+    compatibilityDate: '2025-06-22'
+    // preset: 'vercel' // Temporarily disabled for local development
   },
   router: {
     options: {
