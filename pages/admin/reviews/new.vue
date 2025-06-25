@@ -18,7 +18,50 @@
                 v-model="form.title"
                 class="w-full"
                 required
+                @blur="checkForDuplicates"
               />
+              <!-- Duplicate Reviews Warning -->
+              <div v-if="duplicateReviews.length > 0" class="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-start">
+                  <i class="pi pi-exclamation-triangle text-yellow-600 mt-0.5 mr-2"></i>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-yellow-800 mb-2">
+                      Similar reviews found ({{ duplicateReviews.length }})
+                    </h4>
+                    <div class="space-y-2 max-h-40 overflow-y-auto">
+                      <div 
+                        v-for="review in duplicateReviews" 
+                        :key="review.id"
+                        class="flex items-center justify-between p-2 bg-white rounded border"
+                      >
+                        <div class="flex-1">
+                          <NuxtLink 
+                            :to="`/reviews/${review.slug}`" 
+                            class="text-sm font-medium text-blue-600 hover:underline"
+                            target="_blank"
+                          >
+                            {{ review.title }}
+                          </NuxtLink>
+                          <p class="text-xs text-gray-500 mt-1">
+                            Rating: {{ review.rating }}/5 • {{ formatDate(review.created_at) }}
+                          </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <Button
+                            size="small"
+                            icon="pi pi-eye"
+                            @click="viewReview(review.slug)"
+                            class="p-button-sm p-button-outlined"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <p class="text-xs text-yellow-700 mt-2">
+                      Consider checking these reviews before creating a new one, or modify your title to be more unique.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="field">
@@ -148,6 +191,10 @@ const form = ref({
 })
 
 console.log('[new.vue] Initial form.value:', form.value)
+
+// Duplicate checking state
+const duplicateReviews = ref([])
+const lastCheckedTitle = ref('')
 
 // Watch for rating changes
 watch(() => form.value.rating, (newRating, oldRating) => {
@@ -279,5 +326,109 @@ function handleAIRatingUpdate(rating) {
   } else {
     console.log('[new.vue] Rating is not a valid number:', rating)
   }
+}
+
+const checkForDuplicates = async () => {
+  const title = form.value.title?.trim()
+  
+  // Don't check if title is empty or hasn't changed
+  if (!title || title === lastCheckedTitle.value) {
+    return
+  }
+  
+  console.log('[new.vue] Checking for duplicates with title:', title)
+  
+  try {
+    // Search for reviews with similar titles using full-text search
+    const { data: similarReviews, error } = await client
+      .from('reviews')
+      .select('id, title, slug, rating, created_at')
+      .or(`title.ilike.%${title}%,title.ilike.${title}%,title.ilike.%${title}`)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    
+    if (error) {
+      console.error('[new.vue] Error checking for duplicates:', error)
+      return
+    }
+    
+    // Filter out exact matches and very similar titles
+    const duplicates = similarReviews.filter(review => {
+      const reviewTitle = review.title.toLowerCase()
+      const inputTitle = title.toLowerCase()
+      
+      // Check for exact match or very high similarity
+      return reviewTitle === inputTitle || 
+             reviewTitle.includes(inputTitle) || 
+             inputTitle.includes(reviewTitle) ||
+             calculateSimilarity(reviewTitle, inputTitle) > 0.8
+    })
+    
+    duplicateReviews.value = duplicates
+    lastCheckedTitle.value = title
+    
+    console.log('[new.vue] Found duplicates:', duplicates.length)
+  } catch (error) {
+    console.error('[new.vue] Error in duplicate check:', error)
+  }
+}
+
+const viewReview = (slug) => {
+  // Open review in new tab
+  window.open(`/reviews/${slug}`, '_blank')
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch (error) {
+    return 'N/A'
+  }
+}
+
+// Simple similarity calculation using Levenshtein distance
+const calculateSimilarity = (str1, str2) => {
+  const longer = str1.length > str2.length ? str1 : str2
+  const shorter = str1.length > str2.length ? str2 : str1
+  
+  if (longer.length === 0) return 1.0
+  
+  const distance = levenshteinDistance(longer, shorter)
+  return (longer.length - distance) / longer.length
+}
+
+const levenshteinDistance = (str1, str2) => {
+  const matrix = []
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i]
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1]
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        )
+      }
+    }
+  }
+  
+  return matrix[str2.length][str1.length]
 }
 </script> 
