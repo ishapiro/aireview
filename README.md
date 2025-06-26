@@ -181,3 +181,52 @@ To run from source:
 # Go >= 1.22
 go run . help
 ```
+
+## Development History and Key Enhancements
+
+Below is a detailed summary of the key actions, issues, and solutions discussed during the development of this Nuxt 3 application for product reviews:
+
+1. **Amazon Product Lookup Integration:**  
+   - Created a composable for Amazon API calls, a secure server-side API endpoint with AWS signature generation, and a UI button to trigger Amazon product searches displayed in a modal.  
+   - Resolved a 404 error for the Amazon API endpoint by verifying file locations, creating test endpoints, and updating the endpoint to match AWS signature requirements. Credentials were moved to environment variables.
+
+2. **UI/UX Enhancements:**  
+   - Adjusted the size and style of the "Save" buttons on review cards, fixed Vue warnings about the "review" prop, and replaced the save button with a bookmark icon with tooltip.  
+   - Updated the create review page to include a rating input and AI-generated ratings, fixed `v-model` bindings, and resolved a runtime error about reading 'title' of undefined.  
+   - Resolved a Nuxt warning about `useAsyncData` keys by making the key unique.
+
+3. **Saved Lists and Comparison Features:**  
+   - Implemented a "Reformat as Table" feature for saved-lists compare display.  
+   - Made saved lists cards smaller, fit 3 across per page, and included a scrollable section for items. Footer buttons were made always visible.  
+   - Moved the "Compare" button in the View List dialog to the footer and fixed missing scrollbars.  
+   - Removed the author name from each review in the details dialog.
+
+4. **Review Detail Page Enhancements:**  
+   - Added an "Update with AI" button to send the product name to the AI and display the response in a PrimeVue Dialog with markdown formatting and smaller font for headers.
+
+5. **Navigation and Admin Features:**  
+   - Added List Management (Bookmarks) and Admin icon buttons to the top navigation, visible based on user login and admin privileges.  
+   - Updated the home page to show the list where generated reviews were added.  
+   - Updated the userReviewGenerator completion step to always show a button to the generated list.
+
+6. **Deduplication and Category Management:**  
+   - Created a deduplication tool for admins at `pages/admin/reviews/dedup.vue`, grouping similar reviews and allowing admins to delete duplicates.  
+   - Added a button for the deduplication tool to the admin quick actions.  
+   - Updated the "Append Category" action to only add a category if the review was not already in that category.
+
+7. **Database and SQL Issues:**  
+   - Provided SQL statements to remove duplicate entries from `review_categories`, keeping the most recent entry and logging deleted rows.
+
+8. **Review Update Error:**  
+   - Fixed a type mismatch error (`integer` vs. `numeric`) in the review update function by updating the parameter type in `schema.sql`.
+
+9. **Deployment and Build Issues:**  
+   - Diagnosed and resolved Vercel deployment issues related to the `outputDirectory` and the use of `--prebuilt`.  
+   - Added a build date/time to the footer for debugging deployments, with a script to generate `.build-date` and display it in the app.  
+   - Fixed an ES module error with the build script by renaming it to `.cjs` and updating the `package.json` script.
+
+10. **Final Deployment Troubleshooting:**  
+    - Confirmed deployment process and settings via Vercel dashboard.  
+    - Recommended removing the `outputDirectory` from `vercel.json` and deploying without `--prebuilt`, which resolved the issue.
+
+**Throughout the development, code edits, SQL queries, deployment advice, and UI/UX improvements were provided, addressing each request and troubleshooting step in detail.**

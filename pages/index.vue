@@ -20,14 +20,15 @@
               <UserReviewGenerator />
             </template>
             <template v-else>
-              <Button 
-                label="Dynamic AI Reviews for your Home or Business" 
-                size="large" 
-                disabled 
-                class="opacity-50 cursor-not-allowed" 
-                v-tooltip.top="'Create a Free Account and Log In to use AI search.'"
-                icon="pi pi-robot"
-              />
+              <span v-tooltip.top="'You need an account and must be logged in to use this feature.'">
+                <Button 
+                  label="Dynamic AI Reviews for your Home or Business" 
+                  size="large" 
+                  disabled 
+                  class="opacity-50 cursor-not-allowed" 
+                  icon="pi pi-robot"
+                />
+              </span>
             </template>
           </div>
         </div>

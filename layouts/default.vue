@@ -61,6 +61,7 @@
         <div class="flex justify-between items-center">
           <div class="text-gray-500 text-sm">
             © {{ new Date().getFullYear() }} Cogitations. All rights reserved.
+            <span v-if="buildDate" class="ml-2 text-xs text-gray-400">Build: {{ buildDate }}</span>
           </div>
           <div class="flex space-x-6">
             <NuxtLink to="/about" class="text-gray-500 hover:text-gray-900">
@@ -84,6 +85,8 @@ import { ref, onMounted, watch } from 'vue'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const profile = ref(null)
+const config = useRuntimeConfig()
+const buildDate = config.public.buildDate
 
 const fetchProfile = async () => {
   if (!user.value) {
