@@ -17,6 +17,11 @@
             AI-generated reviews that search, analyze, and summarize insights from across the web —
             giving you a fast, balanced view before you buy.
           </p>
+          <!-- Search Bar -->
+          <form class="flex justify-center mb-8" @submit.prevent="navigateToSearch">
+            <input v-model="searchQuery" type="text" placeholder="Search for a product or category..." class="w-full max-w-md px-4 py-3 rounded-l-lg border border-gray-200 focus:ring-2 focus:ring-primary-400 focus:outline-none text-lg" />
+            <button type="submit" class="btn-primary rounded-l-none rounded-r-lg px-6 text-lg">Search</button>
+          </form>
           <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <NuxtLink to="/search">
               <Button label="Browse Existing Reviews" size="large" class="w-full sm:w-auto rounded-lg px-8 py-3" />
@@ -25,7 +30,7 @@
               <UserReviewGenerator />
             </template>
             <template v-else>
-              <span v-tooltip.top="'You need an account and must be logged in to use this feature.'">
+              <span v-tooltip="{ value: 'You need a free account and must be logged in to use this feature.', pt: { popper: 'min-w-[250px] max-w-[350px] whitespace-normal text-left' } }">
                 <Button 
                   label="Generate New AI Reviews" 
                   size="large" 
@@ -35,6 +40,10 @@
                 />
               </span>
             </template>
+          </div>
+          <!-- Affiliate Disclosure -->
+          <div class="mt-4 text-xs text-gray-400 max-w-md mx-auto">
+            <p>Cogitations Reviews may earn affiliate commissions from links on this site. Our reviews are unbiased and AI-assisted. <NuxtLink to="/about" class="underline hover:text-primary-600">Learn more</NuxtLink>.</p>
           </div>
           <!-- Feature Highlights -->
           <div class="mt-10 max-w-md mx-auto">
@@ -57,38 +66,6 @@
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Featured Categories -->
-    <div class="bg-gray-50 py-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-8 tracking-tight">Popular Categories</h2>
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <NuxtLink
-            v-for="category in categories"
-            :key="category.id"
-            :to="`/categories/${category.slug}`"
-            class="group block bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-200 p-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-400 no-underline"
-          >
-            <div>
-              <img
-                v-if="category.image_url"
-                :src="category.image_url"
-                :alt="category.name"
-                class="w-full h-48 object-cover rounded-t-xl"
-                @error="$event.target.style.display = 'none'"
-              />
-              <div v-else class="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-xl">
-                <i class="pi pi-image text-4xl text-gray-400"></i>
-              </div>
-            </div>
-            <div class="p-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">{{ category.name }}</h3>
-              <p class="text-base text-gray-500 mb-0 line-clamp-3">{{ category.description }}</p>
-            </div>
-          </NuxtLink>
         </div>
       </div>
     </div>
@@ -130,24 +107,77 @@
         </div>
       </div>
     </div>
+
+    <!-- Popular Categories (Horizontal Scroll) -->
+    <div class="bg-gray-50 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Popular Categories</h2>
+          <NuxtLink to="/categories" class="btn-primary inline-block">View All Categories</NuxtLink>
+        </div>
+        <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <NuxtLink
+            v-for="category in categories.slice(0,8)"
+            :key="category.id"
+            :to="`/categories/${category.slug}`"
+            class="group min-w-[280px] max-w-xs bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-200 p-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-400 no-underline"
+          >
+            <div>
+              <img
+                v-if="category.image_url"
+                :src="category.image_url"
+                :alt="category.name"
+                class="w-full h-40 object-cover rounded-t-xl"
+                @error="$event.target.style.display = 'none'"
+              />
+              <div v-else class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-xl">
+                <i class="pi pi-image text-4xl text-gray-400"></i>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">{{ category.name }}</h3>
+              <p class="text-sm text-gray-500 mb-0 line-clamp-3">{{ category.description }}</p>
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works / Why Trust Us -->
+    <div class="bg-white py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">How Cogitations Reviews Works</h2>
+        <ul class="space-y-4 text-base text-gray-700">
+          <li><span class="font-semibold text-primary-600">1.</span> We scan thousands of product reviews, articles, and feedback sources using advanced AI.</li>
+          <li><span class="font-semibold text-primary-600">2.</span> Our system summarizes and analyzes the data to provide unbiased, balanced insights.</li>
+          <li><span class="font-semibold text-primary-600">3.</span> You get fast, easy-to-read reviews and can generate new ones on demand.</li>
+          <li><span class="font-semibold text-primary-600">4.</span> We may earn affiliate commissions, but our reviews are always independent and AI-assisted.</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import UserReviewGenerator from '~/components/UserReviewGenerator.vue'
+import { useCategories } from '~/composables/useCategories'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const config = useRuntimeConfig()
 
+const searchQuery = ref('')
+const navigateToSearch = () => {
+  if (searchQuery.value.trim()) {
+    navigateTo(`/search?query=${encodeURIComponent(searchQuery.value.trim())}`)
+  } else {
+    navigateTo('/search')
+  }
+}
+
 // Fetch categories
-const { data: categories } = await useAsyncData('categories', async () => {
-  const { data } = await client
-    .from('categories_with_review_count')
-    .select('*')
-    .order('review_count', { ascending: false })
-  return data
-})
+const { data: categories } = useCategories()
 
 // Fetch latest reviews
 const { data: latestReviews } = await useAsyncData('latest-reviews', async () => {

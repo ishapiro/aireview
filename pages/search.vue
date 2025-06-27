@@ -69,24 +69,54 @@
     </Card>
 
     <!-- Search Results -->
-    <div v-if="searchResults.length > 0">
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <ReviewCard
-          v-for="review in searchResults"
-          :key="review.id"
-          :review="review"
-        />
+    <div v-if="matchedCategories.length > 0 || searchResults.length > 0">
+      <div v-if="matchedCategories.length > 0" class="mb-10">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Matching Categories</h3>
+        <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <NuxtLink
+            v-for="category in matchedCategories"
+            :key="category.id"
+            :to="`/categories/${category.slug}`"
+            class="group min-w-[280px] max-w-xs bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-200 p-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-400 no-underline"
+          >
+            <div>
+              <img
+                v-if="category.image_url"
+                :src="category.image_url"
+                :alt="category.name"
+                class="w-full h-40 object-cover rounded-t-xl"
+                @error="$event.target.style.display = 'none'"
+              />
+              <div v-else class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-xl">
+                <i class="pi pi-image text-4xl text-gray-400"></i>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">{{ category.name }}</h3>
+              <p class="text-sm text-gray-500 mb-0 line-clamp-3">{{ category.description }}</p>
+            </div>
+          </NuxtLink>
+        </div>
       </div>
-
-      <!-- Pagination -->
-      <div class="mt-8 flex justify-center">
-                  <Paginator
+      <div v-if="searchResults.length > 0">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Matching Reviews</h3>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ReviewCard
+            v-for="review in searchResults"
+            :key="review.id"
+            :review="review"
+          />
+        </div>
+        <!-- Pagination -->
+        <div class="mt-8 flex justify-center">
+          <Paginator
             v-model:first="paginatorFirst"
             :rows="12"
             :totalRecords="totalResults"
             @page="onPageChange"
             template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
           />
+        </div>
       </div>
     </div>
 
@@ -110,6 +140,7 @@
 import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
+import { useCategories } from '~/composables/useCategories'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -124,6 +155,7 @@ const searchForm = ref({
 })
 
 const searchResults = ref([])
+const matchedCategories = ref([])
 const currentPage = ref(1)
 const totalResults = ref(0)
 const isSearching = ref(false)
@@ -137,14 +169,7 @@ const paginatorFirst = computed({
 })
 
 // Fetch categories for dropdown
-const { data: categories } = await useAsyncData('categories', async () => {
-  const { data } = await client
-    .from('categories')
-    .select('*')
-    .order('name')
-  
-  return data
-})
+const { data: categories } = useCategories()
 
 // Rating options for dropdown
 const ratingOptions = [
@@ -176,12 +201,23 @@ const onPageChange = (event) => {
   fetchResults()
 }
 
-// Fetch search results
+// Fetch search results (categories + reviews)
 const fetchResults = async () => {
   isSearching.value = true
   hasSearched.value = true
 
   try {
+    // 1. Find matching categories (case-insensitive, partial match)
+    if (searchForm.value.query && categories.value) {
+      const q = searchForm.value.query.trim().toLowerCase()
+      matchedCategories.value = categories.value.filter(cat =>
+        cat.name.toLowerCase().includes(q)
+      )
+    } else {
+      matchedCategories.value = []
+    }
+
+    // 2. Find matching reviews/products as before
     let query = client
       .from('reviews')
       .select(`
@@ -240,14 +276,6 @@ const fetchResults = async () => {
         console.error('Error logging search event:', logError)
       }
     }
-  } catch (error) {
-    console.error('Error fetching search results:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'An unexpected error occurred. Please try again.',
-      life: 3000
-    })
   } finally {
     isSearching.value = false
   }

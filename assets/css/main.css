@@ -125,4 +125,11 @@ html, body {
 body {
   @apply bg-gray-50 text-gray-800;
   font-family: 'Inter', sans-serif;
+}
+
+.wide-tooltip {
+  min-width: 250px !important;
+  max-width: 350px !important;
+  white-space: normal !important;
+  text-align: left !important;
 } 
