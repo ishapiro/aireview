@@ -44,10 +44,10 @@
             >
               <div class="flex items-center mb-3">
                 <i class="pi pi-refresh text-2xl text-blue-600 mr-3"></i>
-                <h4 class="text-lg font-medium text-gray-900">Regenerate Existing Reviews</h4>
+                <h4 class="text-lg font-medium text-gray-900">Refresh Existing Reviews</h4>
               </div>
               <p class="text-sm text-gray-600">
-                Update the content of existing reviews in this category with new AI-generated content.
+                Refresh the content of existing reviews in this category with new AI-generated content.
               </p>
             </div>
           </div>
@@ -65,10 +65,10 @@
         <!-- Step 1: Category Input (only show if no category prop) -->
         <div v-if="currentStep === 1 && !category">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Step 1: {{ selectedAction === 'regenerate_reviews' ? 'Select Category' : 'Enter Category Name' }}
+            Step 1: {{ selectedAction === 'regenerate_reviews' ? 'Select Category to Refresh' : 'Enter Category Name' }}
           </h3>
           <div class="space-y-4">
-            <!-- Category Selection for Regenerate Reviews -->
+            <!-- Category Selection for Refresh Reviews -->
             <div v-if="selectedAction === 'regenerate_reviews'">
               <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">
                 Select Category:
@@ -83,7 +83,7 @@
                 :disabled="isProcessing || isLoadingCategories"
               />
               <p class="text-sm text-gray-500 mt-1">
-                Select a category to see existing reviews that can be regenerated.
+                Select a category to see existing reviews that can be refreshed.
               </p>
             </div>
             
@@ -213,9 +213,9 @@
           </div>
         </div>
 
-        <!-- Step 2: Review Selection (for Regenerate Reviews) -->
+        <!-- Step 2: Review Selection (for Refresh Reviews) -->
         <div v-if="currentStep === 2 && selectedAction === 'regenerate_reviews'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 2: Select Reviews to Regenerate</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 2: Select Reviews to Refresh</h3>
           <div class="flex flex-col h-full">
             <div class="space-y-4">
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -286,7 +286,7 @@
                 @click="startReviewRegeneration"
                 :loading="isProcessing"
                 :disabled="isProcessing || selectedReviews.length === 0"
-                label="Start Regenerating Reviews"
+                label="Start Refreshing Reviews"
                 icon="pi pi-refresh"
               />
               <div class="flex items-center space-x-2">
@@ -388,9 +388,9 @@
           </div>
         </div>
 
-        <!-- Step 3: Review Regeneration Progress -->
+        <!-- Step 3: Review Refresh Progress -->
         <div v-if="currentStep === 3 && selectedAction === 'regenerate_reviews'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 3: Regenerating Reviews</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 3: Refreshing Reviews</h3>
           <div class="space-y-4">
             <!-- Progress -->
             <div v-if="isProcessing" class="space-y-2">
@@ -400,7 +400,7 @@
               </div>
               <ProgressBar :value="((currentReviewIndex + 1) / selectedReviews.length) * 100" />
               <p class="text-sm text-gray-600">
-                Currently processing: <strong>{{ cleanTitle(currentReviewTitle) }}</strong>
+                Currently refreshing: <strong>{{ cleanTitle(currentReviewTitle) }}</strong>
               </p>
             </div>
 
@@ -425,12 +425,12 @@
                 <i class="pi pi-check-circle text-green-500 text-xl mr-3"></i>
                 <div>
                   <h4 class="text-sm font-medium text-green-900">
-                    {{ selectedAction === 'update_products' ? 'Category Population Complete!' : 'Review Regeneration Complete!' }}
+                    {{ selectedAction === 'update_products' ? 'Category Population Complete!' : 'Review Refresh Complete!' }}
                   </h4>
                   <p class="text-sm text-green-700 mt-1">
                     {{ selectedAction === 'update_products' 
                       ? `Successfully generated ${generatedReviews.length} reviews for ${selectedCategory.name}`
-                      : `Successfully regenerated ${regeneratedReviews.length} reviews for ${selectedCategory.name}`
+                      : `Successfully refreshed ${regeneratedReviews.length} reviews for ${selectedCategory.name}`
                     }}
                   </p>
                 </div>
@@ -474,9 +474,9 @@
               </div>
             </div>
 
-            <!-- Regenerated Reviews Summary -->
+            <!-- Refreshed Reviews Summary -->
             <div v-if="regeneratedReviews.length > 0" class="space-y-2">
-              <h4 class="text-sm font-medium text-gray-900">Regenerated Reviews:</h4>
+              <h4 class="text-sm font-medium text-gray-900">Refreshed Reviews:</h4>
               <div class="max-h-60 overflow-y-auto space-y-2">
                 <div 
                   v-for="review in regeneratedReviews" 
@@ -775,7 +775,7 @@ const startReviewRegeneration = async () => {
       // Add a small delay to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 1000))
     } catch (error) {
-      console.error(`Error regenerating review ${review.title}:`, error)
+      console.error(`Error refreshing review ${review.title}:`, error)
       // Continue with next review
     }
   }
