@@ -42,6 +42,7 @@
                     icon="pi pi-robot"
                   />
                 </span>
+                <p class="text-xs text-gray-500 text-center mt-2 sm:hidden">Sign up for free and sign in to use this feature.</p>
               </template>
             </div>
           </form>

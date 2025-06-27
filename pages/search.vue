@@ -101,18 +101,18 @@
           </NuxtLink>
         </div>
       </div>
-      <div v-if="searchResults.length > 0">
+    <div v-if="searchResults.length > 0">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Matching Reviews</h3>
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <ReviewCard
-            v-for="review in searchResults"
-            :key="review.id"
-            :review="review"
-          />
-        </div>
-        <!-- Pagination -->
-        <div class="mt-8 flex justify-center">
-          <Paginator
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ReviewCard
+          v-for="review in searchResults"
+          :key="review.id"
+          :review="review"
+        />
+      </div>
+      <!-- Pagination -->
+      <div class="mt-8 flex justify-center">
+                  <Paginator
             v-model:first="paginatorFirst"
             :rows="12"
             :totalRecords="totalResults"

@@ -1,113 +1,113 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
     <div v-if="isLoading" class="flex justify-center items-center min-h-[400px]">
       <ProgressSpinner />
     </div>
     
     <div v-else-if="!review" class="text-center min-h-[400px] flex flex-col justify-center">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">Review Not Found</h2>
-      <p class="text-gray-600 mb-8">This review may have been removed or is not published.</p>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Review Not Found</h2>
+      <p class="text-sm sm:text-base text-gray-600 mb-8">This review may have been removed or is not published.</p>
       <NuxtLink to="/" class="text-blue-600 hover:text-blue-800">
         Return to Home
       </NuxtLink>
     </div>
 
-    <div v-else class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+    <div v-else class="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 md:p-12">
       <!-- Review Header -->
-      <div class="mb-4">
-        <h1 class="text-4xl font-extrabold text-gray-900 leading-tight mb-2">{{ cleanTitle(review.title) }}</h1>
-        <div class="flex items-center gap-4 mb-6">
+      <div class="mb-4 sm:mb-6">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2 sm:mb-4">{{ cleanTitle(review.title) }}</h1>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <button
             @click="handleAmazonLookup"
             :disabled="isAmazonLoading"
-            class="btn-primary inline-flex items-center px-6 py-3 text-lg font-semibold rounded-lg shadow-md border-0"
+            class="btn-primary inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold rounded-lg shadow-md border-0 w-full sm:w-auto"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Lookup on Amazon
           </button>
         </div>
-        <div class="flex items-center text-gray-500 text-sm mb-2">
+        <div class="flex flex-col sm:flex-row sm:items-center text-gray-500 text-xs sm:text-sm mb-2 sm:mb-4 gap-1 sm:gap-0">
           <span>{{ formatDate(review.created_at) }}</span>
-          <span class="mx-2">·</span>
+          <span class="hidden sm:inline mx-2">·</span>
           <span><i class="pi pi-eye mr-1"></i>{{ review.views_count }} views</span>
-          <span class="mx-2">·</span>
+          <span class="hidden sm:inline mx-2">·</span>
           <span><i class="pi pi-thumbs-up mr-1"></i>{{ review.helpful_count }} found helpful</span>
         </div>
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-yellow-500 text-xl"><i class="pi pi-star-fill"></i></span>
-          <span class="text-lg font-semibold text-gray-800">{{ review.rating?.toFixed(1) || 'N/A' }}</span>
+        <div class="flex items-center gap-2 mb-3 sm:mb-4">
+          <span class="text-yellow-500 text-lg sm:text-xl"><i class="pi pi-star-fill"></i></span>
+          <span class="text-base sm:text-lg font-semibold text-gray-800">{{ review.rating?.toFixed(1) || 'N/A' }}</span>
         </div>
-        <div class="mb-4">
-          <span class="text-blue-600 text-sm">This review was created with AI assistance</span>
+        <div class="mb-3 sm:mb-4">
+          <span class="text-blue-600 text-xs sm:text-sm">This review was created with AI assistance</span>
         </div>
       </div>
 
       <!-- Review Content -->
-      <div class="prose max-w-none mb-12 prose-headings:font-bold prose-headings:text-gray-900 prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-lg prose-p:leading-relaxed prose-p:text-gray-800 prose-li:leading-relaxed prose-li:text-gray-700 prose-ul:pl-6 prose-ol:pl-6 prose-strong:text-gray-900 prose-strong:font-semibold space-y-6 text-left">
+      <div class="prose max-w-none mb-8 sm:mb-12 prose-headings:font-bold prose-headings:text-gray-900 prose-h1:text-2xl sm:prose-h1:text-3xl prose-h2:text-xl sm:prose-h2:text-2xl prose-h3:text-lg sm:prose-h3:text-xl prose-p:text-base sm:prose-p:text-lg prose-p:leading-relaxed prose-p:text-gray-800 prose-li:leading-relaxed prose-li:text-gray-700 prose-ul:pl-4 sm:prose-ul:pl-6 prose-ol:pl-4 sm:prose-ol:pl-6 prose-strong:text-gray-900 prose-strong:font-semibold space-y-4 sm:space-y-6 text-left">
         <div v-html="renderedContent"></div>
       </div>
 
       <!-- Edit Button for Review Owner -->
-      <div v-if="user?.id === review?.user_id" class="mb-8 flex justify-end">
-        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary">
+      <div v-if="user?.id === review?.user_id" class="mb-6 sm:mb-8 flex justify-end">
+        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
           <i class="pi pi-pencil mr-2"></i>
           Edit Review
         </NuxtLink>
       </div>
 
       <!-- Comments Section -->
-      <div class="border-t pt-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Comments</h2>
+      <div class="border-t pt-6 sm:pt-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Comments</h2>
         
         <!-- Comment Form -->
-        <div v-if="user" class="mb-8">
+        <div v-if="user" class="mb-6 sm:mb-8">
           <textarea
             v-model="newComment"
-            class="input-field mb-4"
+            class="input-field mb-3 sm:mb-4 text-sm sm:text-base"
             rows="4"
             placeholder="Write a comment..."
           ></textarea>
           <button
             @click="handleSubmitComment"
-            class="btn-primary"
+            class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
             :disabled="!newComment.trim()"
           >
             Post Comment
           </button>
         </div>
-        <div v-else class="mb-8 text-center">
+        <div v-else class="mb-6 sm:mb-8 text-center">
           <button 
             @click="navigateTo('/auth/login')"
-            class="btn-primary"
+            class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
           >
             Sign in to comment
           </button>
         </div>
 
         <!-- Comments List -->
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-6">
           <div
             v-for="comment in comments"
             :key="comment.id"
-            class="bg-gray-50 rounded-lg p-6"
+            class="bg-gray-50 rounded-lg p-4 sm:p-6"
           >
-            <div class="flex items-center mb-4">
+            <div class="flex items-center mb-3 sm:mb-4">
               <img
                 :src="comment.author.avatar_url || '/default-avatar.svg'"
                 :alt="comment.author.full_name"
-                class="w-8 h-8 rounded-full mr-3 bg-gray-100"
+                class="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-2 sm:mr-3 bg-gray-100"
                 @error="$event.target.src = '/default-avatar.svg'"
               />
               <div>
-                <div class="font-medium text-gray-900">
+                <div class="font-medium text-gray-900 text-sm sm:text-base">
                   {{ comment.author.full_name }}
                 </div>
-                <div class="text-sm text-gray-500">
+                <div class="text-xs sm:text-sm text-gray-500">
                   {{ formatDate(comment.created_at) }}
                 </div>
               </div>
             </div>
-            <p class="text-gray-700">{{ comment.content }}</p>
+            <p class="text-gray-700 text-sm sm:text-base">{{ comment.content }}</p>
           </div>
         </div>
       </div>
@@ -118,43 +118,43 @@
       v-model:visible="showAmazonDialog"
       modal
       header="Amazon Products"
-      :style="{ width: '80vw', maxWidth: '800px' }"
+      :style="{ width: '95vw', maxWidth: '800px' }"
       :closable="true"
     >
-      <div v-if="amazonProducts.length === 0 && !isAmazonLoading" class="text-center py-8">
-        <p class="text-gray-600">No products found on Amazon for "{{ review?.title }}"</p>
+      <div v-if="amazonProducts.length === 0 && !isAmazonLoading" class="text-center py-6 sm:py-8">
+        <p class="text-sm sm:text-base text-gray-600">No products found on Amazon for "{{ review?.title }}"</p>
       </div>
       
-      <div v-else-if="isAmazonLoading" class="text-center py-8">
+      <div v-else-if="isAmazonLoading" class="text-center py-6 sm:py-8">
         <ProgressSpinner />
-        <p class="text-gray-600 mt-4">Searching Amazon...</p>
+        <p class="text-sm sm:text-base text-gray-600 mt-4">Searching Amazon...</p>
       </div>
       
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-3 sm:space-y-4">
         <div
           v-for="product in amazonProducts"
           :key="product.ASIN"
-          class="border rounded-lg p-4 hover:shadow-md transition-shadow"
+          class="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
         >
-          <div class="flex gap-4">
+          <div class="flex gap-3 sm:gap-4">
             <div class="flex-shrink-0">
               <img
                 v-if="product.Images?.Primary?.Medium?.URL"
                 :src="product.Images.Primary.Medium.URL"
                 :alt="product.ItemInfo?.Title?.DisplayValue"
-                class="w-20 h-20 object-cover rounded"
+                class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded"
               />
-              <div v-else class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
-                <i class="pi pi-image text-gray-400"></i>
+              <div v-else class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded flex items-center justify-center">
+                <i class="pi pi-image text-gray-400 text-sm sm:text-base"></i>
               </div>
             </div>
             
-            <div class="flex-1">
-              <h3 class="font-semibold text-gray-900 mb-2">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-gray-900 mb-2 text-sm sm:text-base line-clamp-2">
                 {{ product.ItemInfo?.Title?.DisplayValue || 'Product Title Not Available' }}
               </h3>
               
-              <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
                 <span v-if="product.CustomerReviews?.StarRating?.Value">
                   <i class="pi pi-star-fill text-yellow-400 mr-1"></i>
                   {{ product.CustomerReviews.StarRating.Value }} ({{ product.CustomerReviews.Count || 0 }} reviews)
@@ -169,7 +169,7 @@
                 :href="product.affiliateLink"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center text-blue-600 hover:text-blue-800"
+                class="inline-flex items-center text-blue-600 hover:text-blue-800 text-xs sm:text-sm"
               >
                 <i class="pi pi-external-link mr-1"></i>
                 View on Amazon
@@ -185,9 +185,9 @@
       v-model:visible="showAIDialog"
       modal
       header="AI Update"
-      :style="{ width: '600px', maxWidth: '90vw' }"
+      :style="{ width: '95vw', maxWidth: '600px' }"
     >
-      <div class="prose prose-lg max-w-none text-sm prose-headings:text-base" v-html="renderedAIResponse"></div>
+      <div class="prose prose-sm sm:prose-lg max-w-none prose-headings:text-sm sm:prose-headings:text-base" v-html="renderedAIResponse"></div>
       <template #footer>
         <Button @click="showAIDialog = false" label="Close" />
       </template>
