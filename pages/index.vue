@@ -149,12 +149,13 @@
     </div>
 
     <!-- Info Modal -->
-    <Dialog v-model:visible="showInfo" modal header="How Cogitations Reviews Works" :style="{ width: '90vw', maxWidth: '700px' }">
+    <Dialog v-model:visible="showInfo" modal header="How Savta.ai Works" :style="{ width: '90vw', maxWidth: '700px' }">
       <ul class="space-y-4 text-base text-gray-700 list-disc pl-6">
         <li>We scan thousands of product reviews, articles, and feedback sources using advanced AI.</li>
         <li>Our system summarizes and analyzes the data to provide unbiased, balanced insights.</li>
         <li>You get fast, easy-to-read reviews and can generate new ones on demand.</li>
         <li>We may earn affiliate commissions, but our reviews are always independent and AI-assisted.</li>
+        <li>Why is it called Savta.ai? Because it's like a grandmother who knows everything about products and helps you make the best decisions.</li>
       </ul>
       <template #footer>
         <Button @click="showInfo = false" label="Close" />
