@@ -15,9 +15,12 @@
         </div> -->
       </div>
       <div class="relative">
-        
-        <h3 class="text-xl font-semibold text-gray-900 mb-2" :title="cleanTitle(review.title)">{{ truncate(cleanTitle(review.title), 50) }}</h3>
-        
+        <h3 
+          class="text-xl font-bold text-gray-900 mb-2 pr-10 truncate leading-tight"
+          :title="cleanTitle(review.title)"
+        >
+          {{ truncate(cleanTitle(review.title), 50) }}
+        </h3>
         <img
           v-if="review.thumbnail_url"
           :src="review.thumbnail_url"
@@ -25,8 +28,7 @@
           class="w-full h-48 object-cover rounded-lg mb-4"
         />
       </div>
-      
-      <p class="text-gray-600 mb-4 line-clamp-3">{{ reviewSummary }}</p>
+      <p class="text-base text-gray-600 mb-4 leading-relaxed line-clamp-3">{{ reviewSummary }}</p>
       
       <div class="flex items-center justify-between">
         <div class="flex items-center">
@@ -70,7 +72,7 @@
     </NuxtLink>
     
     <!-- Save to List Button (outside the NuxtLink to prevent navigation) -->
-    <div class="absolute top-2 right-2" @click.stop>
+    <div class="absolute top-2 right-2 z-10" @click.stop>
       <SaveToList :review-id="review.id" />
     </div>
   </div>

@@ -66,31 +66,29 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-3xl font-bold text-gray-900 mb-8 tracking-tight">Popular Categories</h2>
         <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <Card v-for="category in categories" :key="category.id" class="hover:shadow-xl transition-shadow rounded-xl p-6 bg-white">
-            <template #header>
-              <img 
-                v-if="category.image_url" 
-                :src="category.image_url" 
-                :alt="category.name" 
+          <NuxtLink
+            v-for="category in categories"
+            :key="category.id"
+            :to="`/categories/${category.slug}`"
+            class="group block bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-200 p-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-400 no-underline"
+          >
+            <div>
+              <img
+                v-if="category.image_url"
+                :src="category.image_url"
+                :alt="category.name"
                 class="w-full h-48 object-cover rounded-t-xl"
                 @error="$event.target.style.display = 'none'"
               />
               <div v-else class="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-xl">
                 <i class="pi pi-image text-4xl text-gray-400"></i>
               </div>
-            </template>
-            <template #title>
-              <span class="text-lg font-semibold text-gray-800">{{ category.name }}</span>
-            </template>
-            <template #content>
-              <p class="text-gray-500">{{ category.description }}</p>
-            </template>
-            <template #footer>
-              <NuxtLink :to="`/categories/${category.slug}`">
-                <Button label="View Reviews" class="rounded-lg px-6 py-2" />
-              </NuxtLink>
-            </template>
-          </Card>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">{{ category.name }}</h3>
+              <p class="text-base text-gray-500 mb-0 line-clamp-3">{{ category.description }}</p>
+            </div>
+          </NuxtLink>
         </div>
       </div>
     </div>
