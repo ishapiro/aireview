@@ -3,7 +3,7 @@
     <!-- Button to trigger the dialog -->
     <Button 
       @click="openDialog" 
-      label="Dynamic AI Reviews for your Home or Business" 
+      label="Generate New AI Reviews" 
       size="large" 
     />
 

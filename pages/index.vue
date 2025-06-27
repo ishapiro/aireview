@@ -5,9 +5,14 @@
       <div class="max-w-3xl mx-auto py-20 px-4 sm:py-28 sm:px-6 lg:px-8">
         <div class="text-center">
           <!-- Headline -->
-          <h1 class="text-5xl font-extrabold text-gray-900 leading-tight mb-2 tracking-tight">
-            Find the Best Products
-          </h1>
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <h1 class="text-5xl font-extrabold text-gray-900 leading-tight tracking-tight">
+              Find the Best Products
+            </h1>
+            <button @click="showInfo = true" class="ml-2 w-8 h-8 flex items-center justify-center focus:outline-none border-none bg-transparent p-0" aria-label="How Cogitations Reviews Works">
+              <i class="pi pi-info-circle text-2xl text-primary-600 hover:text-primary-700 focus:text-primary-800 transition-colors"></i>
+            </button>
+          </div>
           <h2 class="text-2xl font-semibold text-gray-700 mb-6 tracking-tight">
             Instantly or On Demand
           </h2>
@@ -18,29 +23,28 @@
             giving you a fast, balanced view before you buy.
           </p>
           <!-- Search Bar -->
-          <form class="flex justify-center mb-8" @submit.prevent="navigateToSearch">
-            <input v-model="searchQuery" type="text" placeholder="Search for a product or category..." class="w-full max-w-md px-4 py-3 rounded-l-lg border border-gray-200 focus:ring-2 focus:ring-primary-400 focus:outline-none text-lg" />
-            <button type="submit" class="btn-primary rounded-l-none rounded-r-lg px-6 text-lg">Search</button>
+          <form class="flex flex-col items-center gap-4 mb-4 w-full max-w-2xl mx-auto" @submit.prevent="navigateToSearch">
+            <div class="flex w-full">
+              <input v-model="searchQuery" type="text" placeholder="Search for a product or category..." class="flex-1 px-4 py-3 rounded-l-lg border border-gray-200 focus:ring-2 focus:ring-primary-400 focus:outline-none text-lg" />
+              <button type="submit" class="btn-primary rounded-l-none rounded-r-lg px-6 text-lg font-semibold w-auto">Search Existing Reviews</button>
+            </div>
+            <div class="w-full">
+              <template v-if="user">
+                <UserReviewGenerator />
+              </template>
+              <template v-else>
+                <span v-tooltip="{ value: 'You need a free account and must be signed in to use this feature.', pt: { popper: 'min-w-[250px] max-w-[350px] whitespace-normal text-left' } }" class="block w-full">
+                  <Button 
+                    label="Generate New AI Reviews" 
+                    size="large" 
+                    disabled 
+                    class="btn-primary opacity-50 cursor-not-allowed w-full text-lg font-semibold py-3 rounded-lg mt-2" 
+                    icon="pi pi-robot"
+                  />
+                </span>
+              </template>
+            </div>
           </form>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <NuxtLink to="/search">
-              <Button label="Browse Existing Reviews" size="large" class="w-full sm:w-auto rounded-lg px-8 py-3" />
-            </NuxtLink>
-            <template v-if="user">
-              <UserReviewGenerator />
-            </template>
-            <template v-else>
-              <span v-tooltip="{ value: 'You need a free account and must be signed in to use this feature.', pt: { popper: 'min-w-[250px] max-w-[350px] whitespace-normal text-left' } }">
-                <Button 
-                  label="Generate New AI Reviews" 
-                  size="large" 
-                  disabled 
-                  class="opacity-50 cursor-not-allowed w-full sm:w-auto rounded-lg px-8 py-3" 
-                  icon="pi pi-robot"
-                />
-              </span>
-            </template>
-          </div>
           <!-- Affiliate Disclosure -->
           <div class="mt-4 text-xs text-gray-400 max-w-md mx-auto">
             <p>Cogitations Reviews may earn affiliate commissions from links on this site. Our reviews are unbiased and AI-assisted. <NuxtLink to="/about" class="underline hover:text-primary-600">Learn more</NuxtLink>.</p>
@@ -143,18 +147,18 @@
       </div>
     </div>
 
-    <!-- How It Works / Why Trust Us -->
-    <div class="bg-white py-12">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">How Cogitations Reviews Works</h2>
-        <ul class="space-y-4 text-base text-gray-700">
-          <li><span class="font-semibold text-primary-600">1.</span> We scan thousands of product reviews, articles, and feedback sources using advanced AI.</li>
-          <li><span class="font-semibold text-primary-600">2.</span> Our system summarizes and analyzes the data to provide unbiased, balanced insights.</li>
-          <li><span class="font-semibold text-primary-600">3.</span> You get fast, easy-to-read reviews and can generate new ones on demand.</li>
-          <li><span class="font-semibold text-primary-600">4.</span> We may earn affiliate commissions, but our reviews are always independent and AI-assisted.</li>
-        </ul>
-      </div>
-    </div>
+    <!-- Info Modal -->
+    <Dialog v-model:visible="showInfo" modal header="How Cogitations Reviews Works" :style="{ width: '90vw', maxWidth: '700px' }">
+      <ul class="space-y-4 text-base text-gray-700 list-disc pl-6">
+        <li>We scan thousands of product reviews, articles, and feedback sources using advanced AI.</li>
+        <li>Our system summarizes and analyzes the data to provide unbiased, balanced insights.</li>
+        <li>You get fast, easy-to-read reviews and can generate new ones on demand.</li>
+        <li>We may earn affiliate commissions, but our reviews are always independent and AI-assisted.</li>
+      </ul>
+      <template #footer>
+        <Button @click="showInfo = false" label="Close" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -162,12 +166,15 @@
 import { ref } from 'vue'
 import UserReviewGenerator from '~/components/UserReviewGenerator.vue'
 import { useCategories } from '~/composables/useCategories'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const config = useRuntimeConfig()
 
 const searchQuery = ref('')
+const showInfo = ref(false)
 const navigateToSearch = () => {
   if (searchQuery.value.trim()) {
     navigateTo(`/search?query=${encodeURIComponent(searchQuery.value.trim())}`)

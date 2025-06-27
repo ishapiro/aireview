@@ -16,7 +16,7 @@
       </div>
       <div class="relative">
         <h3 
-          class="text-xl font-bold text-gray-900 mb-2 pr-10 truncate leading-tight"
+          class="text-lg font-bold text-gray-900 mb-2 pr-10 truncate leading-tight"
           :title="cleanTitle(review.title)"
         >
           {{ truncate(cleanTitle(review.title), 50) }}
@@ -28,7 +28,7 @@
           class="w-full h-48 object-cover rounded-lg mb-4"
         />
       </div>
-      <p class="text-base text-gray-600 mb-4 leading-relaxed line-clamp-3">{{ reviewSummary }}</p>
+      <p class="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-3">{{ reviewSummary }}</p>
       
       <div class="flex items-center justify-between">
         <div class="flex items-center">
