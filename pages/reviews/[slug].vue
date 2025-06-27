@@ -12,89 +12,39 @@
       </NuxtLink>
     </div>
 
-    <div v-else class="bg-white rounded-lg shadow-lg p-6">
-      <!-- Amazon Lookup Button -->
-      <div class="mb-6 flex justify-center">
-        <Button
-          @click="handleAmazonLookup"
-          :loading="isAmazonLoading"
-          class="btn-primary"
-          icon="pi pi-shopping-cart"
-          label="Lookup on Amazon"
-        />
-      </div>
-
+    <div v-else class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
       <!-- Review Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ cleanTitle(review.title) }}</h1>
-        
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center">
-            <div>
-              <div class="text-sm text-gray-500">
-                {{ formatDate(review.created_at) }}
-                <span v-if="review.updated_at !== review.created_at">
-                  (Updated {{ formatDate(review.updated_at) }})
-                </span>
-              </div>
-              <div class="flex items-center text-sm text-gray-500 space-x-4 mt-2">
-                <span>
-                  <i class="pi pi-eye mr-1"></i>
-                  {{ review.views_count }} views
-                </span>
-                <span>
-                  <i class="pi pi-thumbs-up mr-1"></i>
-                  {{ review.helpful_count }} found helpful
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="flex items-center">
-            <div class="star-rating text-xl mr-4" v-if="review.rating > 1">
-              <i class="pi pi-star-fill mr-1"></i>
-              {{ review.rating.toFixed(1) }}
-            </div>
-            <SaveToList :review-id="review.id" class="mr-2" />
-            <Button
-              v-if="user"
-              @click="handleStarReview"
-              :label="hasUserStarred ? 'Starred' : 'Star'"
-              :icon="hasUserStarred ? 'pi pi-star-fill' : 'pi pi-star'"
-              size="small"
-            />
-            <Button
-              class="ml-2"
-              label="Update with AI"
-              icon="pi pi-robot"
-              :loading="isAIUpdating"
-              @click="handleUpdateWithAI"
-              size="small"
-              severity="secondary"
-            />
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 mb-6">
-          <span
-            v-for="category in review.categories"
-            :key="category.id"
-            class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full"
+      <div class="mb-4">
+        <h1 class="text-4xl font-extrabold text-gray-900 leading-tight mb-2">{{ cleanTitle(review.title) }}</h1>
+        <div class="flex items-center gap-4 mb-6">
+          <button
+            @click="handleAmazonLookup"
+            :disabled="isAmazonLoading"
+            class="inline-flex items-center px-6 py-3 text-lg font-semibold rounded-lg bg-violet-600 text-white shadow-md hover:bg-violet-700 transition focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
           >
-            {{ category.name }}
-          </span>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Lookup on Amazon
+          </button>
+          <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full">Best Price</span>
         </div>
-
-        <div v-if="review.ai_generated" class="mb-6">
-          <span class="text-blue-600">
-            <i class="pi pi-robot mr-1"></i>
-            This review was created with AI assistance
-          </span>
+        <div class="flex items-center text-gray-500 text-sm mb-2">
+          <span>{{ formatDate(review.created_at) }}</span>
+          <span class="mx-2">·</span>
+          <span><i class="pi pi-eye mr-1"></i>{{ review.views_count }} views</span>
+          <span class="mx-2">·</span>
+          <span><i class="pi pi-thumbs-up mr-1"></i>{{ review.helpful_count }} found helpful</span>
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-yellow-500 text-xl"><i class="pi pi-star-fill"></i></span>
+          <span class="text-lg font-semibold text-gray-800">{{ review.rating?.toFixed(1) || 'N/A' }}</span>
+        </div>
+        <div class="mb-4">
+          <span class="text-blue-600 text-sm">This review was created with AI assistance</span>
         </div>
       </div>
 
       <!-- Review Content -->
-      <div class="prose prose-lg max-w-none mb-12">
+      <div class="prose max-w-none mb-12 prose-headings:font-bold prose-headings:text-gray-900 prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-lg prose-p:leading-relaxed prose-p:text-gray-800 prose-li:leading-relaxed prose-li:text-gray-700 prose-ul:pl-6 prose-ol:pl-6 prose-strong:text-gray-900 prose-strong:font-semibold space-y-6 text-left">
         <div v-html="renderedContent"></div>
       </div>
 
