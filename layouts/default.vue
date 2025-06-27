@@ -11,7 +11,8 @@
             </NuxtLink>
           </div>
 
-          <div class="flex items-center space-x-4">
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-4">
             <NuxtLink to="/">
               <Button icon="pi pi-home" rounded aria-label="Home" />
             </NuxtLink>
@@ -43,6 +44,83 @@
               </NuxtLink>
               <NuxtLink to="/auth/register">
                 <Button label="Sign up" />
+              </NuxtLink>
+            </template>
+          </div>
+
+          <!-- Mobile Menu Button -->
+          <div class="md:hidden flex items-center">
+            <Button
+              @click="mobileMenuOpen = !mobileMenuOpen"
+              icon="pi pi-bars"
+              rounded
+              aria-label="Toggle mobile menu"
+            />
+          </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div v-show="mobileMenuOpen" class="md:hidden border-t border-gray-200 bg-white">
+          <div class="px-2 pt-2 pb-3 space-y-1">
+            <NuxtLink 
+              to="/" 
+              class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+              @click="mobileMenuOpen = false"
+            >
+              <i class="pi pi-home mr-3 text-primary-600"></i>
+              Home
+            </NuxtLink>
+            
+            <template v-if="user">
+              <NuxtLink 
+                to="/saved-lists" 
+                class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                @click="mobileMenuOpen = false"
+              >
+                <i class="pi pi-bookmark mr-3 text-primary-600"></i>
+                Saved Lists
+              </NuxtLink>
+              <NuxtLink 
+                v-if="profile?.is_admin" 
+                to="/admin" 
+                class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                @click="mobileMenuOpen = false"
+              >
+                <i class="pi pi-cog mr-3 text-primary-600"></i>
+                Admin Dashboard
+              </NuxtLink>
+              <NuxtLink 
+                to="/profile" 
+                class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                @click="mobileMenuOpen = false"
+              >
+                <i class="pi pi-user mr-3 text-primary-600"></i>
+                Profile
+              </NuxtLink>
+              <button
+                @click="handleSignOut"
+                class="flex items-center w-full px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                <i class="pi pi-sign-out mr-3 text-primary-600"></i>
+                Sign out
+              </button>
+            </template>
+            <template v-else>
+              <NuxtLink 
+                to="/auth/login" 
+                class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                @click="mobileMenuOpen = false"
+              >
+                <i class="pi pi-sign-in mr-3 text-primary-600"></i>
+                Sign in
+              </NuxtLink>
+              <NuxtLink 
+                to="/auth/register" 
+                class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                @click="mobileMenuOpen = false"
+              >
+                <i class="pi pi-user-plus mr-3 text-primary-600"></i>
+                Sign up
               </NuxtLink>
             </template>
           </div>
@@ -85,6 +163,7 @@ import { ref, onMounted, watch } from 'vue'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const profile = ref(null)
+const mobileMenuOpen = ref(false)
 const config = useRuntimeConfig()
 const buildDate = config.public.buildDate
 
