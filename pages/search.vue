@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Search Existing Reviews</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Search Existing Reviews</h1>
+    <p class="text-sm text-gray-500 mb-6 max-w-2xl">
+      Want a review that doesn't exist yet? <span class="font-medium text-primary-600">Registered users</span> can generate new AI-powered reviews for any product in seconds.
+    </p>
 
     <!-- Search Form -->
     <Card class="mb-8">
