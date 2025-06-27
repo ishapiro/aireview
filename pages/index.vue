@@ -50,7 +50,7 @@
             <ul class="space-y-4 text-base text-gray-600 text-left">
               <li class="flex items-start gap-3">
                 <svg class="w-5 h-5 text-violet-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>AI reviews scan thousands of product comments, articles, and feedback sources.</span>
+                <span>Our AI reviews scan thousands of product comments, articles, and feedback sources.</span>
               </li>
               <li class="flex items-start gap-3">
                 <svg class="w-5 h-5 text-violet-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
