@@ -6,9 +6,9 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80 focus:outline-none">
-              <span class="text-2xl font-bold text-primary-600">C</span>
-              <span class="ml-2 text-xl font-bold text-gray-900">Cogitations</span>
+              <img src="/savta.jpg" alt="savta.ai Logo" class="h-14 w-auto" />
             </NuxtLink>
+            <span class="pb-1 pl-2 text-xl font-bold text-blue-600 self-end">savta.ai</span>
           </div>
 
           <!-- Desktop Navigation -->
