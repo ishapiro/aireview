@@ -5,6 +5,7 @@
       @click="openDialog" 
       label="Generate New AI Reviews" 
       size="large" 
+      class="w-full sm:w-auto"
     />
 
     <!-- Review Generator Dialog -->
@@ -12,26 +13,27 @@
       v-model:visible="showDialog"
       modal
       header="Generate AI Product Reviews"
-      :style="{ width: '90vw', maxWidth: '1000px' }"
+      :style="{ width: '95vw', maxWidth: '600px' }"
       :closable="!isProcessing"
+      class="sm:max-w-lg md:max-w-xl lg:max-w-2xl"
     >
-      <div class="space-y-6">
+      <div class="space-y-4 sm:space-y-6">
         <!-- Step 1: Business Type Input -->
         <div v-if="currentStep === 1">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Choose Review Mode</h3>
+          <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-4">Step 1: Choose Review Mode</h3>
           <div class="space-y-4">
             <!-- Mode Selection -->
-            <div class="bg-gray-100 p-4 rounded-lg mb-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+            <div class="bg-gray-100 p-3 sm:p-4 rounded-lg mb-2">
+              <label class="block text-sm font-medium text-gray-700 mb-3">
                 What would you like to do?
               </label>
-              <div class="flex gap-4">
+              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <label class="flex items-center">
                   <input
                     type="radio"
                     v-model="mode"
                     value="find"
-                    class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    class="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
                     :disabled="isProcessing"
                   />
                   <span class="text-sm text-gray-700">Find multiple products to review</span>
@@ -41,7 +43,7 @@
                     type="radio"
                     v-model="mode"
                     value="single"
-                    class="mr-2 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                    class="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600 focus:ring-green-500 border-gray-300"
                     :disabled="isProcessing"
                   />
                   <span class="text-sm text-gray-700">Review a Single Product</span>
@@ -49,17 +51,17 @@
               </div>
             </div>
             <!-- Review Type Selection -->
-            <div class="bg-gray-100 p-4 rounded-lg mb-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+            <div class="bg-gray-100 p-3 sm:p-4 rounded-lg mb-2">
+              <label class="block text-sm font-medium text-gray-700 mb-3">
                 Review Type:
               </label>
-              <div class="flex gap-4">
+              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <label class="flex items-center">
                   <input
                     type="radio"
                     v-model="reviewType"
                     value="consumer"
-                    class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    class="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
                     :disabled="isProcessing"
                   />
                   <span class="text-sm text-gray-700">Consumer Review</span>
@@ -69,7 +71,7 @@
                     type="radio"
                     v-model="reviewType"
                     value="business"
-                    class="mr-2 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                    class="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600 focus:ring-green-500 border-gray-300"
                     :disabled="isProcessing"
                   />
                   <span class="text-sm text-gray-700">Business Review</span>
@@ -95,6 +97,7 @@
                   :disabled="!businessType.trim() || !reviewType"
                   label="Find Products"
                   icon="pi pi-arrow-right"
+                  class="w-full sm:w-auto"
                 />
               </div>
             </div>
@@ -109,13 +112,14 @@
                 placeholder="e.g., 'iRobot Roomba 694'"
                 :disabled="isProcessing"
               />
-              <div class="flex justify-end">
+              <div class="flex justify-end mt-4">
                 <Button
                   @click="reviewSingleProduct"
                   :loading="isProcessing"
                   :disabled="!singleProductName.trim() || !reviewType"
                   label="Review Product"
                   icon="pi pi-check"
+                  class="w-full sm:w-auto"
                 />
               </div>
             </div>
@@ -124,15 +128,15 @@
 
         <!-- Step 2: Review Generation -->
         <div v-if="currentStep === 2">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 2: Generating Reviews</h3>
+          <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-4">Step 2: Generating Reviews</h3>
           <div class="space-y-4">
             <!-- Product List Display -->
-            <div v-if="products.length > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-2">Found Products:</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div v-if="products.length > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
+              <h4 class="text-sm font-medium text-gray-900 mb-3">Found Products:</h4>
+              <div class="grid grid-cols-1 gap-2">
                 <div v-for="(product, index) in products" :key="index" class="text-sm text-gray-700 flex items-center">
-                  <i class="pi pi-check-circle text-green-500 mr-2"></i>
-                  {{ product }}
+                  <i class="pi pi-check-circle text-green-500 mr-2 flex-shrink-0"></i>
+                  <span class="break-words">{{ product }}</span>
                 </div>
               </div>
             </div>
@@ -145,24 +149,26 @@
               </div>
               <ProgressBar :value="((currentProductIndex + 1) / products.length) * 100" />
               <p class="text-sm text-gray-600">
-                Currently processing: <strong>{{ products[currentProductIndex] }}</strong>
+                Currently processing: <strong class="break-words">{{ products[currentProductIndex] }}</strong>
               </p>
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
               <Button
                 @click="startReviewGeneration"
                 :loading="isProcessing"
                 :disabled="isProcessing || products.length === 0"
                 label="Start Generating Reviews"
                 icon="pi pi-play"
+                class="w-full sm:w-auto order-2 sm:order-1"
               />
               <Button
                 @click="currentStep = 1"
                 :disabled="isProcessing"
                 label="Back"
                 icon="pi pi-arrow-left"
+                class="w-full sm:w-auto order-1 sm:order-2"
               />
             </div>
           </div>
@@ -170,11 +176,11 @@
 
         <!-- Step 3: Completion -->
         <div v-if="currentStep === 3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 3: Complete</h3>
+          <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-4">Step 3: Complete</h3>
           <div class="space-y-4">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 text-xl mr-3"></i>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <div class="flex items-start">
+                <i class="pi pi-check-circle text-green-500 text-xl mr-3 flex-shrink-0 mt-0.5"></i>
                 <div>
                   <h4 class="text-sm font-medium text-green-900">Review Generation Complete!</h4>
                   <p class="text-sm text-green-700 mt-1">
@@ -183,44 +189,55 @@
                 </div>
               </div>
             </div>
-            <div class="flex flex-col items-center space-y-2">
-              <p class="text-sm text-gray-600">A new list has been created for you with these reviews.</p>
+            <div class="flex flex-col items-center space-y-3">
+              <p class="text-sm text-gray-600 text-center">A new list has been created for you with these reviews.</p>
               <NuxtLink
                 :to="newListId.value ? { path: '/saved-lists', query: { highlight: newListId.value } } : '/saved-lists'"
-                class="btn-primary px-6 py-2 rounded text-white text-lg mt-2"
+                class="btn-primary px-6 py-3 rounded text-white text-base sm:text-lg mt-2 w-full sm:w-auto text-center"
               >
                 View My List
               </NuxtLink>
             </div>
             <div class="flex justify-end">
-              <Button @click="closeDialog" label="Close" icon="pi pi-check" />
+              <Button @click="closeDialog" label="Close" icon="pi pi-check" class="w-full sm:w-auto" />
             </div>
           </div>
         </div>
 
         <!-- Error Message -->
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-3 rounded text-sm">
           {{ error }}
         </div>
       </div>
     </Dialog>
 
     <!-- Similar Products Dialog -->
-    <Dialog v-model:visible="showSimilarDialog" modal header="Similar Products" :style="{ width: '500px' }">
+    <Dialog 
+      v-model:visible="showSimilarDialog" 
+      modal 
+      header="Similar Products" 
+      :style="{ width: '95vw', maxWidth: '500px' }"
+      class="sm:max-w-lg"
+    >
       <div>
         <div v-if="similarReviews.length > 0">
           <ul class="divide-y divide-gray-200">
             <li v-for="review in similarReviews" :key="review.id" class="py-3 cursor-pointer hover:bg-gray-50 rounded px-2" @click="() => { showSimilarDialog = false; showDialog = false; router.push(`/reviews/${review.slug}`) }">
-              <div class="font-medium text-primary-700">{{ review.title }}</div>
-              <div class="text-sm text-gray-500 line-clamp-2">{{ review.summary }}</div>
+              <div class="font-medium text-primary-700 text-sm sm:text-base">{{ review.title }}</div>
+              <div class="text-xs sm:text-sm text-gray-500 line-clamp-2 mt-1">{{ review.summary }}</div>
             </li>
           </ul>
         </div>
-        <div v-else class="text-gray-500">No similar products found.</div>
+        <div v-else class="text-gray-500 text-sm sm:text-base">No similar products found.</div>
       </div>
       <template #footer>
         <div class="flex justify-end mt-4">
-          <Button @click="() => { showSimilarDialog = false; proceedWithAIReview() }" label="Didn't find your product? Generate a new Review" icon="pi pi-search" />
+          <Button 
+            @click="() => { showSimilarDialog = false; proceedWithAIReview() }" 
+            label="Didn't find your product? Generate a new Review" 
+            icon="pi pi-search" 
+            class="w-full sm:w-auto text-sm"
+          />
         </div>
       </template>
     </Dialog>
