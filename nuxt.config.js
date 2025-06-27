@@ -26,7 +26,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Savta.ai - AI Based Product Reviews',
+      title: 'Savta.ai - AI Based Reviews',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

@@ -4,8 +4,7 @@
     <Button 
       @click="openDialog" 
       label="Generate New AI Reviews" 
-      size="large" 
-      class="w-full sm:w-auto"
+      class="btn-primary rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold w-full sm:w-auto"
     />
 
     <!-- Review Generator Dialog -->

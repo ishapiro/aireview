@@ -2,7 +2,7 @@
   <div>
     <!-- Hero Section -->
     <div class="bg-white">
-      <div class="max-w-3xl mx-auto py-12 px-4 sm:py-20 sm:px-6 lg:px-8 lg:py-28">
+      <div class="max-w-3xl mx-auto py-12 px-4 sm:py-20 sm:px-6 lg:px-8 lg:py-25">
         <div class="text-center">
           <!-- Headline -->
           <div class="flex items-center justify-center gap-2 mb-2">
@@ -14,13 +14,14 @@
             </button>
           </div>
           <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-700 mb-4 sm:mb-6 tracking-tight">
-            Instantly or On Demand
+            Smarter Reviews, Powered by AI
           </h2>
 
           <!-- Subheadline -->
           <p class="text-base sm:text-lg text-gray-500 mb-6 sm:mb-10 leading-relaxed">
-            AI-generated reviews that search, analyze, and summarize insights from across the web —
-            giving you a fast, balanced view before you buy.
+            Savta uses advanced AI to scan thousands of reviews, articles, and ratings across the web — 
+            analyzing and summarizing them into clear, balanced insights. Don’t rely on a single source. 
+            Get the full picture before you buy.
           </p>
           <!-- Search Bar -->
           <form class="flex flex-col items-center gap-3 sm:gap-4 mb-4 w-full max-w-2xl mx-auto" @submit.prevent="navigateToSearch">
