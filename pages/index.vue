@@ -30,7 +30,7 @@
               <UserReviewGenerator />
             </template>
             <template v-else>
-              <span v-tooltip="{ value: 'You need a free account and must be logged in to use this feature.', pt: { popper: 'min-w-[250px] max-w-[350px] whitespace-normal text-left' } }">
+              <span v-tooltip="{ value: 'You need a free account and must be signed in to use this feature.', pt: { popper: 'min-w-[250px] max-w-[350px] whitespace-normal text-left' } }">
                 <Button 
                   label="Generate New AI Reviews" 
                   size="large" 
