@@ -20,12 +20,11 @@
           <button
             @click="handleAmazonLookup"
             :disabled="isAmazonLoading"
-            class="inline-flex items-center px-6 py-3 text-lg font-semibold rounded-lg bg-violet-600 text-white shadow-md hover:bg-violet-700 transition focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
+            class="btn-primary inline-flex items-center px-6 py-3 text-lg font-semibold rounded-lg shadow-md border-0"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Lookup on Amazon
           </button>
-          <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full">Best Price</span>
         </div>
         <div class="flex items-center text-gray-500 text-sm mb-2">
           <span>{{ formatDate(review.created_at) }}</span>
@@ -79,7 +78,7 @@
         <div v-else class="mb-8 text-center">
           <button 
             @click="navigateTo('/auth/login')"
-            class="btn-primary border-none"
+            class="btn-primary"
           >
             Sign in to comment
           </button>
