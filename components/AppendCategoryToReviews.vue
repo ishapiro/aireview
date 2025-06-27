@@ -1,6 +1,20 @@
 <template>
   <div>
-    <Button label="Append Category to Reviews" class="btn-primary w-full" @click="showDialog = true" icon="pi pi-tags" />
+    <div
+      @click="showDialog = true"
+      class="group bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4 hover:shadow-md hover:border-purple-200 transition-all duration-200 cursor-pointer"
+    >
+      <div class="flex items-center">
+        <div class="p-1.5 sm:p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+          <i class="pi pi-plus text-purple-600 text-base sm:text-lg"></i>
+        </div>
+        <div class="ml-2 sm:ml-3 flex-1">
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-purple-600 transition-colors">Append Categories</h4>
+          <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add categories to existing reviews</p>
+        </div>
+        <i class="pi pi-chevron-right text-gray-400 group-hover:text-purple-600 transition-colors text-sm"></i>
+      </div>
+    </div>
     <Dialog v-model:visible="showDialog" modal header="Append Category to Reviews" :style="{ width: '600px' }">
       <div class="space-y-4">
         <!-- Search Bar -->

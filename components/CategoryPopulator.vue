@@ -1,14 +1,22 @@
 <template>
   <div>
     <!-- Populate Category Button (only show if no category prop) -->
-    <button
+    <div
       v-if="!category"
-      type="button"
       @click="openDialog"
-      class="btn-primary block text-center w-full text-base font-medium border-0"
+      class="group bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4 hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer"
     >
-      Let AI Help Add or Refresh Reviews in This Category
-    </button>
+      <div class="flex items-center">
+        <div class="p-1.5 sm:p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+          <i class="pi pi-robot text-blue-600 text-base sm:text-lg"></i>
+        </div>
+        <div class="ml-2 sm:ml-3 flex-1">
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">AI Category Management</h4>
+          <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add or refresh reviews with AI assistance</p>
+        </div>
+        <i class="pi pi-chevron-right text-gray-400 group-hover:text-blue-600 transition-colors text-sm"></i>
+      </div>
+    </div>
 
     <!-- Category Populator Dialog -->
     <Dialog

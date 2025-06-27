@@ -1,13 +1,21 @@
 <template>
   <div>
     <!-- Categorize Uncategorized Reviews Button -->
-    <button
-      type="button"
+    <div
       @click="openDialog"
-      class="btn-primary block text-center w-full text-base font-medium border-0"
+      class="group bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4 hover:shadow-md hover:border-green-200 transition-all duration-200 cursor-pointer"
     >
-      Categorize Uncategorized Reviews
-    </button>
+      <div class="flex items-center">
+        <div class="p-1.5 sm:p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+          <i class="pi pi-tag text-green-600 text-base sm:text-lg"></i>
+        </div>
+        <div class="ml-2 sm:ml-3 flex-1">
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">Categorize Reviews</h4>
+          <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Find and categorize uncategorized reviews</p>
+        </div>
+        <i class="pi pi-chevron-right text-gray-400 group-hover:text-green-600 transition-colors text-sm"></i>
+      </div>
+    </div>
 
     <!-- Categorizer Dialog -->
     <Dialog
