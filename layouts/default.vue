@@ -6,7 +6,7 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80 focus:outline-none">
-              <img src="/savta.jpg" alt="savta.ai Logo" class="h-14 w-auto" />
+              <img src="/savta.webp" alt="savta.ai Logo" class="h-14 w-auto" />
             </NuxtLink>
             <span class="pb-1 pl-2 text-xl font-bold text-blue-600 self-end">savta.ai</span>
           </div>
