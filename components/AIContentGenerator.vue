@@ -333,7 +333,7 @@ const generateAIContent = async () => {
 
 // New function to generate product lists
 const generateProductList = async (categoryName, reviewType = 'business') => {
-  if (!categoryName || isGenerating.value) return []
+  if (!categoryName || isGenerating.value) return { products: [], rawResponse: '' }
 
   isGenerating.value = true
   aiError.value = ''
@@ -365,26 +365,30 @@ const generateProductList = async (categoryName, reviewType = 'business') => {
     
     // Parse the product list
     const productsMatch = fullResponse.match(/PRODUCTS:\s*([\s\S]*?)(?=\n\n|$)/i)
+    let parsedProducts = []
+    
     if (productsMatch) {
       const productsText = productsMatch[1].trim()
       const productLines = productsText.split('\n').filter(line => line.trim())
       
-      return productLines.map(line => {
+      parsedProducts = productLines.map(line => {
         // Remove numbering and clean up
         return line.replace(/^\d+\.\s*/, '').trim().replace(/[^\w\s.-]/g, '')
       }).filter(product => /[a-zA-Z0-9]/.test(product))
     } else {
       // Fallback: try to extract products from the response
       const lines = fullResponse.split('\n').filter(line => line.trim())
-      return lines
+      parsedProducts = lines
         .map(line => line.replace(/^\d+\.\s*/, '').trim().replace(/[^\w\s.-]/g, ''))
         .filter(product => /[a-zA-Z0-9]/.test(product) && !product.toLowerCase().includes('product'))
         .slice(0, 10)
     }
+    
+    return { products: parsedProducts, rawResponse: fullResponse }
   } catch (error) {
     console.error('Error generating product list:', error)
     aiError.value = `Error generating product list: ${error.message}`
-    return []
+    return { products: [], rawResponse: error.message }
   } finally {
     isGenerating.value = false
   }

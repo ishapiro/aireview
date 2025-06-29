@@ -188,35 +188,48 @@
             </div>
             
             <div class="flex justify-between items-center">
-              <Button
-                v-if="products.length === 0"
-                @click="generateProductList"
-                :loading="isGeneratingProducts"
-                :disabled="isGeneratingProducts"
-                label="Generate Product List"
-                icon="pi pi-list"
-              />
-              <Button
-                v-else
-                @click="currentStep = 3"
-                :disabled="isGeneratingProducts"
-                label="Continue to Review Generation"
-                icon="pi pi-arrow-right"
-              />
-              <Button
-                v-if="!category"
-                @click="currentStep = 1"
-                :disabled="isGeneratingProducts"
-                label="Back"
-                icon="pi pi-arrow-left"
-              />
-              <Button
-                v-else
-                @click="currentStep = 0"
-                :disabled="isGeneratingProducts"
-                label="Back"
-                icon="pi pi-arrow-left"
-              />
+              <div class="flex items-center space-x-2">
+                <Button
+                  v-if="products.length === 0"
+                  @click="generateProductList"
+                  :loading="isGeneratingProducts"
+                  :disabled="isGeneratingProducts"
+                  label="Generate Product List"
+                  icon="pi pi-list"
+                />
+                <Button
+                  v-if="rawAIResponse"
+                  @click="showDebugDialog = true"
+                  :disabled="isGeneratingProducts"
+                  label="Debug Response"
+                  icon="pi pi-bug"
+                  class="p-button-secondary"
+                  size="small"
+                />
+              </div>
+              <div class="flex items-center space-x-2">
+                <Button
+                  v-if="products.length > 0"
+                  @click="currentStep = 3"
+                  :disabled="isGeneratingProducts"
+                  label="Continue to Review Generation"
+                  icon="pi pi-arrow-right"
+                />
+                <Button
+                  v-if="!category"
+                  @click="currentStep = 1"
+                  :disabled="isGeneratingProducts"
+                  label="Back"
+                  icon="pi pi-arrow-left"
+                />
+                <Button
+                  v-else
+                  @click="currentStep = 0"
+                  :disabled="isGeneratingProducts"
+                  label="Back"
+                  icon="pi pi-arrow-left"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -447,7 +460,7 @@
                   </h4>
                   <p class="text-sm text-green-700 mt-1">
                     {{ selectedAction === 'update_products' 
-                      ? `Successfully generated ${generatedReviews.length} reviews for ${selectedCategory.name}`
+                      ? `Successfully generated ${generatedReviews.length} new reviews for ${selectedCategory.name}`
                       : `Successfully refreshed ${regeneratedReviews.length} reviews for ${selectedCategory.name}`
                     }}
                   </p>
@@ -562,6 +575,50 @@
     <!-- Hidden AI Content Generator for reusing AI functions -->
     <AIContentGenerator ref="aiGenerator" style="display: none;" />
   </div>
+
+  <!-- Debug Dialog for Raw AI Response -->
+  <Dialog
+    v-model:visible="showDebugDialog"
+    modal
+    header="Raw AI Response Debug"
+    :style="{ width: '90vw', maxWidth: '800px' }"
+  >
+    <div class="space-y-4">
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Category:</h4>
+        <p class="text-sm text-gray-700">{{ selectedCategory?.name }}</p>
+      </div>
+      
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 class="text-sm font-medium text-yellow-900 mb-2">Raw AI Response:</h4>
+        <pre class="text-xs text-yellow-800 whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto">{{ rawAIResponse }}</pre>
+      </div>
+      
+      <div v-if="products.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h4 class="text-sm font-medium text-green-900 mb-2">Parsed Products ({{ products.length }}):</h4>
+        <div class="space-y-1">
+          <div 
+            v-for="(product, index) in products" 
+            :key="index"
+            class="text-sm text-green-800"
+          >
+            {{ index + 1 }}. {{ product }}
+          </div>
+        </div>
+      </div>
+      
+      <div v-else class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <h4 class="text-sm font-medium text-red-900 mb-2">No Products Parsed:</h4>
+        <p class="text-sm text-red-800">The AI response could not be parsed into a product list.</p>
+      </div>
+    </div>
+    
+    <template #footer>
+      <div class="flex justify-end">
+        <Button @click="showDebugDialog = false" label="Close" />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -601,6 +658,8 @@ const isLoadingCategories = ref(false)
 // Product generation state
 const products = ref([])
 const isGeneratingProducts = ref(false)
+const rawAIResponse = ref('')
+const showDebugDialog = ref(false)
 
 // Review generation state
 const currentProductIndex = ref(0)
@@ -674,6 +733,8 @@ const resetState = () => {
   isCheckingCategory.value = false
   isGeneratingProducts.value = false
   isLoadingCategories.value = false
+  rawAIResponse.value = ''
+  showDebugDialog.value = false
 }
 
 // Watch for category prop changes - moved after resetState definition
@@ -866,12 +927,17 @@ const generateProductList = async () => {
     }
 
     // Use the AI Generator's product list function
-    const productList = await aiGenerator.value.generateProductList(selectedCategory.value.name)
+    const result = await aiGenerator.value.generateProductList(selectedCategory.value.name)
+    console.log('[CategoryPopulator] Raw productList API reply:', result);
     
-    if (productList && productList.length > 0) {
-      products.value = productList
+    // Store the raw response for debugging
+    rawAIResponse.value = result.rawResponse || 'No raw response available'
+    
+    if (result.products && result.products.length > 0) {
+      products.value = result.products
       currentStep.value = 3
     } else {
+      console.warn('[CategoryPopulator] No products generated. API reply:', result);
       throw new Error('No products could be generated')
     }
   } catch (error) {

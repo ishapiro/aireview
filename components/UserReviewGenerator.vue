@@ -355,10 +355,10 @@ const generateProductList = async () => {
   error.value = ''
 
   try {
-    const productList = await aiGenerator.value.generateProductList(businessType.value, reviewType.value)
+    const result = await aiGenerator.value.generateProductList(businessType.value, reviewType.value)
     
-    if (productList && productList.length > 0) {
-      products.value = productList
+    if (result.products && result.products.length > 0) {
+      products.value = result.products
       currentStep.value = 2
     } else {
       throw new Error('No products could be generated')
