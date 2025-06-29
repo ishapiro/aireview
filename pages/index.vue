@@ -20,7 +20,7 @@
           <!-- Subheadline -->
           <p class="text-base sm:text-lg text-gray-500 mb-6 sm:mb-10 leading-relaxed">
             Savta uses advanced AI to scan thousands of reviews, articles, and ratings across the web — 
-            analyzing and summarizing them into clear, balanced insights. Don’t rely on a single source. 
+            analyzing and summarizing them into clear, balanced insights. Don't rely on a single source. 
             Get the full picture before you buy.
           </p>
           <!-- Search Bar -->
@@ -119,7 +119,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4">
           <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Popular Categories</h2>
-          <NuxtLink to="/categories" class="btn-primary inline-block text-sm sm:text-base px-4 sm:px-6 py-2">View All Categories</NuxtLink>
+          <NuxtLink to="/categories-all" class="btn-primary inline-block text-sm sm:text-base px-4 sm:px-6 py-2">View All Categories</NuxtLink>
         </div>
         <div class="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           <NuxtLink

@@ -127,7 +127,7 @@
 
         <!-- Step 2: Review Generation -->
         <div v-if="currentStep === 2">
-          <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-4">Step 2: Generating Reviews</h3>
+          <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-2">Step 2: Generating Reviews</h3>
           <div class="space-y-4">
             <!-- Product List Display -->
             <div v-if="products.length > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
@@ -142,6 +142,11 @@
 
             <!-- Progress -->
             <div v-if="isProcessing" class="space-y-2">
+              <div class="flex justify-between text-sm text-gray-600 pb-2">
+                <span>It take about 10-15 seconds to search the web and combined everything we learn
+                  to create a review for each product.
+                </span>
+              </div>
               <div class="flex justify-between text-sm text-gray-600">
                 <span>Processing: {{ currentProductIndex + 1 }} of {{ products.length }}</span>
                 <span>{{ Math.round(((currentProductIndex + 1) / products.length) * 100) }}%</span>

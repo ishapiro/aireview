@@ -341,6 +341,11 @@
             <!-- Enhanced Progress -->
             <div v-if="isProcessing" class="space-y-4">
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex justify-between text-sm text-gray-600 pb-2">
+                  <span>It take about 10-15 seconds to search the web and combined everything we learn
+                    to create a review for each product.
+                  </span>
+                </div>
                 <div class="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Processing: {{ currentProductIndex + 1 }} of {{ products.length }}</span>
                   <span>{{ Math.round(((currentProductIndex + 1) / products.length) * 100) }}%</span>
@@ -402,6 +407,11 @@
           <div class="space-y-4">
             <!-- Progress -->
             <div v-if="isProcessing" class="space-y-2">
+              <div class="flex justify-between text-sm text-gray-600 pb-2">
+                <span>It take about 10-15 seconds to search the web and combined everything we learn
+                  to create a review for each product.
+                </span>
+              </div>
               <div class="flex justify-between text-sm text-gray-600">
                 <span>Processing: {{ currentReviewIndex + 1 }} of {{ selectedReviews.length }}</span>
                 <span>{{ Math.round(((currentReviewIndex + 1) / selectedReviews.length) * 100) }}%</span>

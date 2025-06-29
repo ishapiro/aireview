@@ -160,6 +160,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { Analytics } from '@vercel/analytics/nuxt'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const profile = ref(null)

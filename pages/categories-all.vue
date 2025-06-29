@@ -7,6 +7,7 @@
         :key="category.id"
         :to="`/categories/${category.slug}`"
         class="group block bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-200 p-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-400 no-underline"
+        @click.native="logCategory(category)"
       >
         <div>
           <img
@@ -36,4 +37,8 @@
 <script setup>
 import { useCategories } from '~/composables/useCategories'
 const { data: categories } = useCategories()
+
+function logCategory(category) {
+  console.log('Category clicked:', category.name, 'Slug:', category.slug)
+}
 </script> 
