@@ -26,7 +26,12 @@
           <!-- Search Bar -->
           <form class="flex flex-col items-center gap-3 sm:gap-4 mb-4 w-full max-w-2xl mx-auto" @submit.prevent="navigateToSearch">
             <div class="flex flex-col sm:flex-row w-full gap-2 sm:gap-0">
-              <input v-model="searchQuery" type="text" placeholder="Search for a product or category..." class="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-l-lg sm:rounded-r-none border border-gray-200 focus:ring-2 focus:ring-primary-400 focus:outline-none text-base sm:text-lg" />
+              <SearchInput 
+                v-model="searchQuery" 
+                :categories="categories"
+                @search="handleSearchSuggestion"
+                class="flex-1"
+              />
               <button type="submit" class="btn-primary rounded-lg sm:rounded-l-none sm:rounded-r-lg px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold w-full sm:w-auto">Search</button>
             </div>
             <div class="w-full">
@@ -171,6 +176,7 @@ import UserReviewGenerator from '~/components/UserReviewGenerator.vue'
 import { useCategories } from '~/composables/useCategories'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import SearchInput from '~/components/SearchInput.vue'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()
@@ -184,6 +190,12 @@ const navigateToSearch = () => {
   } else {
     navigateTo('/search')
   }
+}
+
+// Handle search suggestions
+const handleSearchSuggestion = (suggestion) => {
+  searchQuery.value = suggestion
+  navigateToSearch()
 }
 
 // Fetch categories

@@ -1,3 +1,5 @@
+import pluralize from 'pluralize'
+
 export function slugify(text) {
   if (!text || typeof text !== 'string') return ''
   
@@ -80,4 +82,18 @@ export function cleanTitle(text) {
   if (!text || typeof text !== 'string') return ''
   // Remove leading and trailing quotation marks
   return text.replace(/^["']|["']$/g, '')
+}
+
+export function normalizeText(text) {
+  if (!text || typeof text !== 'string') return ''
+  // Remove apostrophes and similar, other punctuation, collapse whitespace, lower case, singularize
+  return text
+    .replace(/['’`]/g, '')      // Remove apostrophes and similar
+    .replace(/[^a-zA-Z0-9 ]/g, ' ') // Remove other punctuation
+    .replace(/\s+/g, ' ')       // Collapse whitespace
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map(word => pluralize.singular(word))
+    .join(' ')
 } 

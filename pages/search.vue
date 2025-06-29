@@ -12,10 +12,10 @@
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="field">
               <label for="query" class="block text-sm font-medium text-gray-700">Search</label>
-              <InputText
-                id="query"
+              <SearchInput
                 v-model="searchForm.query"
-                class="w-full"
+                :categories="categories"
+                @search="handleSearch"
                 placeholder="Search reviews..."
               />
             </div>
@@ -128,8 +128,9 @@
       <template #content>
         <div class="text-gray-500">
           <i class="pi pi-search text-4xl mb-4"></i>
-          <p class="text-lg">No reviews found matching your criteria.</p>
-          <p class="mt-2">Try adjusting your search filters.</p>
+          <p class="text-lg font-semibold mb-2">No saved review found for your search.</p>
+          <p class="mb-2">Savta uses advanced AI to scan thousands of reviews, articles, and ratings across the web — analyzing and summarizing them into clear, balanced insights. Don't rely on a single source. Get the full picture before you buy.</p>
+          <p class="mt-4">Create a <span class='font-semibold text-primary-600'>free account</span> and sign in to generate a review for a product that is currently not in our database.</p>
         </div>
       </template>
     </Card>
@@ -144,6 +145,8 @@ import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
 import { useCategories } from '~/composables/useCategories'
+import SearchInput from '~/components/SearchInput.vue'
+import { normalizeText } from '~/utils/string'
 
 const client = useSupabaseClient()
 const route = useRoute()
@@ -210,11 +213,11 @@ const fetchResults = async () => {
   hasSearched.value = true
 
   try {
-    // 1. Find matching categories (case-insensitive, partial match)
+    // 1. Find matching categories (case-insensitive, partial match, normalized)
     if (searchForm.value.query && categories.value) {
-      const q = searchForm.value.query.trim().toLowerCase()
+      const q = normalizeText(searchForm.value.query.trim())
       matchedCategories.value = categories.value.filter(cat =>
-        cat.name.toLowerCase().includes(q)
+        normalizeText(cat.name).includes(q)
       )
     } else {
       matchedCategories.value = []
