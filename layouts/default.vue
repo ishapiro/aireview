@@ -9,6 +9,7 @@
               <img src="/savta.webp" alt="savta.ai Logo" class="h-14 w-auto" />
             </NuxtLink>
             <span class="pb-1 pl-2 text-xl font-bold text-blue-600 self-end">savta.ai</span>
+            <span class="pb-2 pl-5 text-sm font-bold text-green-600 self-end">(beta: no warranty, no support)</span>
           </div>
 
           <!-- Desktop Navigation -->
