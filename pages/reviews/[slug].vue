@@ -16,16 +16,31 @@
       <!-- Review Header -->
       <div class="mb-4 sm:mb-6">
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2 sm:mb-4">{{ cleanTitle(review.title) }}</h1>
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        
+        <!-- Action Buttons - Mobile Optimized -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <button
             @click="handleAmazonLookup"
             :disabled="isAmazonLoading"
-            class="btn-primary inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold rounded-lg shadow-md border-0 w-full sm:w-auto"
+            class="btn-primary inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-lg font-semibold rounded-lg shadow-md border-0 w-full sm:w-auto min-h-[44px] touch-manipulation"
           >
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Lookup on Amazon
           </button>
+          
+          <!-- Helpful Button - Mobile Optimized -->
+          <button
+            @click="handleStarReview"
+            :disabled="!user"
+            class="inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-lg font-semibold rounded-lg shadow-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 w-full sm:w-auto min-h-[44px] touch-manipulation"
+            :class="{ 'bg-blue-50 border-blue-300 text-blue-700': hasUserStarred }"
+          >
+            <i class="pi pi-thumbs-up mr-2" :class="{ 'text-blue-600': hasUserStarred }"></i>
+            {{ hasUserStarred ? 'Marked Helpful' : 'Mark as Helpful' }}
+          </button>
         </div>
+
+        <!-- Metadata - Mobile Optimized -->
         <div class="flex flex-col sm:flex-row sm:items-center text-gray-500 text-xs sm:text-sm mb-2 sm:mb-4 gap-1 sm:gap-0">
           <span>{{ formatDate(review.created_at) }}</span>
           <span class="hidden sm:inline mx-2">·</span>
@@ -33,10 +48,14 @@
           <span class="hidden sm:inline mx-2">·</span>
           <span><i class="pi pi-thumbs-up mr-1"></i>{{ review.helpful_count }} found helpful</span>
         </div>
+        
+        <!-- Rating - Mobile Optimized -->
         <div class="flex items-center gap-2 mb-3 sm:mb-4">
           <span class="text-yellow-500 text-lg sm:text-xl"><i class="pi pi-star-fill"></i></span>
           <span class="text-base sm:text-lg font-semibold text-gray-800">{{ review.rating?.toFixed(1) || 'N/A' }}</span>
         </div>
+        
+        <!-- AI Notice - Mobile Optimized -->
         <div class="mb-3 sm:mb-4">
           <span class="text-blue-600 text-xs sm:text-sm">This review was created with AI assistance</span>
         </div>
@@ -47,9 +66,9 @@
         <div v-html="renderedContent"></div>
       </div>
 
-      <!-- Edit Button for Review Owner -->
+      <!-- Edit Button for Review Owner - Mobile Optimized -->
       <div v-if="user?.id === review?.user_id" class="mb-6 sm:mb-8 flex justify-end">
-        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
+        <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-3 min-h-[44px] inline-flex items-center justify-center touch-manipulation">
           <i class="pi pi-pencil mr-2"></i>
           Edit Review
         </NuxtLink>
@@ -59,32 +78,36 @@
       <div class="border-t pt-6 sm:pt-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Comments</h2>
         
-        <!-- Comment Form -->
+        <!-- Comment Form - Mobile Optimized -->
         <div v-if="user" class="mb-6 sm:mb-8">
           <textarea
             v-model="newComment"
-            class="input-field mb-3 sm:mb-4 text-sm sm:text-base"
+            class="input-field mb-3 sm:mb-4 text-sm sm:text-base w-full"
             rows="4"
             placeholder="Write a comment..."
           ></textarea>
-          <button
-            @click="handleSubmitComment"
-            class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
-            :disabled="!newComment.trim()"
-          >
-            Post Comment
-          </button>
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button
+              @click="handleSubmitComment"
+              class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-3 min-h-[44px] inline-flex items-center justify-center w-full sm:w-auto touch-manipulation"
+              :disabled="!newComment.trim()"
+            >
+              <i class="pi pi-send mr-2"></i>
+              Post Comment
+            </button>
+          </div>
         </div>
         <div v-else class="mb-6 sm:mb-8 text-center">
           <button 
             @click="navigateTo('/auth/login')"
-            class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
+            class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-3 min-h-[44px] inline-flex items-center justify-center w-full sm:w-auto touch-manipulation"
           >
+            <i class="pi pi-sign-in mr-2"></i>
             Sign in to comment
           </button>
         </div>
 
-        <!-- Comments List -->
+        <!-- Comments List - Mobile Optimized -->
         <div class="space-y-4 sm:space-y-6">
           <div
             v-for="comment in comments"
@@ -95,11 +118,11 @@
               <img
                 :src="comment.author.avatar_url || '/default-avatar.svg'"
                 :alt="comment.author.full_name"
-                class="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-2 sm:mr-3 bg-gray-100"
+                class="w-8 h-8 sm:w-8 sm:h-8 rounded-full mr-3 bg-gray-100 flex-shrink-0"
                 @error="$event.target.src = '/default-avatar.svg'"
               />
-              <div>
-                <div class="font-medium text-gray-900 text-sm sm:text-base">
+              <div class="min-w-0 flex-1">
+                <div class="font-medium text-gray-900 text-sm sm:text-base truncate">
                   {{ comment.author.full_name }}
                 </div>
                 <div class="text-xs sm:text-sm text-gray-500">
@@ -107,19 +130,20 @@
                 </div>
               </div>
             </div>
-            <p class="text-gray-700 text-sm sm:text-base">{{ comment.content }}</p>
+            <p class="text-gray-700 text-sm sm:text-base break-words">{{ comment.content }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Amazon Products Dialog -->
+    <!-- Amazon Products Dialog - Mobile Optimized -->
     <Dialog
       v-model:visible="showAmazonDialog"
       modal
       header="Amazon Products"
       :style="{ width: '95vw', maxWidth: '800px' }"
       :closable="true"
+      class="sm:mx-4"
     >
       <div v-if="amazonProducts.length === 0 && !isAmazonLoading" class="text-center py-6 sm:py-8">
         <p class="text-sm sm:text-base text-gray-600">No products found on Amazon for "{{ review?.title }}"</p>
@@ -130,7 +154,7 @@
         <p class="text-sm sm:text-base text-gray-600 mt-4">Searching Amazon...</p>
       </div>
       
-      <div v-else class="space-y-3 sm:space-y-4">
+      <div v-else class="space-y-3 sm:space-y-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
         <div
           v-for="product in amazonProducts"
           :key="product.ASIN"
@@ -169,7 +193,7 @@
                 :href="product.affiliateLink"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center text-blue-600 hover:text-blue-800 text-xs sm:text-sm"
+                class="inline-flex items-center text-blue-600 hover:text-blue-800 text-xs sm:text-sm min-h-[32px] touch-manipulation"
               >
                 <i class="pi pi-external-link mr-1"></i>
                 View on Amazon
@@ -180,16 +204,19 @@
       </div>
     </Dialog>
 
-    <!-- AI Update Dialog -->
+    <!-- AI Update Dialog - Mobile Optimized -->
     <Dialog
       v-model:visible="showAIDialog"
       modal
       header="AI Update"
       :style="{ width: '95vw', maxWidth: '600px' }"
+      class="sm:mx-4"
     >
-      <div class="prose prose-sm sm:prose-lg max-w-none prose-headings:text-sm sm:prose-headings:text-base" v-html="renderedAIResponse"></div>
+      <div class="prose prose-sm sm:prose-lg max-w-none prose-headings:text-sm sm:prose-headings:text-base overflow-x-auto max-h-[60vh] sm:max-h-[70vh] overflow-y-auto" v-html="renderedAIResponse"></div>
       <template #footer>
-        <Button @click="showAIDialog = false" label="Close" />
+        <div class="flex justify-end w-full p-4">
+          <Button @click="showAIDialog = false" label="Close" class="min-h-[44px] px-4 py-3 touch-manipulation" />
+        </div>
       </template>
     </Dialog>
   </div>

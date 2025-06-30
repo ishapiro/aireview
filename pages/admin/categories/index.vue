@@ -1,13 +1,20 @@
 <template>
-  <div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Categories</h1>
-      <Button @click="showDialog = true" label="Add Category" icon="pi pi-plus" />
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header - Mobile Optimized -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Categories</h1>
+      <Button 
+        @click="showDialog = true" 
+        label="Add Category" 
+        icon="pi pi-plus" 
+        class="w-full sm:w-auto min-h-[44px] touch-manipulation"
+      />
     </div>
 
     <Card>
       <template #content>
-        <div class="overflow-x-auto">
+        <!-- Desktop Table View -->
+        <div class="hidden sm:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
@@ -57,19 +64,19 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <button
                     @click="handleEdit(category)"
-                    class="text-primary-600 hover:text-primary-900 mr-4"
+                    class="text-primary-600 hover:text-primary-900 mr-4 touch-manipulation"
                   >
                     Edit
                   </button>
                   <button
                     @click="openCategoryPopulator(category)"
-                    class="text-blue-600 hover:text-blue-900 mr-4"
+                    class="text-blue-600 hover:text-blue-900 mr-4 touch-manipulation"
                   >
                     Generate Reviews
                   </button>
                   <button
                     @click="handleDelete(category.id)"
-                    class="text-red-600 hover:text-red-900"
+                    class="text-red-600 hover:text-red-900 touch-manipulation"
                   >
                     Delete
                   </button>
@@ -78,40 +85,108 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div class="sm:hidden space-y-4">
+          <div 
+            v-for="category in categories" 
+            :key="category.id"
+            class="border border-gray-200 rounded-lg p-4 space-y-4"
+          >
+            <!-- Category Header -->
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0">
+                <div class="w-16 h-16">
+                  <img 
+                    v-if="category.image_url" 
+                    :src="category.image_url" 
+                    :alt="category.name"
+                    class="w-16 h-16 object-cover rounded"
+                    @error="$event.target.style.display = 'none'"
+                  />
+                  <div v-else class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                    <i class="pi pi-image text-gray-400"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-medium text-gray-900 break-words">{{ category.name }}</h3>
+                <p class="text-sm text-gray-500 break-words">{{ category.slug }}</p>
+                <p class="text-sm text-gray-700 mt-1 break-words">{{ category.description }}</p>
+              </div>
+            </div>
+
+            <!-- Review Count -->
+            <div class="flex justify-between items-center">
+              <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                   :class="category.review_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'">
+                {{ category.review_count || 0 }} {{ category.review_count === 1 ? 'review' : 'reviews' }}
+              </div>
+            </div>
+
+            <!-- Action Buttons - Mobile Optimized -->
+            <div class="flex flex-col gap-2">
+              <button
+                @click="handleEdit(category)"
+                class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors min-h-[44px] touch-manipulation"
+              >
+                <i class="pi pi-pencil mr-2"></i>
+                Edit Category
+              </button>
+              <button
+                @click="openCategoryPopulator(category)"
+                class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors min-h-[44px] touch-manipulation"
+              >
+                <i class="pi pi-plus-circle mr-2"></i>
+                Generate Reviews
+              </button>
+              <button
+                @click="handleDelete(category.id)"
+                class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors min-h-[44px] touch-manipulation"
+              >
+                <i class="pi pi-trash mr-2"></i>
+                Delete Category
+              </button>
+            </div>
+          </div>
+        </div>
       </template>
     </Card>
 
-    <!-- Category Dialog -->
+    <!-- Category Dialog - Mobile Optimized -->
     <Dialog
       v-model:visible="showDialog"
       :modal="true"
       :header="editingCategory ? 'Edit Category' : 'Add Category'"
       class="p-fluid"
+      :style="{ width: '95vw', maxWidth: '600px' }"
     >
       <template #default>
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div class="field">
-            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name</label>
             <InputText
               id="name"
               v-model="form.name"
               required
+              class="w-full"
             />
           </div>
 
           <div class="field">
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <Textarea
               id="description"
               v-model="form.description"
               rows="3"
+              class="w-full"
             />
           </div>
 
           <div class="field">
             <label class="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
-            <div class="flex items-center space-x-4">
-              <div class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img
                   v-if="form.image_url"
                   :src="form.image_url"
@@ -122,12 +197,13 @@
                   <p class="text-sm text-gray-500">No image</p>
                 </div>
               </div>
-              <div class="flex flex-col space-y-2">
+              <div class="flex flex-col gap-2 w-full sm:w-auto">
                 <Button
                   type="button"
                   label="Upload Image"
                   icon="pi pi-upload"
                   @click="handleImageUpload"
+                  class="w-full sm:w-auto min-h-[44px] touch-manipulation"
                 />
                 <Button
                   type="button"
@@ -136,6 +212,7 @@
                   @click="openUnsplashDialog"
                   :disabled="!form.name.trim() || !isUnsplashConfigured"
                   :title="!isUnsplashConfigured ? 'Unsplash API not configured' : 'Search for images on Unsplash'"
+                  class="w-full sm:w-auto min-h-[44px] touch-manipulation"
                 />
                 <Button
                   v-if="form.image_url"
@@ -143,6 +220,7 @@
                   label="Remove Image"
                   icon="pi pi-trash"
                   @click="form.image_url = ''"
+                  class="w-full sm:w-auto min-h-[44px] touch-manipulation"
                 />
               </div>
             </div>
@@ -150,32 +228,35 @@
         </form>
       </template>
       <template #footer>
-        <Button
-          label="Cancel"
-          icon="pi pi-times"
-          @click="showDialog = false"
-          class="mr-2"
-        />
-        <Button
-          label="Save"
-          icon="pi pi-check"
-          @click="handleSubmit"
-          :loading="isSubmitting"
-        />
+        <div class="flex flex-col sm:flex-row gap-2 w-full">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="showDialog = false"
+            class="w-full sm:w-auto min-h-[44px] touch-manipulation"
+          />
+          <Button
+            label="Save"
+            icon="pi pi-check"
+            @click="handleSubmit"
+            :loading="isSubmitting"
+            class="w-full sm:w-auto min-h-[44px] touch-manipulation"
+          />
+        </div>
       </template>
     </Dialog>
 
-    <!-- Unsplash Image Search Dialog -->
+    <!-- Unsplash Image Search Dialog - Mobile Optimized -->
     <Dialog
       v-model:visible="showUnsplashDialog"
       modal
       header="Search Unsplash Images"
-      :style="{ width: '90vw', maxWidth: '1200px' }"
+      :style="{ width: '95vw', maxWidth: '1200px' }"
       :closable="!isSearchingImages"
     >
       <div class="space-y-4">
-        <!-- Search Input -->
-        <div class="flex items-center space-x-4">
+        <!-- Search Input - Mobile Optimized -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <div class="flex-1">
             <InputText
               v-model="unsplashSearchQuery"
@@ -191,21 +272,23 @@
             :disabled="!unsplashSearchQuery.trim()"
             label="Search"
             icon="pi pi-search"
+            class="w-full sm:w-auto min-h-[44px] touch-manipulation"
           />
         </div>
 
         <!-- Search Results -->
         <div v-if="unsplashImages.length > 0" class="space-y-4">
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-medium text-gray-900">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h3 class="text-base sm:text-lg font-medium text-gray-900">
               Found {{ totalImages }} images for "{{ unsplashSearchQuery }}"
             </h3>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center justify-center sm:justify-end gap-2">
               <Button
                 @click="previousPage"
                 :disabled="currentPage === 1 || isSearchingImages"
                 icon="pi pi-chevron-left"
                 size="small"
+                class="min-h-[44px] touch-manipulation"
               />
               <span class="text-sm text-gray-600">
                 Page {{ currentPage }} of {{ totalPages }}
@@ -215,23 +298,24 @@
                 :disabled="currentPage >= totalPages || isSearchingImages"
                 icon="pi pi-chevron-right"
                 size="small"
+                class="min-h-[44px] touch-manipulation"
               />
             </div>
           </div>
 
-          <!-- Image Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <!-- Image Grid - Mobile Optimized -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 max-h-[60vh] overflow-y-auto">
             <div
               v-for="image in unsplashImages"
               :key="image.id"
-              class="relative group cursor-pointer border-2 rounded-lg overflow-hidden transition-all duration-200"
+              class="relative group cursor-pointer border-2 rounded-lg overflow-hidden transition-all duration-200 touch-manipulation"
               :class="selectedImage?.id === image.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'"
               @click="selectImage(image)"
             >
               <img
                 :src="image.urls.small"
                 :alt="image.alt_description || 'Unsplash image'"
-                class="w-full h-32 object-cover"
+                class="w-full h-24 sm:h-32 object-cover"
                 loading="lazy"
               />
               <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
@@ -247,54 +331,57 @@
             </div>
           </div>
 
-          <!-- Selection Actions -->
-          <div v-if="selectedImage" class="flex justify-between items-center pt-4 border-t">
-            <div class="text-sm text-gray-600">
+          <!-- Selection Actions - Mobile Optimized -->
+          <div v-if="selectedImage" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-4 border-t">
+            <div class="text-sm text-gray-600 text-center sm:text-left">
               Selected: <span class="font-medium">{{ selectedImage.alt_description || 'Untitled' }}</span>
             </div>
-            <div class="flex space-x-2">
+            <div class="flex flex-col sm:flex-row gap-2">
               <Button
                 @click="useSelectedImage"
                 label="Use This Image"
                 icon="pi pi-check"
+                class="w-full sm:w-auto min-h-[44px] touch-manipulation"
               />
               <Button
                 @click="selectedImage = null"
                 label="Clear Selection"
+                class="w-full sm:w-auto min-h-[44px] touch-manipulation"
               />
             </div>
           </div>
         </div>
 
-        <!-- Loading State -->
-        <div v-else-if="isSearchingImages" class="flex justify-center items-center py-12">
+        <!-- Loading State - Mobile Optimized -->
+        <div v-else-if="isSearchingImages" class="flex justify-center items-center py-8 sm:py-12">
           <div class="text-center">
-            <i class="pi pi-spin pi-spinner text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-600">Searching for images...</p>
+            <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600 text-sm sm:text-base">Searching for images...</p>
           </div>
         </div>
 
-        <!-- No Results -->
-        <div v-else-if="hasSearched && unsplashImages.length === 0" class="text-center py-12">
-          <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
-          <p class="text-gray-600">No images found for "{{ unsplashSearchQuery }}"</p>
+        <!-- No Results - Mobile Optimized -->
+        <div v-else-if="hasSearched && unsplashImages.length === 0" class="text-center py-8 sm:py-12">
+          <i class="pi pi-search text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+          <p class="text-gray-600 text-sm sm:text-base">No images found for "{{ unsplashSearchQuery }}"</p>
           <p class="text-sm text-gray-500 mt-2">Try a different search term</p>
         </div>
 
-        <!-- Initial State -->
-        <div v-else class="text-center py-12">
-          <i class="pi pi-image text-4xl text-gray-400 mb-4"></i>
-          <p class="text-gray-600">Search for images to use as your category image</p>
+        <!-- Initial State - Mobile Optimized -->
+        <div v-else class="text-center py-8 sm:py-12">
+          <i class="pi pi-image text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+          <p class="text-gray-600 text-sm sm:text-base">Search for images to use as your category image</p>
           <p class="text-sm text-gray-500 mt-2">Enter a search term above to get started</p>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2">
+        <div class="flex justify-end">
           <Button
             @click="closeUnsplashDialog"
             label="Close"
             :disabled="isSearchingImages"
+            class="min-h-[44px] touch-manipulation"
           />
         </div>
       </template>

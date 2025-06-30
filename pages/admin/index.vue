@@ -57,84 +57,114 @@
     <div class="mb-6 sm:mb-8">
       <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Quick Actions</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <NuxtLink 
-          to="/admin/reviews/new" 
-          class="group bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md hover:border-blue-200 transition-all duration-200 no-underline"
-        >
-          <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-              <i class="pi pi-plus text-blue-600 text-lg sm:text-xl"></i>
-            </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Create Review</h3>
-          </div>
-          <p class="text-gray-600 text-xs sm:text-sm">Add a new product review to the database</p>
-        </NuxtLink>
-
-        <NuxtLink 
-          to="/admin/categories" 
-          class="group bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md hover:border-green-200 transition-all duration-200 no-underline"
-        >
-          <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
-              <i class="pi pi-tags text-green-600 text-lg sm:text-xl"></i>
-            </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Manage Tags</h3>
-          </div>
-          <p class="text-gray-600 text-xs sm:text-sm">Organize and manage product tags</p>
-        </NuxtLink>
-
-        <NuxtLink 
-          to="/admin/users" 
-          class="group bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md hover:border-purple-200 transition-all duration-200 no-underline"
-        >
-          <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
-              <i class="pi pi-users text-purple-600 text-lg sm:text-xl"></i>
-            </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Manage Users</h3>
-          </div>
-          <p class="text-gray-600 text-xs sm:text-sm">View and manage user accounts</p>
-        </NuxtLink>
-
-        <NuxtLink 
-          to="/admin/reviews/dedup" 
-          class="group bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md hover:border-orange-200 transition-all duration-200 no-underline"
-        >
-          <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-orange-50 rounded-lg group-hover:bg-orange-100 transition-colors">
-              <i class="pi pi-filter text-orange-600 text-lg sm:text-xl"></i>
-            </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">Deduplicate Reviews</h3>
-          </div>
-          <p class="text-gray-600 text-xs sm:text-sm">Find and remove duplicate reviews</p>
-        </NuxtLink>
-
+        <!-- Reviews Card -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-indigo-50 rounded-lg">
-              <i class="pi pi-database text-indigo-600 text-lg sm:text-xl"></i>
+            <div class="p-2 sm:p-3 bg-blue-50 rounded-lg">
+              <i class="pi pi-file text-blue-600 text-lg sm:text-xl"></i>
             </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Tag Tools</h3>
+            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Reviews</h3>
           </div>
           <div class="space-y-2 sm:space-y-3">
+            <NuxtLink 
+              to="/admin/reviews/new" 
+              class="group block bg-gray-50 rounded-lg p-3 hover:bg-blue-50 transition-all duration-200 no-underline"
+            >
+              <div class="flex items-center">
+                <div class="p-1.5 sm:p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                  <i class="pi pi-plus text-blue-600 text-sm sm:text-base"></i>
+                </div>
+                <div class="ml-2 sm:ml-3 flex-1">
+                  <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Create Review</h4>
+                  <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add a new product review</p>
+                </div>
+                <i class="pi pi-chevron-right text-gray-400 group-hover:text-blue-600 transition-colors text-sm"></i>
+              </div>
+            </NuxtLink>
+
+            <NuxtLink 
+              to="/admin/reviews/dedup" 
+              class="group block bg-gray-50 rounded-lg p-3 hover:bg-orange-50 transition-all duration-200 no-underline"
+            >
+              <div class="flex items-center">
+                <div class="p-1.5 sm:p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+                  <i class="pi pi-filter text-orange-600 text-sm sm:text-base"></i>
+                </div>
+                <div class="ml-2 sm:ml-3 flex-1">
+                  <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors">Deduplicate Reviews</h4>
+                  <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Find and remove duplicates</p>
+                </div>
+                <i class="pi pi-chevron-right text-gray-400 group-hover:text-orange-600 transition-colors text-sm"></i>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Tags Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div class="flex items-center mb-3 sm:mb-4">
+            <div class="p-2 sm:p-3 bg-green-50 rounded-lg">
+              <i class="pi pi-tags text-green-600 text-lg sm:text-xl"></i>
+            </div>
+            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Tags</h3>
+          </div>
+          <div class="space-y-2 sm:space-y-3">
+            <NuxtLink 
+              to="/admin/categories" 
+              class="group block bg-gray-50 rounded-lg p-3 hover:bg-green-50 transition-all duration-200 no-underline"
+            >
+              <div class="flex items-center">
+                <div class="p-1.5 sm:p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                  <i class="pi pi-pencil text-green-600 text-sm sm:text-base"></i>
+                </div>
+                <div class="ml-2 sm:ml-3 flex-1">
+                  <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">Add/Edit Tags</h4>
+                  <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Organize and manage tags</p>
+                </div>
+                <i class="pi pi-chevron-right text-gray-400 group-hover:text-green-600 transition-colors text-sm"></i>
+              </div>
+            </NuxtLink>
+
             <CategoryPopulator />
             <UncategorizedReviewCategorizer />
             <AppendCategoryToReviews />
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-          <div class="flex items-center mb-3 sm:mb-4">
-            <div class="p-2 sm:p-3 bg-gray-50 rounded-lg">
-              <i class="pi pi-chart-line text-gray-600 text-lg sm:text-xl"></i>
+        <!-- Third Column: Users and Analytics -->
+        <div class="space-y-3 sm:space-y-4">
+          <!-- Users Card -->
+          <NuxtLink 
+            to="/admin/users" 
+            class="group bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md hover:border-purple-200 transition-all duration-200 no-underline block"
+          >
+            <div class="flex items-center">
+              <div class="p-2 sm:p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+                <i class="pi pi-users text-purple-600 text-lg sm:text-xl"></i>
+              </div>
+              <div class="ml-3 sm:ml-4">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Manage Users</h3>
+                <p class="text-gray-600 text-xs sm:text-sm">View and manage user accounts</p>
+              </div>
             </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Analytics</h3>
-          </div>
-          <p class="text-gray-600 text-xs sm:text-sm">View detailed analytics and reports</p>
-          <div class="mt-3 sm:mt-4">
-            <button class="text-xs sm:text-sm text-gray-500 hover:text-gray-700 transition-colors">
-              Coming Soon
-            </button>
+          </NuxtLink>
+
+          <!-- Analytics Card -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+            <div class="flex items-center">
+              <div class="p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <i class="pi pi-chart-line text-gray-600 text-lg sm:text-xl"></i>
+              </div>
+              <div class="ml-3 sm:ml-4">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Analytics</h3>
+                <p class="text-gray-600 text-xs sm:text-sm">View detailed analytics and reports</p>
+              </div>
+            </div>
+            <div class="mt-3 sm:mt-4">
+              <button class="text-xs sm:text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                Coming Soon
+              </button>
+            </div>
           </div>
         </div>
       </div>

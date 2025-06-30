@@ -10,7 +10,7 @@
           <i class="pi pi-tag text-green-600 text-base sm:text-lg"></i>
         </div>
         <div class="ml-2 sm:ml-3 flex-1">
-          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">Add Tahs to Reviews</h4>
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">Add Tags to Reviews</h4>
           <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">ag reviews without categories (tags)</p>
         </div>
         <i class="pi pi-chevron-right text-gray-400 group-hover:text-green-600 transition-colors text-sm"></i>
