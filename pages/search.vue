@@ -5,8 +5,18 @@
       Want a review that doesn't exist yet? <span class="font-medium text-primary-600">Registered users</span> can generate new AI-powered reviews for any product in seconds.
     </p>
 
+    <!-- Expand button, only on mobile and when collapsed -->
+    <button
+      v-if="searchCollapsed && isMobile"
+      @click="expandSearch"
+      class="w-full flex items-center justify-center py-2 bg-white border border-gray-200 rounded shadow mb-2 text-gray-700 hover:bg-gray-50 transition block md:hidden"
+    >
+      <span class="mr-2">Show Search</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+    </button>
+
     <!-- Search Form -->
-    <Card class="mb-8">
+    <Card class="mb-8" :class="{ 'hidden': searchCollapsed && isMobile, 'block': !searchCollapsed || !isMobile }">
       <template #content>
         <form @submit.prevent="handleSearch" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -141,7 +151,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
 import { useCategories } from '~/composables/useCategories'
@@ -195,10 +205,37 @@ const sortOptions = [
   { label: 'Most Helpful', value: 'helpful_count' }
 ]
 
-// Handle search form submission
-const handleSearch = () => {
+const isMobile = ref(window.innerWidth < 768)
+const searchCollapsed = ref(false)
+
+function updateIsMobile() {
+  isMobile.value = window.innerWidth < 768
+  console.log('[search.vue] isMobile:', isMobile.value, 'width:', window.innerWidth)
+}
+
+onMounted(() => {
+  window.addEventListener('resize', updateIsMobile)
+  updateIsMobile()
+  // If there are results on mobile, collapse search
+  if (isMobile.value && (searchResults.value.length > 0 || matchedCategories.value.length > 0)) {
+    searchCollapsed.value = true
+  }
+  console.log('[search.vue] onMounted isMobile:', isMobile.value)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
+
+function handleSearch() {
   currentPage.value = 1
   fetchResults()
+  // Collapse search on mobile after search
+  if (isMobile.value) searchCollapsed.value = true
+}
+
+function expandSearch() {
+  searchCollapsed.value = false
 }
 
 // Handle pagination
@@ -319,4 +356,14 @@ watch(searchForm, (newValue) => {
 const clearCategory = () => {
   searchForm.value.category_ids = []
 }
+
+watch(
+  [searchResults, matchedCategories, isMobile],
+  ([results, categories, mobile]) => {
+    if (mobile && (results.length > 0 || categories.length > 0)) {
+      searchCollapsed.value = true;
+      console.log('[search.vue] Collapsing search form after results loaded.');
+    }
+  }
+);
 </script> 
