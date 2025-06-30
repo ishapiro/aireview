@@ -36,6 +36,13 @@
 
 <script setup>
 import { useCategories } from '~/composables/useCategories'
+
+definePageMeta({
+  layout: 'default',
+  name: 'All Tags',
+  breadcrumb: 'All Tags'
+})
+
 const { data: categories } = useCategories()
 
 function logCategory(category) {

@@ -12,6 +12,12 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'default',
+  name: 'Confirm',
+  breadcrumb: 'Confirm'
+})
+
 const client = useSupabaseClient()
 
 onMounted(async () => {

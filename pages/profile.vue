@@ -273,6 +273,12 @@ import { useImageUpload } from '@/composables/useImageUpload'
 import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
 
+definePageMeta({
+  layout: 'default',
+  name: 'Profile',
+  breadcrumb: 'Profile'
+})
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()

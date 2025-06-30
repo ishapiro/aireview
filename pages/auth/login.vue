@@ -99,6 +99,12 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'
 
+definePageMeta({
+  layout: 'default',
+  name: 'Sign In',
+  breadcrumb: 'Sign In'
+})
+
 console.log('Login page script loaded');
 
 const client = useSupabaseClient()

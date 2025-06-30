@@ -13,4 +13,10 @@
 <script setup>
 // This is a catch-all route that will handle any unknown paths
 // including the Chrome DevTools path
+
+definePageMeta({
+  layout: 'default',
+  name: 'Not Found',
+  breadcrumb: 'Not Found'
+})
 </script> 

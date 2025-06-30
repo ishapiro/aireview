@@ -158,6 +158,12 @@ import { useCategories } from '~/composables/useCategories'
 import SearchInput from '~/components/SearchInput.vue'
 import { normalizeText } from '~/utils/string'
 
+definePageMeta({
+  layout: 'default',
+  name: 'Search',
+  breadcrumb: 'Search'
+})
+
 const client = useSupabaseClient()
 const route = useRoute()
 const router = useRouter()

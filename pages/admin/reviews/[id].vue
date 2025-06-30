@@ -206,7 +206,8 @@ import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
 import MultiSelect from 'primevue/multiselect'
 import { onBeforeRouteLeave } from 'vue-router'
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, watch } from 'vue'
+import { useBreadcrumbs } from '~/composables/useBreadcrumbs'
 
 definePageMeta({
   middleware: ['auth-admin']
@@ -218,6 +219,7 @@ const toast = useToast()
 const confirm = useConfirm()
 const router = useRouter()
 const route = useRoute()
+const { setBreadcrumbs } = useBreadcrumbs()
 
 const review = ref(null)
 const form = ref({
@@ -304,6 +306,21 @@ onMounted(async () => {
     })
     
     window.addEventListener('beforeunload', handleBeforeUnload)
+
+    // Update breadcrumb when review is loaded
+    setBreadcrumbs([
+      {
+        label: 'Admin',
+        to: '/admin'
+      },
+      {
+        label: 'Reviews',
+        to: '/admin/reviews'
+      },
+      {
+        label: reviewData.title || 'Edit Review'
+      }
+    ])
   } catch (error) {
     console.error('Error loading review:', error)
     toast.add({
@@ -313,6 +330,8 @@ onMounted(async () => {
       life: 5000
     })
     form.value = null
+  } finally {
+    isLoading.value = false
   }
 })
 
@@ -488,4 +507,23 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   return format(new Date(dateString), 'MMMM d, yyyy')
 }
+
+// Update breadcrumb when review is loaded
+watch(review, (newReview) => {
+  if (newReview) {
+    setBreadcrumbs([
+      {
+        label: 'Admin',
+        to: '/admin'
+      },
+      {
+        label: 'Reviews',
+        to: '/admin/reviews'
+      },
+      {
+        label: newReview.title || 'Edit Review'
+      }
+    ])
+  }
+}, { immediate: true })
 </script> 

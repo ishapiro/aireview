@@ -260,11 +260,18 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
 import { marked } from 'marked'
 import { useAI } from '@/composables/useAI'
+
+definePageMeta({
+  layout: 'default',
+  name: 'Saved Lists',
+  breadcrumb: 'Saved Lists'
+})
 
 const client = useSupabaseClient()
 const user = useSupabaseUser()

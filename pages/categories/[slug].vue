@@ -56,13 +56,39 @@
 </template>
 
 <script setup>
+import { useCategories } from '~/composables/useCategories'
+import { useBreadcrumbs } from '~/composables/useBreadcrumbs'
+
 const route = useRoute()
+
+definePageMeta({
+  layout: 'default',
+  name: 'Category',
+  breadcrumb: 'Category'
+})
+
 console.log('DEBUG: [slug].vue loaded for slug:', route.params.slug)
 const client = useSupabaseClient()
+const { setBreadcrumbs } = useBreadcrumbs()
 
 const category = ref(null)
 const reviews = ref([])
 const isLoading = ref(true)
+
+// Update breadcrumb when category is loaded
+watch(category, (newCategory) => {
+  if (newCategory) {
+    setBreadcrumbs([
+      {
+        label: 'Categories',
+        to: '/categories-all'
+      },
+      {
+        label: newCategory.name || 'Category'
+      }
+    ])
+  }
+}, { immediate: true })
 
 // Fetch category and its reviews
 const { data } = await useAsyncData('category-' + route.params.slug, async () => {

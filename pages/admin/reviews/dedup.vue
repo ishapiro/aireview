@@ -37,6 +37,11 @@ import Button from 'primevue/button'
 import stringSimilarity from 'string-similarity'
 import { navigateTo } from '#app'
 
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth-admin']
+})
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()

@@ -178,6 +178,12 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import SearchInput from '~/components/SearchInput.vue'
 
+definePageMeta({
+  layout: 'default',
+  name: 'Home',
+  breadcrumb: 'Home'
+})
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const config = useRuntimeConfig()

@@ -191,6 +191,12 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'
 
+definePageMeta({
+  layout: 'default',
+  name: 'Sign Up',
+  breadcrumb: 'Sign Up'
+})
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()

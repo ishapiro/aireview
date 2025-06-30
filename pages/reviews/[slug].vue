@@ -238,7 +238,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useToast } from 'primevue/usetoast'
@@ -247,10 +247,17 @@ import { format } from 'date-fns'
 import { cleanTitle } from '~/utils/string'
 import { useAmazon } from '~/composables/useAmazon'
 import { useAI } from '@/composables/useAI'
+import { useBreadcrumbs } from '~/composables/useBreadcrumbs'
 
 // PrimeVue components
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
+
+definePageMeta({
+  layout: 'default',
+  name: 'Review',
+  breadcrumb: 'Review'
+})
 
 const route = useRoute()
 const client = useSupabaseClient()
@@ -258,6 +265,7 @@ const user = useSupabaseUser()
 const toast = useToast()
 const { searchProducts } = useAmazon()
 const { sendAIPrompt } = useAI()
+const { setBreadcrumbs } = useBreadcrumbs()
 
 const review = ref(null)
 const comments = ref([])
@@ -578,4 +586,19 @@ const handleUpdateWithAI = async () => {
     isAIUpdating.value = false
   }
 }
+
+// Update breadcrumb when review is loaded
+watch(review, (newReview) => {
+  if (newReview) {
+    setBreadcrumbs([
+      {
+        label: 'Reviews',
+        to: '/reviews'
+      },
+      {
+        label: newReview.title || 'Review'
+      }
+    ])
+  }
+}, { immediate: true })
 </script> 
