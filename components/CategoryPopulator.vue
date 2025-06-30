@@ -38,7 +38,7 @@
             >
               <div class="flex items-center mb-3">
                 <i class="pi pi-list text-2xl text-blue-600 mr-3"></i>
-                <h4 class="text-lg font-medium text-gray-900">Update Products in a Tag</h4>
+                <h4 class="text-lg font-medium text-gray-900">Add New AI Reviews to a Tag</h4>
               </div>
               <p class="text-sm text-gray-600">
                 Generate new products and reviews for this tag. This will add new reviews without affecting existing ones.

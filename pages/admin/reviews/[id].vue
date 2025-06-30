@@ -239,7 +239,7 @@ const hasChanged = computed(() => {
 })
 
 // Fetch categories
-const { data: categories } = await useAsyncData('categories', async () => {
+const { data: categories } = await useAsyncData('admin-review-categories', async () => {
   const { data } = await client
     .from('categories')
     .select('*')
@@ -250,43 +250,70 @@ const { data: categories } = await useAsyncData('categories', async () => {
 // Fetch review by ID with author and categories
 onMounted(async () => {
   const reviewId = route.params.id
-  const { data, error } = await client
-    .from('reviews')
-    .select(`
-      *,
-      author:profiles(*),
-      review_categories(category_id)
-    `)
-    .eq('id', reviewId)
-    .single()
+  
+  try {
+    // First, fetch the review with author
+    const { data: reviewData, error: reviewError } = await client
+      .from('reviews')
+      .select(`
+        *,
+        author:profiles(*)
+      `)
+      .eq('id', reviewId)
+      .single()
 
-  if (error || !data) {
+    if (reviewError || !reviewData) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: reviewError?.message || 'Review not found',
+        life: 5000
+      })
+      form.value = null
+      return
+    }
+
+    // Then, fetch the categories for this review
+    const { data: categoryData, error: categoryError } = await client
+      .from('review_categories')
+      .select(`
+        category_id,
+        categories(*)
+      `)
+      .eq('review_id', reviewId)
+
+    if (categoryError) {
+      console.error('Error fetching categories:', categoryError)
+      // Don't fail the whole load, just log the error
+    }
+
+    review.value = reviewData
+    form.value = {
+      title: reviewData.title,
+      summary: reviewData.summary,
+      content: reviewData.content,
+      category_ids: categoryData ? categoryData.map(rc => rc.category_id) : [],
+      rating: reviewData.rating,
+      is_published: reviewData.is_published,
+      ai_generated: reviewData.ai_generated
+    }
+    
+    // Store initial state
+    nextTick(() => {
+      initialFormState = JSON.stringify(form.value)
+    })
+    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+  } catch (error) {
+    console.error('Error loading review:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: error?.message || 'Review not found',
+      detail: 'Failed to load review data',
       life: 5000
     })
     form.value = null
-    return
   }
-  review.value = data
-  form.value = {
-    title: data.title,
-    summary: data.summary,
-    content: data.content,
-    category_ids: data.review_categories.map(rc => rc.category_id),
-    rating: data.rating,
-    is_published: data.is_published,
-    ai_generated: data.ai_generated
-  }
-  
-  // Store initial state
-  nextTick(() => {
-    initialFormState = JSON.stringify(form.value)
-  })
-  
-  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onBeforeUnmount(() => {
@@ -323,18 +350,76 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    const { error } = await client.rpc('update_review_with_categories', {
-      review_id: route.params.id,
-      new_title: form.value.title,
-      new_summary: form.value.summary,
-      new_content: form.value.content,
-      new_rating: form.value.rating,
-      new_is_published: form.value.is_published,
-      new_ai_generated: form.value.ai_generated,
-      new_category_ids: form.value.category_ids
-    })
+    // Debug: Log the form data being sent
+    console.log('Form data being sent:', form.value)
+    console.log('Rating type:', typeof form.value.rating, 'Value:', form.value.rating)
+    
+    // Ensure rating is a proper numeric value
+    const ratingValue = parseFloat(form.value.rating)
+    if (isNaN(ratingValue) || ratingValue < 1.0 || ratingValue > 5.0) {
+      throw new Error('Rating must be a number between 1.0 and 5.0')
+    }
+    
+    const updateData = {
+      title: form.value.title,
+      summary: form.value.summary,
+      content: form.value.content,
+      rating: ratingValue,
+      is_published: form.value.is_published,
+      ai_generated: form.value.ai_generated,
+      updated_at: new Date().toISOString()
+    }
+    
+    console.log('Update data:', updateData)
+    console.log('Review ID:', route.params.id)
+    
+    // Try to get more detailed error information
+    const { data: updateResult, error: reviewError } = await client
+      .from('reviews')
+      .update(updateData)
+      .eq('id', route.params.id)
+      .select()
 
-    if (error) throw error
+    if (reviewError) {
+      console.error('Review update error details:', {
+        code: reviewError.code,
+        message: reviewError.message,
+        details: reviewError.details,
+        hint: reviewError.hint
+      })
+      throw reviewError
+    }
+
+    console.log('Review update successful:', updateResult)
+
+    // Update categories
+    // First, remove existing categories
+    const { error: deleteError } = await client
+      .from('review_categories')
+      .delete()
+      .eq('review_id', route.params.id)
+
+    if (deleteError) {
+      console.error('Category delete error:', deleteError)
+      throw deleteError
+    }
+
+    // Then, add new categories
+    if (form.value.category_ids.length > 0) {
+      const categoryInserts = form.value.category_ids.map(categoryId => ({
+        review_id: route.params.id,
+        category_id: categoryId
+      }))
+
+      const { error: insertError } = await client
+        .from('review_categories')
+        .insert(categoryInserts)
+
+      if (insertError) {
+        console.error('Category insert error:', insertError)
+        throw insertError
+      }
+    }
 
     toast.add({
       severity: 'success',
@@ -346,6 +431,8 @@ const handleSubmit = async () => {
     // Reset initial state
     initialFormState = JSON.stringify(form.value)
   } catch (error) {
+    console.error('Error updating review:', error)
+    console.error('Full error object:', JSON.stringify(error, null, 2))
     toast.add({
       severity: 'error',
       summary: 'Error updating review',

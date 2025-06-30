@@ -59,6 +59,16 @@
         <div class="mb-3 sm:mb-4">
           <span class="text-blue-600 text-xs sm:text-sm">This review was created with AI assistance</span>
         </div>
+
+        <!-- Reviews Consulted Notice -->
+        <div v-if="reviewsConsultedCount" class="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex items-center">
+            <i class="pi pi-search text-blue-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
+            <span class="text-blue-800 text-sm sm:text-base font-medium">
+              This review consolidated almost {{ reviewsConsultedCount }} reviews found on the web.
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Review Content -->
@@ -66,12 +76,17 @@
         <div v-html="renderedContent"></div>
       </div>
 
-      <!-- Edit Button for Review Owner - Mobile Optimized -->
-      <div v-if="user?.id === review?.user_id" class="mb-6 sm:mb-8 flex justify-end">
+      <!-- Edit Button for Review Owner or Admin - Mobile Optimized -->
+      <div v-if="user?.id === review?.user_id || userProfile?.is_admin" class="mb-6 sm:mb-8 flex justify-end">
         <NuxtLink :to="`/admin/reviews/${review.id}`" class="btn-primary text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-3 min-h-[44px] inline-flex items-center justify-center touch-manipulation">
           <i class="pi pi-pencil mr-2"></i>
           Edit Review
         </NuxtLink>
+      </div>
+      
+      <!-- Debug info (remove in production) -->
+      <div v-if="user" class="mb-4 p-2 bg-gray-100 text-xs">
+        Debug: User ID: {{ user.id }}, Review User ID: {{ review?.user_id }}, Is Admin: {{ userProfile?.is_admin }}, Show Edit: {{ user?.id === review?.user_id || userProfile?.is_admin }}
       </div>
 
       <!-- Comments Section -->
@@ -249,6 +264,7 @@ const comments = ref([])
 const newComment = ref('')
 const hasUserStarred = ref(false)
 const isLoading = ref(true)
+const userProfile = ref(null)
 
 // Amazon lookup state
 const showAmazonDialog = ref(false)
@@ -259,6 +275,7 @@ const showAIDialog = ref(false)
 const aiResponse = ref('')
 
 console.log('[reviews/[slug]] Initial load - slug:', route.params.slug)
+console.log('[reviews/[slug]] User object:', user.value)
 
 // Fetch review data
 const { data } = await useAsyncData(`review-${route.params.slug}`, async () => {
@@ -299,6 +316,27 @@ console.log('[reviews/[slug]] Review value after assignment:', review.value)
 // Fetch review by ID with author information
 onMounted(async () => {
   console.log('[reviews/[slug]] onMounted - checking review:', review.value)
+  
+  // Fetch user profile if user is logged in
+  if (user.value) {
+    try {
+      const { data: profileData, error: profileError } = await client
+        .from('profiles')
+        .select('*')
+        .eq('id', user.value.id)
+        .single()
+      
+      if (profileError) {
+        console.error('[reviews/[slug]] Error fetching user profile:', profileError)
+      } else {
+        userProfile.value = profileData
+        console.log('[reviews/[slug]] User profile:', userProfile.value)
+      }
+    } catch (error) {
+      console.error('[reviews/[slug]] Exception fetching user profile:', error)
+    }
+  }
+  
   if (!review.value) {
     console.log('[reviews/[slug]] No review found, redirecting to search')
     toast.add({
@@ -382,6 +420,22 @@ comments.value = commentsData.value
 // Render markdown content
 const renderedContent = computed(() => {
   return marked(review.value?.content || '')
+})
+
+// Extract number of reviews consulted
+const reviewsConsultedCount = computed(() => {
+  if (!review.value?.content) return null
+  
+  const content = review.value.content
+  const reviewsConsultedMatch = content.match(/REVIEWS CONSULTED:\s*(\d+)/i)
+  
+  if (reviewsConsultedMatch) {
+    const count = parseInt(reviewsConsultedMatch[1])
+    // Only return the count if it's greater than zero
+    return count > 0 ? count : null
+  }
+  
+  return null
 })
 
 const renderedAIResponse = computed(() => marked(aiResponse.value || ''))

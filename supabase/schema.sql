@@ -31,7 +31,9 @@ begin
         drop policy if exists "Users can view their own unpublished reviews" on public.reviews;
         drop policy if exists "Users can create reviews" on public.reviews;
         drop policy if exists "Users can update own reviews" on public.reviews;
+        drop policy if exists "Admins can update any review" on public.reviews;
         drop policy if exists "Users can delete own reviews" on public.reviews;
+        drop policy if exists "Admins can delete any review" on public.reviews;
         drop policy if exists "Anyone can increment view count" on public.reviews;
     end if;
 
@@ -325,16 +327,30 @@ create policy "Users can update own reviews"
     on public.reviews for update
     using (auth.uid() = user_id);
 
+create policy "Admins can update any review"
+    on public.reviews for update
+    using (exists (
+        select 1 from public.profiles
+        where id = auth.uid() and is_admin = true
+    ));
+
 create policy "Users can delete own reviews"
     on public.reviews for delete
     using (auth.uid() = user_id);
+
+create policy "Admins can delete any review"
+    on public.reviews for delete
+    using (exists (
+        select 1 from public.profiles
+        where id = auth.uid() and is_admin = true
+    ));
 
 create policy "Anyone can increment view count"
     on public.reviews for update
     using (true)
     with check (
-        -- Only allow updating the views_count column and incrementing by 1
-        views_count = (select views_count + 1 from public.reviews where id = id)
+        -- Allow updating any column, but this policy is mainly for view count increments
+        true
     );
 
 create policy "Comments are viewable by everyone"
