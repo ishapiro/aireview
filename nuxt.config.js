@@ -59,7 +59,8 @@ export default defineNuxtConfig({
         '/terms',
         '/reviews/*',
         '/categories',
-        '/categories/*'
+        '/categories/*',
+        '/categories-all'
       ]
     },
     clientOptions: {
