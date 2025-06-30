@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">All Categories</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">All Tags</h1>
     <div v-if="categories && categories.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       <NuxtLink
         v-for="category in categories"
@@ -29,7 +29,7 @@
     </div>
     <div v-else class="text-center text-gray-500 py-12">
       <i class="pi pi-image text-4xl mb-4"></i>
-      <p class="text-lg">No categories found.</p>
+      <p class="text-lg">No tags found.</p>
     </div>
   </div>
 </template>

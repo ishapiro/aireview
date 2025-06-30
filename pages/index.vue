@@ -123,8 +123,8 @@
     <div class="bg-gray-50 py-12 sm:py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4">
-          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Popular Categories</h2>
-          <NuxtLink to="/categories-all" class="btn-primary inline-block text-sm sm:text-base px-4 sm:px-6 py-2">View All Categories</NuxtLink>
+          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Popular Tags</h2>
+          <NuxtLink to="/categories-all" class="btn-primary inline-block text-sm sm:text-base px-4 sm:px-6 py-2">View All Tags</NuxtLink>
         </div>
         <div class="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           <NuxtLink

@@ -78,9 +78,9 @@
             <div class="p-2 sm:p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
               <i class="pi pi-tags text-green-600 text-lg sm:text-xl"></i>
             </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Manage Categories</h3>
+            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Manage Tags</h3>
           </div>
-          <p class="text-gray-600 text-xs sm:text-sm">Organize and manage product categories</p>
+          <p class="text-gray-600 text-xs sm:text-sm">Organize and manage product tags</p>
         </NuxtLink>
 
         <NuxtLink 
@@ -114,7 +114,7 @@
             <div class="p-2 sm:p-3 bg-indigo-50 rounded-lg">
               <i class="pi pi-database text-indigo-600 text-lg sm:text-xl"></i>
             </div>
-            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Category Tools</h3>
+            <h3 class="ml-3 sm:ml-4 text-base sm:text-lg font-semibold text-gray-900">Tag Tools</h3>
           </div>
           <div class="space-y-2 sm:space-y-3">
             <CategoryPopulator />

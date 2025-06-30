@@ -76,14 +76,14 @@
 
             <!-- Category -->
             <div class="field mb-4">
-              <label for="category" class="block text-sm font-medium text-gray-700">Categories</label>
+              <label for="category" class="block text-sm font-medium text-gray-700">Tags</label>
               <MultiSelect
                 id="category"
                 v-model="form.category_ids"
                 :options="categories"
                 option-label="name"
                 option-value="id"
-                placeholder="Select categories"
+                placeholder="Select tags"
                 class="w-full"
                 display="chip"
               />

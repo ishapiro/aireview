@@ -11,7 +11,7 @@
           <i class="pi pi-robot text-blue-600 text-base sm:text-lg"></i>
         </div>
         <div class="ml-2 sm:ml-3 flex-1">
-          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">AI Category Management</h4>
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">AI Tag Management</h4>
           <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add or refresh reviews with AI assistance</p>
         </div>
         <i class="pi pi-chevron-right text-gray-400 group-hover:text-blue-600 transition-colors text-sm"></i>
@@ -22,7 +22,7 @@
     <Dialog
       v-model:visible="showDialog"
       modal
-      header="Category AI Management"
+      header="AI Tag Management"
       :style="{ width: '90vw', maxWidth: '1000px' }"
       :closable="!isProcessing"
     >
@@ -38,10 +38,10 @@
             >
               <div class="flex items-center mb-3">
                 <i class="pi pi-list text-2xl text-blue-600 mr-3"></i>
-                <h4 class="text-lg font-medium text-gray-900">Update Products in a Category</h4>
+                <h4 class="text-lg font-medium text-gray-900">Update Products in a Tag</h4>
               </div>
               <p class="text-sm text-gray-600">
-                Generate new products and reviews for this category. This will add new reviews without affecting existing ones.
+                Generate new products and reviews for this tag. This will add new reviews without affecting existing ones.
               </p>
             </div>
             

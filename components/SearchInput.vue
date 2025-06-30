@@ -83,7 +83,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Search for a product or category...'
+    default: 'Search for a product or tag...'
   },
   categories: {
     type: Array,

@@ -21,14 +21,14 @@
             </div>
 
             <div class="field">
-              <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+              <label for="category" class="block text-sm font-medium text-gray-700">Tag</label>
               <MultiSelect
                 id="category"
                 v-model="searchForm.category_ids"
                 :options="categories"
                 optionLabel="name"
                 optionValue="id"
-                placeholder="All Categories"
+                placeholder="All Tags"
                 class="w-full"
                 display="chip"
               />
@@ -74,7 +74,7 @@
     <!-- Search Results -->
     <div v-if="matchedCategories.length > 0 || searchResults.length > 0">
       <div v-if="matchedCategories.length > 0" class="mb-10">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Matching Categories</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Matching Tags</h3>
         <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           <NuxtLink
             v-for="category in matchedCategories"

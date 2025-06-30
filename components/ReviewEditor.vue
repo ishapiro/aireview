@@ -48,7 +48,7 @@
 
       <!-- Categories -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tags/label>
         <div class="flex flex-wrap gap-2">
           <div
             v-for="category in categories"

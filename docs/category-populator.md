@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Category Populator is a powerful AI-driven feature that allows administrators to automatically populate categories with multiple product reviews. This feature streamlines the process of creating comprehensive review content for new or existing categories.
+**Categories are now called TAGS for the users as this makes more sense given their use**
+
+The Categories Populator is a powerful AI-driven feature that allows administrators to automatically populate categories with multiple product reviews. This feature streamlines the process of creating comprehensive review content for new or existing categories.
 
 ## Features
 

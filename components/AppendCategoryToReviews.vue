@@ -9,13 +9,13 @@
           <i class="pi pi-plus text-purple-600 text-base sm:text-lg"></i>
         </div>
         <div class="ml-2 sm:ml-3 flex-1">
-          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-purple-600 transition-colors">Append Categories</h4>
-          <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add categories to existing reviews</p>
+          <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-purple-600 transition-colors">Append Tag</h4>
+          <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Add tags to existing reviews</p>
         </div>
         <i class="pi pi-chevron-right text-gray-400 group-hover:text-purple-600 transition-colors text-sm"></i>
       </div>
     </div>
-    <Dialog v-model:visible="showDialog" modal header="Append Category to Reviews" :style="{ width: '600px' }">
+    <Dialog v-model:visible="showDialog" modal header="Append tags to Reviews" :style="{ width: '600px' }">
       <div class="space-y-4">
         <!-- Search Bar -->
         <div>
@@ -33,12 +33,12 @@
         <div v-else-if="searchTerm && !isSearching" class="text-gray-500">No reviews found.</div>
         <!-- Category Dropdown -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Select Category</label>
-          <Dropdown v-model="selectedCategoryId" :options="categoryOptions" optionLabel="name" optionValue="id" placeholder="Choose a category..." class="w-full" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">Select Tag</label>
+          <Dropdown v-model="selectedCategoryId" :options="categoryOptions" optionLabel="name" optionValue="id" placeholder="Choose a tag..." class="w-full" />
         </div>
         <!-- Append Button -->
         <div class="flex justify-end">
-          <Button label="Append Category" class="btn-primary" :disabled="!selectedCategoryId || selectedReviewIds.length === 0 || isAppending" @click="appendCategory" :loading="isAppending" icon="pi pi-plus" />
+          <Button label="Append Tag" class="btn-primary" :disabled="!selectedCategoryId || selectedReviewIds.length === 0 || isAppending" @click="appendCategory" :loading="isAppending" icon="pi pi-plus" />
         </div>
         <div v-if="successMessage" class="text-green-600 text-sm mt-2">{{ successMessage }}</div>
         <div v-if="errorMessage" class="text-red-600 text-sm mt-2">{{ errorMessage }}</div>
