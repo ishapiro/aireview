@@ -7,9 +7,8 @@
       class="group bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4 hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer"
     >
       <div class="flex items-center">
-
-        <div class="p-1.5 sm:p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-            <i class="pi pi-bolt text-blue-600 text-sm sm:text-base"></i>
+        <div class="p-1.5 sm:p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+          <i class="pi pi-bolt text-blue-600 text-base sm:text-lg"></i>
         </div>
         <div class="ml-2 sm:ml-3 flex-1">
           <h4 class="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Revise Reviews for a Tag</h4>
@@ -23,123 +22,151 @@
     <Dialog
       v-model:visible="showDialog"
       modal
-      header="AI Tag Management"
-      :style="{ width: '90vw', maxWidth: '1000px' }"
+      :style="{ width: '100vw', maxWidth: '60rem', borderRadius: '1rem' }"
       :closable="!isProcessing"
+      class="bg-white rounded-xl shadow-lg px-4 py-6 sm:px-10 flex flex-col h-[100vh] sm:h-auto sm:max-h-[90vh]"
     >
-      <div class="space-y-6">
+      <div class="space-y-6 flex-1 flex flex-col">
         <!-- Step 0: Action Selection -->
-        <div v-if="currentStep === 0">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Choose an Action</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div 
-              class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors"
-              :class="selectedAction === 'update_products' ? 'border-blue-500 bg-blue-50' : ''"
-              @click="selectAction('update_products')"
-            >
-              <div class="flex items-center mb-3">
-                <i class="pi pi-list text-2xl text-blue-600 mr-3"></i>
-                <h4 class="text-lg font-medium text-gray-900">Add New AI Reviews to a Tag</h4>
+        <div v-if="currentStep === 0" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Choose an Action</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors"
+                :class="selectedAction === 'update_products' ? 'border-blue-500 bg-blue-50' : ''"
+                @click="selectAction('update_products')"
+              >
+                <div class="flex items-center mb-3">
+                  <i class="pi pi-list text-2xl text-blue-600 mr-3"></i>
+                  <h4 class="text-lg font-medium text-gray-900">Add New AI Reviews to a Tag</h4>
+                </div>
+                <p class="text-sm text-gray-600">
+                  Generate new products and reviews for this tag. This will add new reviews without affecting existing ones.
+                </p>
               </div>
-              <p class="text-sm text-gray-600">
-                Generate new products and reviews for this tag. This will add new reviews without affecting existing ones.
-              </p>
-            </div>
-            
-            <div 
-              class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors"
-              :class="selectedAction === 'regenerate_reviews' ? 'border-blue-500 bg-blue-50' : ''"
-              @click="selectAction('regenerate_reviews')"
-            >
-              <div class="flex items-center mb-3">
-                <i class="pi pi-refresh text-2xl text-blue-600 mr-3"></i>
-                <h4 class="text-lg font-medium text-gray-900">Refresh Existing Reviews</h4>
+              
+              <div 
+                class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors"
+                :class="selectedAction === 'regenerate_reviews' ? 'border-blue-500 bg-blue-50' : ''"
+                @click="selectAction('regenerate_reviews')"
+              >
+                <div class="flex items-center mb-3">
+                  <i class="pi pi-refresh text-2xl text-blue-600 mr-3"></i>
+                  <h4 class="text-lg font-medium text-gray-900">Refresh Existing Reviews</h4>
+                </div>
+                <p class="text-sm text-gray-600">
+                  Refresh the content of existing reviews in this category with new AI-generated content.
+                </p>
               </div>
-              <p class="text-sm text-gray-600">
-                Refresh the content of existing reviews in this category with new AI-generated content.
-              </p>
             </div>
           </div>
           
           <div class="flex justify-end mt-6">
+            <div class='flex flex-col gap-2 w-full'>
+              <Button
+                @click="continueToNextStep"
+                :disabled="!selectedAction"
+                label="Continue"
+                icon="pi pi-arrow-right"
+                class="w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1: Category Input (only show if no category prop) -->
+        <div v-if="currentStep === 1 && !category" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">
+              Step 1: {{ selectedAction === 'regenerate_reviews' ? 'Select Tag to Revise' : 'Select Tag to Add Reviews' }}
+            </h3>
+            <div class="space-y-4">
+              <!-- Category Selection for Both Actions -->
+              <div v-if="selectedAction === 'regenerate_reviews' || selectedAction === 'update_products'">
+                <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">
+                  Select Tag:
+                </label>
+                <Dropdown
+                  id="category-select"
+                  v-model="selectedCategory"
+                  :options="availableCategories"
+                  option-label="name"
+                  placeholder="Choose a tag"
+                  class="w-full mb-4"
+                  :disabled="isProcessing || isLoadingCategories"
+                />
+                <p class="text-sm text-gray-500 mt-1">
+                  Select a tag to {{ selectedAction === 'regenerate_reviews' ? 'revise existing reviews' : 'add new AI reviews' }}.
+                </p>
+              </div>
+
+              <!-- Review Type Selection -->
+              <div v-if="selectedAction === 'regenerate_reviews'" class="bg-gray-100 p-4 rounded-lg">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Review Type:
+                </label>
+                <div class="flex gap-4">
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      v-model="reviewType"
+                      value="consumer"
+                      class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      :disabled="isProcessing"
+                    />
+                    <span class="text-sm text-gray-700">Consumer Review</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      v-model="reviewType"
+                      value="business"
+                      class="mr-2 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                      :disabled="isProcessing"
+                    />
+                    <span class="text-sm text-gray-700">Business Review</span>
+                  </label>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">
+                  Choose whether to generate consumer-focused or business-focused content when refreshing existing reviews.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex justify-between items-center flex-row gap-2 w-full">
             <Button
-              @click="continueToNextStep"
-              :disabled="!selectedAction"
+              @click="currentStep = 0"
+              label="Back"
+              icon="pi pi-arrow-left"
+              class="w-full"
+            />
+            <Button
+              v-if="selectedAction === 'regenerate_reviews'"
+              @click="selectCategoryForRegeneration"
+              :loading="isLoadingCategories"
+              :disabled="!selectedCategory || !reviewType"
               label="Continue"
               icon="pi pi-arrow-right"
+              class="w-full"
+            />
+            <Button
+              v-else-if="selectedAction === 'update_products'"
+              @click="proceedWithSelectedCategory"
+              :disabled="!selectedCategory"
+              label="Continue"
+              icon="pi pi-arrow-right"
+              class="w-full"
             />
           </div>
         </div>
 
-        <!-- Step 1: Category Input (only show if no category prop) -->
-        <div v-if="currentStep === 1 && !category">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Step 1: {{ selectedAction === 'regenerate_reviews' ? 'Select Category to Refresh' : 'Enter Category Name' }}
-          </h3>
-          <div class="space-y-4">
-            <!-- Category Selection for Refresh Reviews -->
-            <div v-if="selectedAction === 'regenerate_reviews'">
-              <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">
-                Select Category:
-              </label>
-              <Dropdown
-                id="category-select"
-                v-model="selectedCategory"
-                :options="availableCategories"
-                option-label="name"
-                placeholder="Choose a category"
-                class="w-full"
-                :disabled="isProcessing || isLoadingCategories"
-              />
-              <p class="text-sm text-gray-500 mt-1">
-                Select a category to see existing reviews that can be refreshed.
-              </p>
-            </div>
-            
-            <!-- Category Name Input for Update Products -->
-            <div v-else>
-              <label for="category-name" class="block text-sm font-medium text-gray-700 mb-2">
-                Category Name:
-              </label>
-              <InputText
-                id="category-name"
-                v-model="categoryName"
-                class="w-full"
-                placeholder="e.g., Smartphones, Laptops, Gaming"
-                :disabled="isProcessing"
-              />
-            </div>
-            
-            <div class="flex justify-between items-center">
-              <Button
-                @click="currentStep = 0"
-                label="Back"
-                icon="pi pi-arrow-left"
-              />
-              <Button
-                v-if="selectedAction === 'regenerate_reviews'"
-                @click="selectCategoryForRegeneration"
-                :loading="isLoadingCategories"
-                :disabled="!selectedCategory"
-                label="Continue"
-                icon="pi pi-arrow-right"
-              />
-              <Button
-                v-else
-                @click="checkOrCreateCategory"
-                :loading="isCheckingCategory"
-                :disabled="!categoryName.trim()"
-                label="Continue"
-                icon="pi pi-arrow-right"
-              />
-            </div>
-          </div>
-        </div>
-
         <!-- Step 2: Product List Generation (for Update Products) -->
-        <div v-if="currentStep === 2 && selectedAction === 'update_products'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 2: Generate Product List</h3>
-          <div class="space-y-4">
+        <div v-if="currentStep === 2 && selectedAction === 'update_products'" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Step 2: Generate Product List</h3>
+            <div class="space-y-4">
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p class="text-sm text-blue-800">
                 <strong>Category:</strong> {{ selectedCategory.name }}
@@ -188,57 +215,59 @@
               </div>
             </div>
             
-            <div class="flex justify-between items-center">
-              <div class="flex items-center space-x-2">
-                <Button
-                  v-if="products.length === 0"
-                  @click="generateProductList"
-                  :loading="isGeneratingProducts"
-                  :disabled="isGeneratingProducts"
-                  label="Generate Product List"
-                  icon="pi pi-list"
-                />
-                <Button
-                  v-if="rawAIResponse"
-                  @click="showDebugDialog = true"
-                  :disabled="isGeneratingProducts"
-                  label="Debug Response"
-                  icon="pi pi-bug"
-                  class="p-button-secondary"
-                  size="small"
-                />
-              </div>
-              <div class="flex items-center space-x-2">
-                <Button
-                  v-if="products.length > 0"
-                  @click="currentStep = 3"
-                  :disabled="isGeneratingProducts"
-                  label="Continue to Review Generation"
-                  icon="pi pi-arrow-right"
-                />
-                <Button
-                  v-if="!category"
-                  @click="currentStep = 1"
-                  :disabled="isGeneratingProducts"
-                  label="Back"
-                  icon="pi pi-arrow-left"
-                />
-                <Button
-                  v-else
-                  @click="currentStep = 0"
-                  :disabled="isGeneratingProducts"
-                  label="Back"
-                  icon="pi pi-arrow-left"
-                />
-              </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 w-full mt-4">
+              <Button
+                v-if="products.length === 0"
+                @click="generateProductList"
+                :loading="isGeneratingProducts"
+                :disabled="isGeneratingProducts"
+                label="Generate Product List"
+                icon="pi pi-list"
+                class="w-full"
+              />
+              <Button
+                v-if="rawAIResponse"
+                @click="showDebugDialog = true"
+                :disabled="isGeneratingProducts"
+                label="Debug Response"
+                icon="pi pi-bug"
+                class="p-button-secondary w-full"
+                size="small"
+              />
+              <Button
+                v-if="products.length > 0"
+                @click="currentStep = 3"
+                :disabled="isGeneratingProducts"
+                label="Continue to Review Generation"
+                icon="pi pi-arrow-right"
+                class="w-full"
+              />
+              <Button
+                v-if="!category"
+                @click="currentStep = 1"
+                :disabled="isGeneratingProducts"
+                label="Back"
+                icon="pi pi-arrow-left"
+                class="w-full"
+              />
+              <Button
+                v-else
+                @click="currentStep = 0"
+                :disabled="isGeneratingProducts"
+                label="Back"
+                icon="pi pi-arrow-left"
+                class="w-full"
+              />
             </div>
           </div>
         </div>
 
         <!-- Step 2: Review Selection (for Refresh Reviews) -->
-        <div v-if="currentStep === 2 && selectedAction === 'regenerate_reviews'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 2: Select Reviews to Refresh</h3>
-          <div class="flex flex-col h-full">
+        <div v-if="currentStep === 2 && selectedAction === 'regenerate_reviews'" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Step 2: Select Reviews to Refresh</h3>
             <div class="space-y-4">
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p class="text-sm text-blue-800">
@@ -304,21 +333,24 @@
             </div>
             
             <div class="mt-auto pt-6 flex justify-between items-center">
-              <Button
-                @click="startReviewRegeneration"
-                :loading="isProcessing"
-                :disabled="isProcessing || selectedReviews.length === 0"
-                label="Start Refreshing Reviews"
-                icon="pi pi-refresh"
-              />
-              <div class="flex items-center space-x-2">
+              <div class='flex flex-col gap-2 w-full'>
+                <Button
+                  @click="startReviewRegeneration"
+                  :loading="isProcessing"
+                  :disabled="isProcessing || selectedReviews.length === 0"
+                  label="Start Refreshing Reviews"
+                  icon="pi pi-refresh"
+                  class="w-full"
+                />
+              </div>
+              <div class='flex flex-col gap-2 w-full'>
                 <Button
                   v-if="!category"
                   @click="currentStep = 1"
                   :disabled="isProcessing"
                   label="Back"
                   icon="pi pi-arrow-left"
-                  class="p-button-secondary"
+                  class="w-full"
                 />
                 <Button
                   v-else
@@ -326,7 +358,7 @@
                   :disabled="isProcessing"
                   label="Back"
                   icon="pi pi-arrow-left"
-                  class="p-button-secondary"
+                  class="w-full"
                 />
               </div>
             </div>
@@ -334,12 +366,12 @@
         </div>
 
         <!-- Step 3: Review Generation (for Update Products) -->
-        <div v-if="currentStep === 3 && selectedAction === 'update_products'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 3: Generate Reviews</h3>
-          <div class="space-y-4">
+        <div v-if="currentStep === 3 && selectedAction === 'update_products'" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Step 3: Generate Reviews</h3>
+            <div class="space-y-4">
             <!-- Product List Display -->
             <div v-if="products.length > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-2">Products to Review:</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div 
                   v-for="(product, index) in products" 
@@ -396,29 +428,41 @@
               </div>
             </div>
 
+            </div>
+            
             <!-- Action Buttons -->
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row gap-2 w-full mt-4">
               <Button
                 @click="startReviewGeneration"
                 :loading="isProcessing"
                 :disabled="isProcessing || products.length === 0"
                 label="Start Generating Reviews"
                 icon="pi pi-play"
+                class="w-full"
               />
               <Button
-                @click="currentStep = 2"
+                @click="showDebugDialog = true"
+                :disabled="isProcessing"
+                label="Debug AI"
+                icon="pi pi-bug"
+                class="p-button-secondary w-full"
+              />
+              <Button
+                @click="handleBackToTagSelection"
                 :disabled="isProcessing"
                 label="Back"
                 icon="pi pi-arrow-left"
+                class="w-full"
               />
             </div>
           </div>
         </div>
 
         <!-- Step 3: Review Refresh Progress -->
-        <div v-if="currentStep === 3 && selectedAction === 'regenerate_reviews'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 3: Refreshing Reviews</h3>
-          <div class="space-y-4">
+        <div v-if="currentStep === 3 && selectedAction === 'regenerate_reviews'" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Step 3: Refreshing Reviews</h3>
+            <div class="space-y-4">
             <!-- Progress -->
             <div v-if="isProcessing" class="space-y-2">
               <div class="flex justify-between text-sm text-gray-600 pb-2">
@@ -436,22 +480,28 @@
               </p>
             </div>
 
+            </div>
+            
             <!-- Action Buttons -->
             <div class="flex justify-between items-center">
-              <Button
-                @click="currentStep = 2"
-                :disabled="isProcessing"
-                label="Back"
-                icon="pi pi-arrow-left"
-              />
+              <div class='flex flex-col gap-2 w-full'>
+                <Button
+                  @click="currentStep = 2"
+                  :disabled="isProcessing"
+                  label="Back"
+                  icon="pi pi-arrow-left"
+                  class="w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Step 4: Completion -->
-        <div v-if="currentStep === 4">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Step 4: Complete</h3>
-          <div class="space-y-4">
+        <div v-if="currentStep === 4" class="flex-1 flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center sm:text-left">Step 4: Complete</h3>
+            <div class="space-y-4">
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
               <div class="flex items-center">
                 <i class="pi pi-check-circle text-green-500 text-xl mr-3"></i>
@@ -543,12 +593,17 @@
               </div>
             </div>
 
+            </div>
+            
             <div class="flex justify-end">
-              <Button
-                @click="closeDialog"
-                label="Close"
-                icon="pi pi-check"
-              />
+              <div class='flex flex-col gap-2 w-full'>
+                <Button
+                  @click="closeDialog"
+                  label="Close"
+                  icon="pi pi-check"
+                  class="w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -560,14 +615,14 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2">
+        <div class="flex flex-col gap-2 w-full">
           <Button
             v-if="currentStep < 4 && currentStep !== 2 "
             type="button"
             @click="closeDialog"
             :disabled="isProcessing"
             label="Cancel"
-            class="p-button-secondary"
+            class="p-button-secondary w-full"
           />
         </div>
       </template>
@@ -577,45 +632,73 @@
     <AIContentGenerator ref="aiGenerator" style="display: none;" />
   </div>
 
-  <!-- Debug Dialog for Raw AI Response -->
+  <!-- Debug Dialog for AI Prompts and Responses -->
   <Dialog
     v-model:visible="showDebugDialog"
     modal
-    header="Raw AI Response Debug"
-    :style="{ width: '90vw', maxWidth: '800px' }"
+    header="AI Debug Information"
+    :style="{ width: '95vw', maxWidth: '1400px' }"
   >
-    <div class="space-y-4">
+    <div class="space-y-6">
+      <!-- Category Information -->
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-gray-900 mb-2">Category:</h4>
-        <p class="text-sm text-gray-700">{{ selectedCategory?.name }}</p>
+        <h4 class="text-sm font-medium text-gray-900 mb-2">Category Information:</h4>
+        <p class="text-sm text-gray-700"><strong>Name:</strong> {{ selectedCategory?.name }}</p>
+        <p class="text-sm text-gray-700"><strong>Review Type:</strong> {{ reviewType === 'consumer' ? 'Consumer Review' : 'Business Review' }}</p>
+        <p class="text-sm text-gray-700"><strong>Action:</strong> {{ selectedAction }}</p>
       </div>
       
-      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-yellow-900 mb-2">Raw AI Response:</h4>
-        <pre class="text-xs text-yellow-800 whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto">{{ rawAIResponse }}</pre>
-      </div>
-      
-      <div v-if="products.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-green-900 mb-2">Parsed Products ({{ products.length }}):</h4>
-        <div class="space-y-1">
-          <div 
-            v-for="(product, index) in products" 
-            :key="index"
-            class="text-sm text-green-800"
-          >
-            {{ index + 1 }}. {{ product }}
+      <!-- Debug Entries -->
+      <div v-if="debugPrompts.length > 0" class="space-y-4">
+        <h4 class="text-lg font-medium text-gray-900">AI Interactions ({{ debugPrompts.length }}):</h4>
+        
+        <div 
+          v-for="(prompt, index) in debugPrompts" 
+          :key="index"
+          class="border border-gray-200 rounded-lg p-4 space-y-3"
+        >
+          <div class="flex justify-between items-start">
+            <h5 class="text-sm font-medium text-gray-900">{{ prompt.type }}</h5>
+            <span class="text-xs text-gray-500">{{ new Date(prompt.timestamp).toLocaleString() }}</span>
+          </div>
+          
+          <div v-if="prompt.product" class="text-sm text-gray-600">
+            <strong>Product:</strong> {{ prompt.product }}
+          </div>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <h6 class="text-sm font-medium text-blue-900 mb-2">Prompt Sent to AI:</h6>
+            <pre class="text-xs text-blue-800 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">{{ prompt.prompt }}</pre>
+          </div>
+          
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+            <h6 class="text-sm font-medium text-green-900 mb-2">AI Response:</h6>
+            <pre class="text-xs text-green-800 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">{{ debugResponses[index]?.response || 'No response available' }}</pre>
           </div>
         </div>
       </div>
       
-      <div v-else class="bg-red-50 border border-red-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-red-900 mb-2">No Products Parsed:</h4>
-        <p class="text-sm text-red-800">The AI response could not be parsed into a product list.</p>
+      <!-- No Debug Data -->
+      <div v-else class="text-center py-8">
+        <i class="pi pi-info-circle text-3xl text-gray-400 mb-4"></i>
+        <p class="text-gray-600">No AI interactions recorded yet.</p>
+        <p class="text-sm text-gray-500 mt-2">Start generating products or reviews to see debug information.</p>
+      </div>
+      
+      <!-- Raw AI Response (Legacy) -->
+      <div v-if="rawAIResponse" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 class="text-sm font-medium text-yellow-900 mb-2">Legacy Raw AI Response:</h4>
+        <pre class="text-xs text-yellow-800 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">{{ rawAIResponse }}</pre>
       </div>
     </div>
     
     <template #footer>
-      <div class="flex justify-end">
+      <div class="flex justify-between">
+        <Button 
+          @click="debugPrompts = []; debugResponses = []" 
+          label="Clear Debug Data" 
+          class="p-button-secondary"
+        />
         <Button @click="showDebugDialog = false" label="Close" />
       </div>
     </template>
@@ -662,6 +745,10 @@ const isGeneratingProducts = ref(false)
 const rawAIResponse = ref('')
 const showDebugDialog = ref(false)
 
+// Debug state
+const debugPrompts = ref([])
+const debugResponses = ref([])
+
 // Review generation state
 const currentProductIndex = ref(0)
 const currentProduct = ref('')
@@ -673,6 +760,9 @@ const selectedReviews = ref([])
 const currentReviewIndex = ref(0)
 const currentReviewTitle = ref('')
 const regeneratedReviews = ref([])
+
+// Review type state
+const reviewType = ref('business')
 
 // AI Generator reference
 const aiGenerator = ref(null)
@@ -729,6 +819,7 @@ const resetState = () => {
   currentProduct.value = ''
   currentReviewIndex.value = 0
   currentReviewTitle.value = ''
+  reviewType.value = 'business'
   error.value = ''
   isProcessing.value = false
   isCheckingCategory.value = false
@@ -736,6 +827,8 @@ const resetState = () => {
   isLoadingCategories.value = false
   rawAIResponse.value = ''
   showDebugDialog.value = false
+  debugPrompts.value = []
+  debugResponses.value = []
 }
 
 // Watch for category prop changes - moved after resetState definition
@@ -761,6 +854,9 @@ const closeDialog = () => {
 
 const selectAction = (action) => {
   selectedAction.value = action
+  if (!props.category && (action === 'update_products' || action === 'regenerate_reviews')) {
+    loadAvailableCategories()
+  }
 }
 
 const continueToNextStep = () => {
@@ -826,8 +922,27 @@ const startReviewRegeneration = async () => {
       // Generate new content for this review
       const reviewData = await aiGenerator.value.generateProductReview(
         review.title, 
-        selectedCategory.value.name
+        selectedCategory.value.name,
+        reviewType.value
       )
+      
+      // Store debug information for review refresh
+      const reviewTypeText = reviewType.value === 'consumer' ? 'Consumer Review' : 'Business Review'
+      const refreshPrompt = `${reviewTypeText}: Review "${review.title}"`
+      
+      debugPrompts.value.push({
+        type: 'Review Refresh',
+        product: review.title,
+        prompt: refreshPrompt,
+        timestamp: new Date().toISOString()
+      })
+      
+      debugResponses.value.push({
+        type: 'Review Refresh',
+        product: review.title,
+        response: 'Response processed by AIContentGenerator - see console for details',
+        timestamp: new Date().toISOString()
+      })
       
       if (reviewData) {
         // Update the existing review
@@ -867,33 +982,41 @@ const startReviewRegeneration = async () => {
 const checkOrCreateCategory = async () => {
   if (!categoryName.value.trim()) return
 
+  // Sanitize the category name: remove any trailing colon and numbers
+  const sanitizedCategoryName = categoryName.value.trim().replace(/:.*$/, '')
+
   isCheckingCategory.value = true
   error.value = ''
 
   try {
-    // First, check if category exists
-    const { data: existingCategory } = await client
+    // First, check if category exists (exact match)
+    const { data: existingCategory, error: selectError } = await client
       .from('categories')
       .select('*')
-      .eq('name', categoryName.value.trim())
-      .single()
+      .eq('name', sanitizedCategoryName)
+      .maybeSingle()
+
+    if (selectError && selectError.code !== 'PGRST116') throw selectError // Ignore "no rows" error
 
     if (existingCategory) {
       selectedCategory.value = existingCategory
     } else {
       // Create new category
-      const slug = await generateSlug(categoryName.value.trim())
-      
+      const slug = await generateSlug(sanitizedCategoryName)
       const { data: newCategory, error: createError } = await client
         .from('categories')
         .insert({
-          name: categoryName.value.trim(),
+          name: sanitizedCategoryName,
           slug: slug,
-          description: `AI-generated category for ${categoryName.value.trim()}`
+          description: `AI-generated category for ${sanitizedCategoryName}`
         })
         .select()
         .single()
 
+      if (createError && createError.code === '23505') {
+        error.value = 'A category with this name already exists.'
+        return
+      }
       if (createError) throw createError
       selectedCategory.value = newCategory
     }
@@ -902,9 +1025,9 @@ const checkOrCreateCategory = async () => {
       loadExistingReviews()
     }
     currentStep.value = 2
-  } catch (error) {
-    console.error('Error checking/creating category:', error)
-    error.value = `Error: ${error.message}`
+  } catch (err) {
+    console.error('Error checking/creating category:', err)
+    error.value = `Error: ${err.message || err}`
   } finally {
     isCheckingCategory.value = false
   }
@@ -933,6 +1056,21 @@ const generateProductList = async () => {
     
     // Store the raw response for debugging
     rawAIResponse.value = result.rawResponse || 'No raw response available'
+    
+    // Store debug information
+    const prompt = `Find the latest ${selectedCategory.value.name}`
+    
+    debugPrompts.value.push({
+      type: 'Product List Generation',
+      prompt: prompt,
+      timestamp: new Date().toISOString()
+    })
+    
+    debugResponses.value.push({
+      type: 'Product List Generation',
+      response: result.rawResponse || 'No response available',
+      timestamp: new Date().toISOString()
+    })
     
     if (result.products && result.products.length > 0) {
       products.value = result.products
@@ -976,8 +1114,29 @@ const startReviewGeneration = async () => {
       // Generate review for this product using AI Generator
       const reviewData = await aiGenerator.value.generateProductReview(
         currentProduct.value, 
-        selectedCategory.value.name
+        selectedCategory.value.name,
+        reviewType.value
       )
+      
+      // Store debug information for review generation
+      const reviewTypeText = reviewType.value === 'consumer' ? 'Consumer Review' : 'Business Review'
+      const reviewPrompt = `${reviewTypeText}: Review "${currentProduct.value}"`
+      
+      debugPrompts.value.push({
+        type: 'Review Generation',
+        product: currentProduct.value,
+        prompt: reviewPrompt,
+        timestamp: new Date().toISOString()
+      })
+      
+      // Note: We can't easily capture the raw response from generateProductReview
+      // as it's processed internally by the AIContentGenerator
+      debugResponses.value.push({
+        type: 'Review Generation',
+        product: currentProduct.value,
+        response: 'Response processed by AIContentGenerator - see console for details',
+        timestamp: new Date().toISOString()
+      })
       
       if (reviewData) {
         // Generate slug from title
@@ -1066,6 +1225,10 @@ const loadAvailableCategories = async () => {
 // Handle category selection for regeneration
 const selectCategoryForRegeneration = async () => {
   if (!selectedCategory.value) return
+  if (!reviewType.value) {
+    error.value = 'Please select a review type before continuing.';
+    return;
+  }
   
   try {
     loadExistingReviews()
@@ -1074,5 +1237,15 @@ const selectCategoryForRegeneration = async () => {
     console.error('Error selecting category:', error)
     error.value = `Error selecting category: ${error.message}`
   }
+}
+
+const proceedWithSelectedCategory = () => {
+  if (!selectedCategory.value) return;
+  currentStep.value = 2;
+}
+
+const handleBackToTagSelection = () => {
+  products.value = [];
+  currentStep.value = 1;
 }
 </script>

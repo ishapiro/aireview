@@ -1,0 +1,13 @@
+name = "cogitations-perplexity-ai"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "cogitations-perplexity-ai"
+
+[env.staging]
+name = "cogitations-perplexity-ai-staging"
+
+# Environment variables that will be set in Cloudflare
+# These need to be configured in the Cloudflare dashboard or via wrangler secret
+# PERPLEXITY_API_KEY - your Perplexity AI API key (used for both authentication and API calls) 

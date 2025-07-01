@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Header - Mobile Optimized -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Categories</h1>
@@ -18,16 +18,19 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Image
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                   Name / Slug
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Reviews
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                   Actions
                 </th>
               </tr>
@@ -53,7 +56,9 @@
                     <div class="text-sm font-medium text-gray-900">{{ category.name }}</div>
                     <div class="text-sm text-gray-500">{{ category.slug }}</div>
                   </div>
-                  <div class="text-sm text-gray-700 mt-2">{{ category.description }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-700 max-w-md">{{ category.description }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"

@@ -332,16 +332,14 @@ const generateAIContent = async () => {
 }
 
 // New function to generate product lists
-const generateProductList = async (categoryName, reviewType = 'business') => {
+const generateProductList = async (categoryName) => {
   if (!categoryName || isGenerating.value) return { products: [], rawResponse: '' }
 
   isGenerating.value = true
   aiError.value = ''
 
   try {
-    const reviewTypeText = reviewType === 'consumer' ? 'Consumer Review' : 'Business Review'
-    const prompt = `${reviewTypeText}: Generate a list of 10 popular ${reviewTypeText} products in the "${categoryName}" category. \n\nPlease return the list in the following exact format:\n\nPRODUCTS:\n1. [Product Name 1]\n2. [Product Name 2]\n3. [Product Name 3]\n...and so on\n\nOnly include the product names, no descriptions or additional text.`
-
+    const prompt = `Find the latest ${categoryName}`
     const requestBody = {
       prompt: prompt,
       model: 'gpt-4-turbo'
