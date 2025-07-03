@@ -213,44 +213,7 @@ The AI system can generate both detailed content and concise summaries:
 - **Automatic Parsing**: AI response is parsed to extract both sections
 - **Fallback**: If parsing fails, full response is used as content
 
-## 🎨 PrimeVue + TailwindCSS Integration
 
-This project uses PrimeVue in unstyled mode with TailwindCSS for complete styling control.
-
-### Configuration
-
-**Nuxt Config** (`nuxt.config.js`):
-```javascript
-export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-primevue'],
-  primevue: {
-    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
-    options: { unstyled: true, ripple: true },
-    components: {
-      include: ['Button', 'Card', 'InputText', 'Password', 'Checkbox']
-    }
-  },
-  css: [
-    'primevue/resources/primevue.css',
-    'primeicons/primeicons.css',
-    '@/assets/css/main.css'
-  ]
-})
-```
-
-**Tailwind Config** (`tailwind.config.js`):
-```javascript
-module.exports = {
-  content: [
-    'node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}',
-    // ... your content paths
-  ],
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('tailwindcss-primeui')
-  ]
-}
-```
 
 ### Usage
 
