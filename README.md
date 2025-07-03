@@ -19,15 +19,16 @@ Integrates AI for both review generation and user driven updates.
 ## 🛠️ Tech Stack
 
 - **Frontend Framework**: [Nuxt 3](https://nuxt.com/)
-- **UI Components**: [PrimeVue](https://primevue.org/) (unstyled mode)
-- **Styling**: [TailwindCSS](https://tailwindcss.com/)
+- **UI Components**: [PrimeVue](https://primevue.org/) (v3.49.1)
+- **Styling**: [TailwindCSS](https://tailwindcss.com/) + [PrimeFlex](https://primevue.org/primeflex/)
 - **Backend/Database**: [Supabase](https://supabase.com/)
 - **Authentication**: Supabase Auth with Google OAuth
-- **CloudFlare**: OpenAI Proxy implemented as a worker
+- **AI Integration**: CloudFlare Workers (OpenAI Proxy)
+- **Icons**: [PrimeIcons](https://primevue.org/icons/) (v6.0.1)
 
 ## 📋 Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - npm or yarn
 - Git
 - Supabase account
@@ -55,6 +56,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN=your-cloudflare-token
 ```
 
+On the hosting platform you need to replicate these environment variable and set
+the SITE_URL to https://savta.ai.
+
 ### 3. Supabase Configuration
 
 1. **Create a Supabase project** at [https://app.supabase.com](https://app.supabase.com)
@@ -76,6 +80,7 @@ NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN=your-cloudflare-token
    - Enable Google provider in Authentication > Providers
    - Configure OAuth credentials in [Google Cloud Console](https://console.cloud.google.com)
    - Add redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`
+   - Also add https://savta.ai
 
 ### 4. Development Server
 
@@ -85,11 +90,90 @@ npm run dev
 
 Visit `http://localhost:3000` to see your application.
 
-## 🔐 Email Duplicate Detection System
+## ⚙️ Configuration
 
-This project implements a robust system to prevent users from creating multiple accounts with the same email address when using different authentication methods.
+### PrimeVue Setup
 
-### How It Works
+This project uses PrimeVue with a custom configuration optimized for Nuxt 3 and TailwindCSS integration.
+
+#### Nuxt Configuration (`nuxt.config.js`)
+
+```javascript
+export default defineNuxtConfig({
+  css: [
+    'primevue/resources/themes/lara-light-indigo/theme.css',
+    'primevue/resources/primevue.css',
+    'primeicons/primeicons.css',
+    'primeflex/primeflex.css',
+    '@/assets/css/main.css'
+  ],
+  build: {
+    transpile: ['primevue']  // Required to prevent import errors
+  }
+})
+```
+
+#### Plugin Configuration (`plugins/primevue.js`)
+
+```javascript
+nuxtApp.vueApp.use(PrimeVue, {
+  unstyled: false,           // Use styled components
+  ripple: true,              // Enable ripple effects
+  inputStyle: 'filled',      // Use filled input style
+  pt: {                      // PassThrough configuration for custom styling
+    card: {
+      root: { class: 'bg-white shadow-md rounded-lg' },
+      content: { class: 'p-6' }
+    },
+    button: {
+      root: { class: 'bg-primary-600 hover:bg-primary-700 text-white' }
+    },
+    inputtext: {
+      root: { class: 'w-full' }
+    },
+    password: {
+      root: { class: 'w-full' }
+    }
+  }
+})
+```
+
+#### Registered Components
+
+- **Form Components**: `Button`, `InputText`, `Password`, `Textarea`, `InputNumber`, `InputSwitch`, `Checkbox`, `Dropdown`
+- **Layout Components**: `Card`, `Dialog`, `ConfirmDialog`, `ConfirmPopup`
+- **Feedback Components**: `Toast`, `ProgressSpinner`, `ProgressBar`, `Tag`
+- **Navigation Components**: `Paginator`
+- **Directives**: `Tooltip`
+
+#### Services
+
+- **ToastService**: For displaying toast notifications
+- **ConfirmationService**: For confirmation dialogs and popups
+
+### Supabase Configuration
+
+The Supabase module is configured with session management to prevent auto-import errors:
+
+```javascript
+supabase: {
+  clientOptions: {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+}
+```
+
+## 🔐 Core Features
+
+### Email Duplicate Detection System
+
+Prevents users from creating multiple accounts with the same email address when using different authentication methods.
+
+#### How It Works
 
 1. **Server-Side API** (`server/api/auth/check-email.post.js`):
    - Uses Supabase service role key to access admin API
@@ -105,33 +189,11 @@ This project implements a robust system to prevent users from creating multiple 
    - Works even without service role key
    - Falls back to Supabase's built-in duplicate detection
 
-### Key Implementation Details
+### AI Content Generation
 
-**Environment Variables in Nuxt 3:**
-```javascript
-// Client-side
-const config = useRuntimeConfig()
-const supabaseUrl = config.public.supabaseUrl
+AI-powered content generation feature that helps users create review content using OpenAI's GPT models.
 
-// Server-side
-const config = useRuntimeConfig()
-const serviceRoleKey = config.supabaseServiceRoleKey
-```
-
-**$fetch Response Handling:**
-```javascript
-// Correct way in Nuxt 3
-const response = await $fetch('/api/auth/check-email', {
-  method: 'POST',
-  body: { email }
-})
-```
-
-## 🤖 AI Content Generation
-
-This project includes an AI-powered content generation feature that helps users create review content using OpenAI's GPT models.
-
-### Features
+#### Features
 
 - **Interactive Dialog**: Opens a modal dialog for entering AI prompts
 - **Real-time Generation**: Generates content using the specified AI endpoint
@@ -145,22 +207,9 @@ This project includes an AI-powered content generation feature that helps users 
 - **Loading States**: Shows spinner during content generation
 - **Cross-Page Integration**: Available on all review creation and editing pages
 
-### How It Works
-
-1. **Prompt Input**: Users enter a custom prompt describing the desired review content
-2. **API Integration**: Sends request to `cogitations-review-ai.cogitations.workers.dev`
-3. **Response Handling**: Processes and displays the AI-generated content
-4. **Content Integration**: Allows users to use or append the generated content to their review
-5. **Summary Generation**: When enabled, generates both content and summary simultaneously
-
-### Implementation Details
+#### Implementation
 
 **Shared Component**: `components/AIContentGenerator.vue`
-
-**Available Pages**:
-- `components/ReviewEditor.vue` - Main review editor component
-- `pages/admin/reviews/new.vue` - Create new review page
-- `pages/admin/reviews/[id].vue` - Edit existing review page
 
 **API Configuration**:
 ```javascript
@@ -179,8 +228,6 @@ const response = await fetch('https://cogitations-review-ai.cogitations.workers.
 })
 ```
 
-**Environment Variable**: `NUXT_PUBLIC_COGITATIONS_CLOUDFLARE_TOKEN` - Required for API authentication
-
 **Component Usage**:
 ```vue
 <AIContentGenerator
@@ -190,39 +237,6 @@ const response = await fetch('https://cogitations-review-ai.cogitations.workers.
   @update:summary-value="form.summary = $event"
   @ai-generated="form.ai_generated = true"
 />
-```
-
-### Usage
-
-1. Click the "Generate with AI" button next to the content field on any review page
-2. Enter your prompt describing the review content you want to generate
-3. Click "Generate Content" to send the request
-4. Review the generated content in the preview
-5. Choose to:
-   - **Use This Content**: Replace existing content with AI-generated content
-   - **Append to Existing**: Add AI content to the end of existing content
-   - **Refine Prompt**: Modify the prompt and generate new content
-6. The "AI Generated" checkbox is automatically checked when using AI content
-7. When summary generation is enabled, both content and summary are populated
-
-### Summary Generation
-
-The AI system can generate both detailed content and concise summaries:
-- **Summary**: Brief 2-3 sentence overview of the review
-- **Content**: Detailed markdown-formatted review content
-- **Automatic Parsing**: AI response is parsed to extract both sections
-- **Fallback**: If parsing fails, full response is used as content
-
-
-
-### Usage
-
-```vue
-<template>
-  <Button class="bg-blue-500 hover:bg-blue-600 text-white">
-    Custom Styled Button
-  </Button>
-</template>
 ```
 
 ## 🚀 Deployment
@@ -279,16 +293,14 @@ The AI system can generate both detailed content and concise summaries:
    - Use wildcards in Supabase, exact URLs in Google Cloud
    - Check environment variables are set correctly
 
-### Debugging Tips
-
-- Check browser console for configuration warnings
-- Use server console logs for API debugging
-- Test authentication flows in both development and production
-- Verify all environment variables are properly set
+5. **`[unimport] failed to find "useSupabaseSession"` Error**:
+   - This occurs due to Nuxt's auto-import instability with Supabase
+   - Solution: Use the `clientOptions` configuration shown in the Supabase Configuration section
+   - Alternative: Clear Nuxt cache with `npx nuxi cleanup`
 
 ### Supabase Dependency Issues
 
-If you encounter issues with Supabase dependencies or module conflicts, use this solution:
+If you encounter issues with Supabase dependencies or module conflicts:
 
 ```bash
 # 1. Remove node_modules and lock file to prevent conflicts
@@ -306,8 +318,6 @@ rm -rf .nuxt
 # 5. Run dev server
 npm run dev
 ```
-
-This approach ensures a clean installation with a stable version of the Supabase module and resolves dependency conflicts that may occur during development.
 
 ## 📁 Project Structure
 
@@ -342,39 +352,4 @@ cogitations-reviews/
 - [Nuxt 3 Documentation](https://nuxt.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [PrimeVue Documentation](https://primevue.org/)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-
-## 🐞 Troubleshooting
-
-### `[unimport] failed to find "useSupabaseSession"` Error
-
-This error can occur intermittently during development, especially after stopping and restarting the `npm run dev` server. It's caused by an instability in how Nuxt's auto-import feature interacts with the `@nuxtjs/supabase` module's session management.
-
-Standard solutions like clearing the Nuxt cache (`npx nuxi cleanup`) or reinstalling dependencies (`rm -rf node_modules && npm install`) may not permanently fix this issue.
-
-#### ✅ The Permanent Solution
-
-The most reliable solution is to explicitly define the client-side session handling behavior for the Supabase module in your `nuxt.config.js` file.
-
-Add the following `clientOptions` to the `supabase` configuration object:
-
-```javascript
-// nuxt.config.js
-
-export default defineNuxtConfig({
-  // ... other config
-  supabase: {
-    // ... other supabase config
-    clientOptions: {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
-  },
-  // ... other config
-})
-```
-
-This configuration enforces a stable session management strategy, which prevents the auto-import errors from occurring during server restarts in the development environment. 
+- [TailwindCSS Documentation](https://tailwindcss.com/docs) 
